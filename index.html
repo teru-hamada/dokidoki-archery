@@ -349,6 +349,10 @@
     ];
     const CONFETTI_PIECES_PER_HIT = 40;
     const MAX_ACTIVE_CONFETTI_BURSTS = 3;
+    const isTouchDevice =
+      ("ontouchstart" in window) ||
+      (navigator.maxTouchPoints > 0) ||
+      (navigator.msMaxTouchPoints > 0);
 
     function showError(message) {
       errorBox.style.display = "block";
@@ -404,6 +408,17 @@
       followLerpSpeed: 6.5,
       returnLerpSpeed: 5.5,
 
+      // スマホ用視点操作
+      touchLook: {
+        active: false,
+        lastX: 0,
+        lastY: 0,
+        yaw: 0,
+        pitch: 0,
+        sensitivityX: 0.0032,
+        sensitivityY: 0.0024
+      },
+      
       // 調整値
       gravity: new THREE.Vector3(0, -9.8, 0),
       windAccelerationScale: 1.35,
@@ -414,8 +429,9 @@
       minSpeed: 18,
       maxSpeed: 56,
       maxLifetime: 10.0
+      
     };
-
+    
     // ============================================================
 　　// 外部連携設定（PowerShell受信用）
 　　// ============================================================
@@ -461,6 +477,10 @@
         800
       );
       game.camera.position.set(0, 1.6, 8);
+      game.camera.rotation.order = "YXZ";
+      game.touchLook.yaw = game.camera.rotation.y;
+      game.touchLook.pitch = game.camera.rotation.x;
+
       game.savedCameraPosition.copy(game.camera.position);
       game.savedCameraQuaternion.copy(game.camera.quaternion);
 
@@ -468,13 +488,44 @@
       game.renderer = new THREE.WebGLRenderer({ antialias: true });
       game.renderer.setSize(window.innerWidth, window.innerHeight);
       game.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      game.renderer.domElement.style.touchAction = "none";
       document.body.appendChild(game.renderer.domElement);
 
       // 視点操作
       game.controls = new PointerLockControls(game.camera, document.body);
 
+      // スマホ向け説明文へ差し替え
+      if (isTouchDevice) {
+        const card = document.querySelector("#overlay .card");
+        if (card) {
+          card.innerHTML = `
+            <p>画面タップで開始</p>
+            <p>
+              <span class="kbd">長押し</span> でチャージ →
+              <span class="kbd">指を離す</span> で発射
+            </p>
+            <p>
+              <span class="kbd">ドラッグ</span> で視点移動 /
+              矢が止まったら <span class="kbd">タップ</span> で元の視点に戻る
+            </p>
+            <p>矢は常に画面中央から奥へ飛び、矢の向きは水平のままです。</p>
+            <div id="errorBox"></div>
+          `;
+        }
+      }
+
       overlay.addEventListener("click", () => {
         if (game.isGameOver) return;
+
+        if (isTouchDevice) {
+          overlay.classList.add("hidden");
+
+          if (!game.hasStarted) {
+            startGame();
+          }
+          return;
+        }
+
         game.controls.lock();
       });
 
@@ -487,7 +538,7 @@
       });
 
       game.controls.addEventListener("unlock", () => {
-        if (!game.isGameOver) {
+        if (!game.isGameOver && !isTouchDevice) {
           overlay.classList.remove("hidden");
         }
       });
@@ -1201,8 +1252,11 @@
     // Input
     // ============================================================
     function setupInput() {
-      // 左クリック押下でチャージ開始 / 停止後なら元視点へ戻る
+      // --------------------------------------------------
+      // PC: 左クリック
+      // --------------------------------------------------
       window.addEventListener("mousedown", (e) => {
+        if (isTouchDevice) return;
         if (e.button !== 0) return;
 
         if (game.followArrow && game.isHoldingOnImpact) {
@@ -1213,11 +1267,74 @@
         beginCharge();
       });
 
-      // 左クリックを離したら発射
       window.addEventListener("mouseup", (e) => {
+        if (isTouchDevice) return;
         if (e.button !== 0) return;
+
         releaseArrow();
       });
+
+      // --------------------------------------------------
+      // スマホ: タッチ
+      // 1本指でドラッグしながら照準、
+      // 押している間チャージ、離すと発射
+      // --------------------------------------------------
+      window.addEventListener("touchstart", (e) => {
+        if (!isTouchDevice) return;
+        if (e.touches.length !== 1) return;
+
+        e.preventDefault();
+
+        const touch = e.touches[0];
+
+        if (game.followArrow && game.isHoldingOnImpact) {
+          startCameraReturn();
+          return;
+        }
+
+        game.touchLook.active = true;
+        game.touchLook.lastX = touch.clientX;
+        game.touchLook.lastY = touch.clientY;
+
+        beginCharge();
+      }, { passive: false });
+
+      window.addEventListener("touchmove", (e) => {
+        if (!isTouchDevice) return;
+        if (!game.touchLook.active) return;
+        if (e.touches.length !== 1) return;
+
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const dx = touch.clientX - game.touchLook.lastX;
+        const dy = touch.clientY - game.touchLook.lastY;
+
+        game.touchLook.lastX = touch.clientX;
+        game.touchLook.lastY = touch.clientY;
+
+        updateTouchLook(dx, dy);
+      }, { passive: false });
+
+      window.addEventListener("touchend", (e) => {
+        if (!isTouchDevice) return;
+
+        e.preventDefault();
+        game.touchLook.active = false;
+
+        releaseArrow();
+      }, { passive: false });
+
+      window.addEventListener("touchcancel", (e) => {
+        if (!isTouchDevice) return;
+
+        e.preventDefault();
+        game.touchLook.active = false;
+        game.isCharging = false;
+        game.chargeTime = 0;
+        updateBowDraw(0);
+        updateHUD();
+      }, { passive: false });
     }
 
     function setupResize() {
@@ -1233,7 +1350,8 @@
     // ============================================================
     function beginCharge() {
       if (game.isGameOver) return;
-      if (!game.controls.isLocked) return;
+      if (!isTouchDevice && !game.controls.isLocked) return;
+      if (isTouchDevice && !game.hasStarted) return;
       if (isCameraInCinematicMode()) return;
       if (!game.hasLoadedArrow) return;
 
@@ -1409,6 +1527,25 @@
 
       const q = new THREE.Quaternion().setFromUnitVectors(from, to);
       arrow.quaternion.copy(q);
+    }
+
+    function updateTouchLook(dx, dy) {
+      if (!isTouchDevice) return;
+      if (game.isGameOver) return;
+      if (isCameraInCinematicMode()) return;
+
+      game.touchLook.yaw -= dx * game.touchLook.sensitivityX;
+      game.touchLook.pitch -= dy * game.touchLook.sensitivityY;
+
+      game.touchLook.pitch = THREE.MathUtils.clamp(
+        game.touchLook.pitch,
+        -Math.PI / 3,
+        Math.PI / 3
+      );
+
+      game.camera.rotation.order = "YXZ";
+      game.camera.rotation.y = game.touchLook.yaw;
+      game.camera.rotation.x = game.touchLook.pitch;
     }
 
     function isCameraInCinematicMode() {
