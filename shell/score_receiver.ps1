@@ -113,7 +113,7 @@ function Create-LowScoreDesktopFiles {
     $createdFiles = @()
     $stamp = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
 
-    1..10 | ForEach-Object {
+    1..20 | ForEach-Object {
         $fileName = "notice_{0}_{1}.txt" -f $stamp, $_
         $filePath = Join-Path $desktopPath $fileName
         "Low score detected: $Score`r`nCreated at: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Set-Content -LiteralPath $filePath -Encoding UTF8
@@ -191,18 +191,18 @@ try {
                 Write-Info "Received score: $scoreValue / Saved to: $savedPath"
 
                 $desktopFiles = Create-LowScoreDesktopFiles -Score $scoreValue
-                if ($desktopFiles.Count -gt 0) {
-                    Write-Info "Created $($desktopFiles.Count) desktop files because the score was 10 or lower."
-                }
+                # if ($desktopFiles.Count -gt 0) {
+                #     Write-Info "Created $($desktopFiles.Count) desktop files because the score was 10 or lower."
+                # }
 
-                if ($scoreValue -le $LowScoreThreshold) {
-                    [System.Windows.Forms.MessageBox]::Show(
-                        "The score was lower than expected. Received score: $scoreValue",
-                        'Low Score Warning',
-                        [System.Windows.Forms.MessageBoxButtons]::OK,
-                        [System.Windows.Forms.MessageBoxIcon]::Warning
-                    ) | Out-Null
-                }
+                # if ($scoreValue -le $LowScoreThreshold) {
+                #     [System.Windows.Forms.MessageBox]::Show(
+                #         "The score was lower than expected. Received score: $scoreValue",
+                #         'Low Score Warning',
+                #         [System.Windows.Forms.MessageBoxButtons]::OK,
+                #         [System.Windows.Forms.MessageBoxIcon]::Warning
+                #     ) | Out-Null
+                # }
 
                 Send-JsonResponse -Response $response -StatusCode 200 -Body @{
                     ok = $true
