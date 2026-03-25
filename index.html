@@ -842,290 +842,315 @@
 
       updateLoadedArrowVisual();
       updateBowDraw(0);
+      applyResponsiveBowLayout();
+    }
+
+    function applyResponsiveBowLayout() {
+      if (!game.bowRoot) return;
+
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const isMobilePortrait = isTouchDevice && isPortrait;
+
+      if (isMobilePortrait) {
+        // 縦画面スマホでは弓を少し内側に寄せて小さくする
+        game.bowRoot.position.set(-0.18, -0.10, 0.00);
+        game.bowRoot.scale.set(0.82, 0.82, 0.82);
+
+        // 少しだけ広く見せる
+        game.camera.fov = 78;
+      } else {
+        // それ以外は従来どおり
+        game.bowRoot.position.set(0, 0, 0);
+        game.bowRoot.scale.set(1, 1, 1);
+
+        game.camera.fov = 70;
+      }
+
+      game.camera.updateProjectionMatrix();
     }
 
     function createBowModel() {
-  const bowGroup = new THREE.Group();
+      const bowGroup = new THREE.Group();
 
-  // --------------------------------------------------
-  // 基本設定
-  // --------------------------------------------------
-  const baseX = 0.56;
-  const baseY = -0.38;
-  const baseZ = -1.00;
+      // --------------------------------------------------
+      // 基本設定
+      // --------------------------------------------------
+      const baseX = 0.56;
+      const baseY = -0.38;
+      const baseZ = -1.00;
 
-  const bowHalfLen = 0.80;
-  const maxDraw = 0.44;
-  const bowTiltY = 0.16;
+      const bowHalfLen = 0.80;
+      const maxDraw = 0.44;
+      const bowTiltY = 0.16;
 
-  // --------------------------------------------------
-  // 弓のカーブ
-  // draw: 0～1
-  // kick: リリース直後のしなり
-  //
-  // 見た目は前回版を維持しつつ、
-  // 「末端が傾く」ように先端側の制御点だけ強く動かす
-  // --------------------------------------------------
-  function createBowCurve(draw = 0, kick = 0) {
-    const flex = draw * 0.055 + kick * 0.030;
+      // --------------------------------------------------
+      // 弓のカーブ
+      // draw: 0～1
+      // kick: リリース直後のしなり
+      //
+      // 見た目は前回版を維持しつつ、
+      // 「末端が傾く」ように先端側の制御点だけ強く動かす
+      // --------------------------------------------------
+      function createBowCurve(draw = 0, kick = 0) {
+        const flex = draw * 0.055 + kick * 0.030;
 
-    // 末端がしなる量
-    const tipForward = flex * 1.8;   // 先端が前に出る
-    const tipSide = flex * 0.9;      // 先端が少し外へ逃げる
-    const midBend = flex * 0.35;     // 中腹は少しだけ追従
-    const centerBack = flex * 0.22;  // 中央は軽く後ろへ
+        // 末端がしなる量
+        const tipForward = flex * 1.8;   // 先端が前に出る
+        const tipSide = flex * 0.9;      // 先端が少し外へ逃げる
+        const midBend = flex * 0.35;     // 中腹は少しだけ追従
+        const centerBack = flex * 0.22;  // 中央は軽く後ろへ
 
-    return new THREE.CatmullRomCurve3([
-      // 下端：引くほど先端が前へ倒れる
-      new THREE.Vector3(0.000,  -bowHalfLen,         0.125 + tipForward),
-      new THREE.Vector3(0.030 + tipSide * 0.55, -bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
-      new THREE.Vector3(0.058 + tipSide * 0.35, -bowHalfLen * 0.52, 0.030 + midBend),
+        return new THREE.CatmullRomCurve3([
+          // 下端：引くほど先端が前へ倒れる
+          new THREE.Vector3(0.000,  -bowHalfLen,         0.125 + tipForward),
+          new THREE.Vector3(0.030 + tipSide * 0.55, -bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
+          new THREE.Vector3(0.058 + tipSide * 0.35, -bowHalfLen * 0.52, 0.030 + midBend),
 
-      // 中央付近は見た目を大きく変えない
-      new THREE.Vector3(0.090,  -bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
-      new THREE.Vector3(0.094,   0.00,              -0.050 - centerBack),
+          // 中央付近は見た目を大きく変えない
+          new THREE.Vector3(0.090,  -bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
+          new THREE.Vector3(0.094,   0.00,              -0.050 - centerBack),
 
-      new THREE.Vector3(0.090,   bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
+          new THREE.Vector3(0.090,   bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
 
-      // 上端：引くほど先端が前へ倒れる
-      new THREE.Vector3(0.058 + tipSide * 0.35,  bowHalfLen * 0.52, 0.030 + midBend),
-      new THREE.Vector3(0.030 + tipSide * 0.55,  bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
-      new THREE.Vector3(0.000,   bowHalfLen,        0.125 + tipForward)
-    ]);
-  }
-
-  // --------------------------------------------------
-  // 弓本体
-  // --------------------------------------------------
-  const bowMaterial = new THREE.MeshStandardMaterial({
-    color: 0x4b2e14,
-    roughness: 0.92,
-    metalness: 0.04
-  });
-
-  const bowBody = new THREE.Mesh(
-    new THREE.TubeGeometry(createBowCurve(0, 0), 60, 0.020, 12, false),
-    bowMaterial
-  );
-
-  bowBody.position.set(baseX, baseY, baseZ);
-  bowBody.rotation.y = bowTiltY;
-  bowGroup.add(bowBody);
-
-  // --------------------------------------------------
-  // グリップ
-  // --------------------------------------------------
-  const grip = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.031, 0.034, 0.21, 14),
-    new THREE.MeshStandardMaterial({
-      color: 0x24150d,
-      roughness: 1.0
-    })
-  );
-  grip.position.set(baseX + 0.018, baseY, baseZ - 0.010);
-  grip.rotation.y = bowTiltY;
-  bowGroup.add(grip);
-
-  // --------------------------------------------------
-  // 弦のローカル基準点
-  // ※ 弓の末端しなりに合わせて先端位置も少し動かす
-  // --------------------------------------------------
-  function getStringLocals(draw = 0, kick = 0) {
-    const flex = draw * 0.055 + kick * 0.030;
-    const tipForward = flex * 1.8;
-    const tipSide = flex * 0.9;
-
-    const topLocal = new THREE.Vector3(
-      0.000 + tipSide * 0.06,
-      bowHalfLen,
-      0.115 + tipForward * 0.92
-    );
-
-    const botLocal = new THREE.Vector3(
-      0.000 + tipSide * 0.06,
-      -bowHalfLen,
-      0.115 + tipForward * 0.92
-    );
-
-    // 初期状態では、弦中央は上下端を結ぶ直線の中点に置く
-    const straightMid = topLocal.clone().lerp(botLocal, 0.5);
-
-    // チャージ時だけ手前へ引く
-    const midLocal = straightMid.clone().add(
-      new THREE.Vector3(0, 0, draw * maxDraw)
-    );
-
-    return {
-      topLocal,
-      midLocal,
-      botLocal
-    };
-  }
-
-  function toWorld(local) {
-    return local.clone()
-      .applyEuler(new THREE.Euler(0, bowTiltY, 0, "XYZ"))
-      .add(new THREE.Vector3(baseX, baseY, baseZ));
-  }
-
-  // --------------------------------------------------
-  // 弦
-  // --------------------------------------------------
-  const initLocals = getStringLocals(0, 0);
-
-  const stringGeo = new THREE.BufferGeometry().setFromPoints([
-    toWorld(initLocals.topLocal),
-    toWorld(initLocals.midLocal),
-    toWorld(initLocals.botLocal)
-  ]);
-
-  const string = new THREE.Line(
-    stringGeo,
-    new THREE.LineBasicMaterial({ color: 0xffffff })
-  );
-
-  bowGroup.add(string);
-  game.bowString = string;
-
-  // --------------------------------------------------
-  // 矢接続位置
-  // --------------------------------------------------
-  const arrowAttach = new THREE.Object3D();
-  arrowAttach.position.copy(toWorld(initLocals.midLocal));
-  bowGroup.add(arrowAttach);
-
-  // --------------------------------------------------
-  // 状態
-  // --------------------------------------------------
-  bowGroup.userData.charge = 0;
-  bowGroup.userData.drawAmount = 0;
-  bowGroup.userData.releaseVelocity = 0;
-  bowGroup.userData.stringVibration = 0;
-  bowGroup.userData.bowKick = 0;
-  bowGroup.userData.attachedArrow = null;
-  bowGroup.userData.arrowAttach = arrowAttach;
-
-  // --------------------------------------------------
-  // 弓形状再構築
-  // --------------------------------------------------
-  function rebuildBow(draw = 0, kick = 0) {
-    const newGeo = new THREE.TubeGeometry(createBowCurve(draw, kick), 60, 0.020, 12, false);
-    bowBody.geometry.dispose();
-    bowBody.geometry = newGeo;
-  }
-
-  // --------------------------------------------------
-  // ノックを接続点へ合わせる
-  // --------------------------------------------------
-  function placeArrowByNock(arrow, attachPos) {
-    if (!arrow) return;
-
-    const nockToCenter = arrow.userData?.nockToCenter ?? 0.475;
-
-    // この矢モデルは +X が先端方向
-    const forward = new THREE.Vector3(1, 0, 0)
-      .applyQuaternion(arrow.quaternion)
-      .normalize();
-
-    // ノック位置が attachPos に来るように、
-    // 矢本体の中心は前方へ nockToCenter だけずらして置く
-    arrow.position.copy(
-      attachPos.clone().addScaledVector(forward, nockToCenter)
-    );
-  }
-
-  // --------------------------------------------------
-  // 弦更新
-  // --------------------------------------------------
-  function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0) {
-    const locals = getStringLocals(draw, kick);
-
-    const top = toWorld(locals.topLocal);
-    const mid = toWorld(
-      locals.midLocal.clone().add(new THREE.Vector3(0, 0, Math.sin(vibePhase) * vibeAmp))
-    );
-    const bot = toWorld(locals.botLocal);
-
-    const pos = string.geometry.attributes.position;
-    pos.setXYZ(0, top.x, top.y, top.z);
-    pos.setXYZ(1, mid.x, mid.y, mid.z);
-    pos.setXYZ(2, bot.x, bot.y, bot.z);
-    pos.needsUpdate = true;
-
-    arrowAttach.position.copy(mid);
-
-    const arrow = bowGroup.userData.attachedArrow;
-    if (arrow) {
-      placeArrowByNock(arrow, mid);
-    }
-  }
-
-  // --------------------------------------------------
-  // チャージ
-  // --------------------------------------------------
-  bowGroup.userData.setCharge = function (value) {
-    const c = THREE.MathUtils.clamp(value, 0, 1);
-    bowGroup.userData.charge = c;
-    bowGroup.userData.drawAmount = c;
-
-    rebuildBow(c, 0);
-    updateString(c, 0, 0, 0);
-  };
-
-  // --------------------------------------------------
-  // 矢接続
-  // --------------------------------------------------
-  bowGroup.userData.attachArrow = function (arrow) {
-    bowGroup.userData.attachedArrow = arrow;
-    if (!arrow) return;
-
-    placeArrowByNock(arrow, arrowAttach.position);
-  };
-
-  // --------------------------------------------------
-  // リリース
-  // --------------------------------------------------
-  bowGroup.userData.releaseString = function () {
-    const power = bowGroup.userData.drawAmount;
-
-    bowGroup.userData.releaseVelocity = Math.max(0.22, power * 0.52);
-    bowGroup.userData.stringVibration = 0.024 + power * 0.040;
-    bowGroup.userData.bowKick = 0.60 + power * 0.72;
-    bowGroup.userData.charge = 0;
-  };
-
-  // --------------------------------------------------
-  // 毎フレーム更新
-  // --------------------------------------------------
-  bowGroup.userData.updateBowAnimation = function (dt, elapsed) {
-    if (bowGroup.userData.drawAmount > 0) {
-      bowGroup.userData.drawAmount -= bowGroup.userData.releaseVelocity * dt * 5.4;
-      if (bowGroup.userData.drawAmount < 0) {
-        bowGroup.userData.drawAmount = 0;
+          // 上端：引くほど先端が前へ倒れる
+          new THREE.Vector3(0.058 + tipSide * 0.35,  bowHalfLen * 0.52, 0.030 + midBend),
+          new THREE.Vector3(0.030 + tipSide * 0.55,  bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
+          new THREE.Vector3(0.000,   bowHalfLen,        0.125 + tipForward)
+        ]);
       }
+
+      // --------------------------------------------------
+      // 弓本体
+      // --------------------------------------------------
+      const bowMaterial = new THREE.MeshStandardMaterial({
+        color: 0x4b2e14,
+        roughness: 0.92,
+        metalness: 0.04
+      });
+
+      const bowBody = new THREE.Mesh(
+        new THREE.TubeGeometry(createBowCurve(0, 0), 60, 0.020, 12, false),
+        bowMaterial
+      );
+
+      bowBody.position.set(baseX, baseY, baseZ);
+      bowBody.rotation.y = bowTiltY;
+      bowGroup.add(bowBody);
+
+      // --------------------------------------------------
+      // グリップ
+      // --------------------------------------------------
+      const grip = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.031, 0.034, 0.21, 14),
+        new THREE.MeshStandardMaterial({
+          color: 0x24150d,
+          roughness: 1.0
+        })
+      );
+      grip.position.set(baseX + 0.018, baseY, baseZ - 0.010);
+      grip.rotation.y = bowTiltY;
+      bowGroup.add(grip);
+
+      // --------------------------------------------------
+      // 弦のローカル基準点
+      // ※ 弓の末端しなりに合わせて先端位置も少し動かす
+      // --------------------------------------------------
+      function getStringLocals(draw = 0, kick = 0) {
+        const flex = draw * 0.055 + kick * 0.030;
+        const tipForward = flex * 1.8;
+        const tipSide = flex * 0.9;
+
+        const topLocal = new THREE.Vector3(
+          0.000 + tipSide * 0.06,
+          bowHalfLen,
+          0.115 + tipForward * 0.92
+        );
+
+        const botLocal = new THREE.Vector3(
+          0.000 + tipSide * 0.06,
+          -bowHalfLen,
+          0.115 + tipForward * 0.92
+        );
+
+        // 初期状態では、弦中央は上下端を結ぶ直線の中点に置く
+        const straightMid = topLocal.clone().lerp(botLocal, 0.5);
+
+        // チャージ時だけ手前へ引く
+        const midLocal = straightMid.clone().add(
+          new THREE.Vector3(0, 0, draw * maxDraw)
+        );
+
+        return {
+          topLocal,
+          midLocal,
+          botLocal
+        };
+      }
+
+      function toWorld(local) {
+        return local.clone()
+          .applyEuler(new THREE.Euler(0, bowTiltY, 0, "XYZ"))
+          .add(new THREE.Vector3(baseX, baseY, baseZ));
+      }
+
+      // --------------------------------------------------
+      // 弦
+      // --------------------------------------------------
+      const initLocals = getStringLocals(0, 0);
+
+      const stringGeo = new THREE.BufferGeometry().setFromPoints([
+        toWorld(initLocals.topLocal),
+        toWorld(initLocals.midLocal),
+        toWorld(initLocals.botLocal)
+      ]);
+
+      const string = new THREE.Line(
+        stringGeo,
+        new THREE.LineBasicMaterial({ color: 0xffffff })
+      );
+
+      bowGroup.add(string);
+      game.bowString = string;
+
+      // --------------------------------------------------
+      // 矢接続位置
+      // --------------------------------------------------
+      const arrowAttach = new THREE.Object3D();
+      arrowAttach.position.copy(toWorld(initLocals.midLocal));
+      bowGroup.add(arrowAttach);
+
+      // --------------------------------------------------
+      // 状態
+      // --------------------------------------------------
+      bowGroup.userData.charge = 0;
+      bowGroup.userData.drawAmount = 0;
+      bowGroup.userData.releaseVelocity = 0;
+      bowGroup.userData.stringVibration = 0;
+      bowGroup.userData.bowKick = 0;
+      bowGroup.userData.attachedArrow = null;
+      bowGroup.userData.arrowAttach = arrowAttach;
+
+      // --------------------------------------------------
+      // 弓形状再構築
+      // --------------------------------------------------
+      function rebuildBow(draw = 0, kick = 0) {
+        const newGeo = new THREE.TubeGeometry(createBowCurve(draw, kick), 60, 0.020, 12, false);
+        bowBody.geometry.dispose();
+        bowBody.geometry = newGeo;
+      }
+
+      // --------------------------------------------------
+      // ノックを接続点へ合わせる
+      // --------------------------------------------------
+      function placeArrowByNock(arrow, attachPos) {
+        if (!arrow) return;
+
+        const nockToCenter = arrow.userData?.nockToCenter ?? 0.475;
+
+        // この矢モデルは +X が先端方向
+        const forward = new THREE.Vector3(1, 0, 0)
+          .applyQuaternion(arrow.quaternion)
+          .normalize();
+
+        // ノック位置が attachPos に来るように、
+        // 矢本体の中心は前方へ nockToCenter だけずらして置く
+        arrow.position.copy(
+          attachPos.clone().addScaledVector(forward, nockToCenter)
+        );
+      }
+
+      // --------------------------------------------------
+      // 弦更新
+      // --------------------------------------------------
+      function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0) {
+        const locals = getStringLocals(draw, kick);
+
+        const top = toWorld(locals.topLocal);
+        const mid = toWorld(
+          locals.midLocal.clone().add(new THREE.Vector3(0, 0, Math.sin(vibePhase) * vibeAmp))
+        );
+        const bot = toWorld(locals.botLocal);
+
+        const pos = string.geometry.attributes.position;
+        pos.setXYZ(0, top.x, top.y, top.z);
+        pos.setXYZ(1, mid.x, mid.y, mid.z);
+        pos.setXYZ(2, bot.x, bot.y, bot.z);
+        pos.needsUpdate = true;
+
+        arrowAttach.position.copy(mid);
+
+        const arrow = bowGroup.userData.attachedArrow;
+        if (arrow) {
+          placeArrowByNock(arrow, mid);
+        }
+      }
+
+      // --------------------------------------------------
+      // チャージ
+      // --------------------------------------------------
+      bowGroup.userData.setCharge = function (value) {
+        const c = THREE.MathUtils.clamp(value, 0, 1);
+        bowGroup.userData.charge = c;
+        bowGroup.userData.drawAmount = c;
+
+        rebuildBow(c, 0);
+        updateString(c, 0, 0, 0);
+      };
+
+      // --------------------------------------------------
+      // 矢接続
+      // --------------------------------------------------
+      bowGroup.userData.attachArrow = function (arrow) {
+        bowGroup.userData.attachedArrow = arrow;
+        if (!arrow) return;
+
+        placeArrowByNock(arrow, arrowAttach.position);
+      };
+
+      // --------------------------------------------------
+      // リリース
+      // --------------------------------------------------
+      bowGroup.userData.releaseString = function () {
+        const power = bowGroup.userData.drawAmount;
+
+        bowGroup.userData.releaseVelocity = Math.max(0.22, power * 0.52);
+        bowGroup.userData.stringVibration = 0.024 + power * 0.040;
+        bowGroup.userData.bowKick = 0.60 + power * 0.72;
+        bowGroup.userData.charge = 0;
+      };
+
+      // --------------------------------------------------
+      // 毎フレーム更新
+      // --------------------------------------------------
+      bowGroup.userData.updateBowAnimation = function (dt, elapsed) {
+        if (bowGroup.userData.drawAmount > 0) {
+          bowGroup.userData.drawAmount -= bowGroup.userData.releaseVelocity * dt * 5.4;
+          if (bowGroup.userData.drawAmount < 0) {
+            bowGroup.userData.drawAmount = 0;
+          }
+        }
+
+        bowGroup.userData.stringVibration *= Math.exp(-dt * 11.0);
+        bowGroup.userData.bowKick *= Math.exp(-dt * 9.0);
+
+        // リリース時だけ先端が軽くしなる
+        const kick = Math.sin(elapsed * 26.0) * bowGroup.userData.bowKick * 0.055;
+
+        rebuildBow(bowGroup.userData.drawAmount, kick);
+        updateString(
+          bowGroup.userData.drawAmount,
+          kick,
+          elapsed * 64.0,
+          bowGroup.userData.stringVibration
+        );
+      };
+
+      // 初期状態
+      rebuildBow(0, 0);
+      updateString(0, 0, 0, 0);
+
+      return bowGroup;
     }
-
-    bowGroup.userData.stringVibration *= Math.exp(-dt * 11.0);
-    bowGroup.userData.bowKick *= Math.exp(-dt * 9.0);
-
-    // リリース時だけ先端が軽くしなる
-    const kick = Math.sin(elapsed * 26.0) * bowGroup.userData.bowKick * 0.055;
-
-    rebuildBow(bowGroup.userData.drawAmount, kick);
-    updateString(
-      bowGroup.userData.drawAmount,
-      kick,
-      elapsed * 64.0,
-      bowGroup.userData.stringVibration
-    );
-  };
-
-  // 初期状態
-  rebuildBow(0, 0);
-  updateString(0, 0, 0, 0);
-
-  return bowGroup;
-}
 
     // ============================================================
     // Arrow: 矢モデル生成
@@ -1346,7 +1371,7 @@
       window.addEventListener("resize", () => {
         game.camera.aspect = window.innerWidth / window.innerHeight;
         game.camera.updateProjectionMatrix();
-        game.renderer.setSize(window.innerWidth, window.innerHeight);
+        applyResponsiveBowLayout();
       });
     }
 
