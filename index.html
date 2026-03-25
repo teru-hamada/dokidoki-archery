@@ -780,6 +780,11 @@
       game.bowRoot = bowRoot;
       game.loadedArrow = loadedArrow;
 
+      // 装填中の矢を弓の追従対象として登録
+      if (bowGroup?.userData?.attachArrow) {
+        bowGroup.userData.attachArrow(loadedArrow);
+      }
+
       updateLoadedArrowVisual();
       updateBowDraw(0);
     }
@@ -875,22 +880,30 @@
     const tipForward = flex * 1.8;
     const tipSide = flex * 0.9;
 
+    const topLocal = new THREE.Vector3(
+      0.000 + tipSide * 0.06,
+      bowHalfLen,
+      0.115 + tipForward * 0.92
+    );
+
+    const botLocal = new THREE.Vector3(
+      0.000 + tipSide * 0.06,
+      -bowHalfLen,
+      0.115 + tipForward * 0.92
+    );
+
+    // 初期状態では、弦中央は上下端を結ぶ直線の中点に置く
+    const straightMid = topLocal.clone().lerp(botLocal, 0.5);
+
+    // チャージ時だけ手前へ引く
+    const midLocal = straightMid.clone().add(
+      new THREE.Vector3(0, 0, draw * maxDraw)
+    );
+
     return {
-      topLocal: new THREE.Vector3(
-        0.000 + tipSide * 0.06,
-        bowHalfLen,
-        0.115 + tipForward * 0.92
-      ),
-      midLocal: new THREE.Vector3(
-        0.0,
-        0.0,
-        -draw * maxDraw
-      ),
-      botLocal: new THREE.Vector3(
-        0.000 + tipSide * 0.06,
-        -bowHalfLen,
-        0.115 + tipForward * 0.92
-      )
+      topLocal,
+      midLocal,
+      botLocal
     };
   }
 
@@ -947,6 +960,26 @@
   }
 
   // --------------------------------------------------
+  // ノックを接続点へ合わせる
+  // --------------------------------------------------
+  function placeArrowByNock(arrow, attachPos) {
+    if (!arrow) return;
+
+    const nockToCenter = arrow.userData?.nockToCenter ?? 0.475;
+
+    // この矢モデルは +X が先端方向
+    const forward = new THREE.Vector3(1, 0, 0)
+      .applyQuaternion(arrow.quaternion)
+      .normalize();
+
+    // ノック位置が attachPos に来るように、
+    // 矢本体の中心は前方へ nockToCenter だけずらして置く
+    arrow.position.copy(
+      attachPos.clone().addScaledVector(forward, nockToCenter)
+    );
+  }
+
+  // --------------------------------------------------
   // 弦更新
   // --------------------------------------------------
   function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0) {
@@ -968,8 +1001,7 @@
 
     const arrow = bowGroup.userData.attachedArrow;
     if (arrow) {
-      arrow.position.copy(mid);
-      arrow.rotation.y = bowTiltY;
+      placeArrowByNock(arrow, mid);
     }
   }
 
@@ -992,8 +1024,7 @@
     bowGroup.userData.attachedArrow = arrow;
     if (!arrow) return;
 
-    arrow.position.copy(arrowAttach.position);
-    arrow.rotation.y = bowTiltY;
+    placeArrowByNock(arrow, arrowAttach.position);
   };
 
   // --------------------------------------------------
@@ -1041,126 +1072,130 @@
   return bowGroup;
 }
 
-  // ============================================================
-// Arrow: 矢モデル生成
-// ------------------------------------------------------------
-// この矢モデルは「+X方向に矢じりが向く」基準で作る。
-// そうすると、後で進行方向へ回すのが簡単になる。
-// ============================================================
-function createArrowModel() {
-  const group = new THREE.Group();
+    // ============================================================
+    // Arrow: 矢モデル生成
+    // ------------------------------------------------------------
+    // この矢モデルは「+X方向に矢じりが向く」基準で作る。
+    // そうすると、後で進行方向へ回すのが簡単になる。
+    // ============================================================
+    function createArrowModel() {
+      const group = new THREE.Group();
 
-  // 軸（細め）
-  const shaftRadius = 0.012;
-  const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(shaftRadius, shaftRadius, 0.95, 12),
-    new THREE.MeshStandardMaterial({
-      color: 0x2f2f2f,
-      roughness: 0.82
-    })
-  );
-  shaft.rotation.z = -Math.PI / 2;
-  group.add(shaft);
+      // 軸（細め）
+      const shaftRadius = 0.012;
+      const shaft = new THREE.Mesh(
+        new THREE.CylinderGeometry(shaftRadius, shaftRadius, 0.95, 12),
+        new THREE.MeshStandardMaterial({
+          color: 0x2f2f2f,
+          roughness: 0.82
+        })
+      );
+      shaft.rotation.z = -Math.PI / 2;
+      group.add(shaft);
 
-  // 矢じり（円錐、軸よりしっかり大きめ）
-  const tip = new THREE.Mesh(
-    new THREE.ConeGeometry(0.032, 0.16, 18),
-    new THREE.MeshStandardMaterial({
-      color: 0x8d8d8d,
-      roughness: 0.35
-    })
-  );
-  tip.rotation.z = -Math.PI / 2;
-  tip.position.x = 0.95 / 2 + 0.08;
-  group.add(tip);
+      // 矢じり
+      const tip = new THREE.Mesh(
+        new THREE.ConeGeometry(shaftRadius, 0.16, 18),
+        new THREE.MeshStandardMaterial({
+          color: 0x8d8d8d,
+          roughness: 0.35
+        })
+      );
+      tip.rotation.z = -Math.PI / 2;
+      tip.position.x = 0.95 / 2 + 0.08;
+      group.add(tip);
 
-  // 羽根材質
-  const featherBaseMat = new THREE.MeshStandardMaterial({
-    color: 0xf28c28,
-    roughness: 0.88,
-    side: THREE.DoubleSide
-  });
+      // 羽根材質
+      const featherBaseMat = new THREE.MeshStandardMaterial({
+        color: 0xf28c28,
+        roughness: 0.88,
+        side: THREE.DoubleSide
+      });
 
-  // 羽の取り付け位置（後方）
-  const featherX = -0.95 / 2 + 0.13;
+      // 羽の取り付け位置（後方）
+      const featherX = -0.95 / 2 + 0.13;
 
-  // ------------------------------------------------------------
-  // 羽形状
-  // ------------------------------------------------------------
-  // ローカル座標で
-  // - X: 矢の進行方向
-  // - Y: 軸から外側へ立ち上がる方向
-  // - Z: 羽の薄み
-  //
-  // y = 0 の下辺（最長辺）が「軸に接着される辺」
-  // になるように形状を作る
-  // ------------------------------------------------------------
-  function createVaneGeometry() {
-    const shape = new THREE.Shape();
+      // ------------------------------------------------------------
+      // 羽形状
+      // ------------------------------------------------------------
+      // ローカル座標で
+      // - X: 矢の進行方向
+      // - Y: 軸から外側へ立ち上がる方向
+      // - Z: 羽の薄み
+      //
+      // y = 0 の下辺（最長辺）が「軸に接着される辺」
+      // になるように形状を作る
+      // ------------------------------------------------------------
+      function createVaneGeometry() {
+        const shape = new THREE.Shape();
 
-    // 最長辺（接地辺）
-    shape.moveTo(-0.060, 0.000);
-    shape.lineTo( 0.082, 0.000);
+        // 最長辺（接地辺）
+        shape.moveTo(-0.060, 0.000);
+        shape.lineTo( 0.082, 0.000);
 
-    // 上側輪郭
-    shape.lineTo( 0.088, 0.010);
-    shape.lineTo( 0.078, 0.030);
-    shape.lineTo( 0.058, 0.046);
-    shape.lineTo( 0.028, 0.056);
-    shape.lineTo(-0.004, 0.043);
-    shape.lineTo(-0.028, 0.026);
-    shape.lineTo(-0.046, 0.012);
-    shape.lineTo(-0.060, 0.000);
-    shape.closePath();
+        // 上側輪郭
+        shape.lineTo( 0.088, 0.010);
+        shape.lineTo( 0.078, 0.030);
+        shape.lineTo( 0.058, 0.046);
+        shape.lineTo( 0.028, 0.056);
+        shape.lineTo(-0.004, 0.043);
+        shape.lineTo(-0.028, 0.026);
+        shape.lineTo(-0.046, 0.012);
+        shape.lineTo(-0.060, 0.000);
+        shape.closePath();
 
-    const geom = new THREE.ExtrudeGeometry(shape, {
-      depth: 0.0012,
-      bevelEnabled: false
-    });
+        const geom = new THREE.ExtrudeGeometry(shape, {
+          depth: 0.0012,
+          bevelEnabled: false
+        });
 
-    // 薄み方向の中心を原点へ
-    geom.translate(0, 0, -0.0006);
+        // 薄み方向の中心を原点へ
+        geom.translate(0, 0, -0.0006);
 
-    return geom;
-  }
+        return geom;
+      }
 
-  const featherGeom = createVaneGeometry();
+      const featherGeom = createVaneGeometry();
 
-  // 接着面を少しだけ軸の外へ逃がしてZ-fightingを防ぐ
-  const contactLift = 0.0002;
+      // 接着面を少しだけ軸の外へ逃がしてZ-fightingを防ぐ
+      const contactLift = 0.0002;
 
-  function createFeather(radialAngle, color) {
-    const mat = featherBaseMat.clone();
-    mat.color.setHex(color);
+      function createFeather(radialAngle, color) {
+        const mat = featherBaseMat.clone();
+        mat.color.setHex(color);
 
-    const feather = new THREE.Mesh(featherGeom, mat);
+        const feather = new THREE.Mesh(featherGeom, mat);
 
-    // 羽の前後を反転
-    feather.scale.x = -1;
+        // 羽の前後を反転
+        feather.scale.x = -1;
 
-    // 軸周りに回転
-    feather.rotation.x = radialAngle;
+        // 軸周りに回転
+        feather.rotation.x = radialAngle;
 
-    // y=0 の最長辺全体が軸に接するように配置
-    feather.position.set(
-      featherX,
-      Math.cos(radialAngle) * (shaftRadius + contactLift),
-      Math.sin(radialAngle) * (shaftRadius + contactLift)
-    );
+        // y=0 の最長辺全体が軸に接するように配置
+        feather.position.set(
+          featherX,
+          Math.cos(radialAngle) * (shaftRadius + contactLift),
+          Math.sin(radialAngle) * (shaftRadius + contactLift)
+        );
 
-    return feather;
-  }
+        return feather;
+      }
 
-  // 4枚の薄い羽
-  const f1 = createFeather(0,             0xf28c28);
-  const f2 = createFeather(Math.PI / 2,   0xffffff);
-  const f3 = createFeather(Math.PI,       0xf28c28);
-  const f4 = createFeather(Math.PI * 1.5, 0xffffff);
+      // 4枚の薄い羽
+      const f1 = createFeather(0,             0xf28c28);
+      const f2 = createFeather(Math.PI / 2,   0xffffff);
+      const f3 = createFeather(Math.PI,       0xf28c28);
+      const f4 = createFeather(Math.PI * 1.5, 0xffffff);
 
-  group.add(f1, f2, f3, f4);
+      group.add(f1, f2, f3, f4);
 
-  return group;
-}
+      // ノック（矢の最後方）からグループ中心までの距離
+      // 軸長 0.95 の半分を基準にしている
+      group.userData.nockToCenter = 0.475;
+
+      return group;
+    }
 
     // ============================================================
     // Input
@@ -1258,6 +1293,11 @@ function createArrowModel() {
       game.hasLoadedArrow = false;
       game.shots++;
 
+      const bowGroup = game.bowRoot?.children?.[0];
+      if (bowGroup?.userData?.releaseString) {
+        bowGroup.userData.releaseString();
+      }
+
       updateLoadedArrowVisual();
       updateBowDraw(0);
       updateHUD();
@@ -1269,7 +1309,7 @@ function createArrowModel() {
       game.hasLoadedArrow = true;
       game.isCharging = false;
       game.chargeTime = 0;
-
+  
       updateLoadedArrowVisual();
       updateBowDraw(0);
       updateHUD();
@@ -1283,30 +1323,31 @@ function createArrowModel() {
 
       game.loadedArrow.visible = game.hasLoadedArrow;
 
-      if (!game.hasLoadedArrow) return;
+      const bowGroup = game.bowRoot?.children?.[0];
 
-      // 手元の矢の位置
-      game.loadedArrow.position.set(0.28, -0.20, -0.98);
+      if (!game.hasLoadedArrow) {
+        if (bowGroup?.userData) {
+          bowGroup.userData.attachedArrow = null;
+        }
+        return;
+      }
 
-      // 手元の矢も前向き（奥向き）にしておく
+      // まず向きを決める
       orientArrowHorizontally(game.loadedArrow, new THREE.Vector3(0, 0, -1));
+
+      // 再装填時も必ず弓へ再接続する
+      if (bowGroup?.userData?.attachArrow) {
+         bowGroup.userData.attachArrow(game.loadedArrow);
+      }
+
     }
 
     function updateBowDraw(ratio) {
       const drawRatio = THREE.MathUtils.clamp(ratio, 0, 1);
 
-      if (!game.bowString) return;
-
-      // 弦の中央だけ手前に引く
-      const pullAmount = 0.24 * drawRatio;
-
-      const pos = game.bowString.geometry.attributes.position;
-      pos.setXYZ(1, 0.70, -0.34, -1.02 + pullAmount);
-      pos.needsUpdate = true;
-
-      // 装填中の矢も一緒に引く
-      if (game.loadedArrow && game.loadedArrow.visible) {
-        game.loadedArrow.position.z = -0.98 + pullAmount;
+      const bowGroup = game.bowRoot?.children?.[0];
+      if (bowGroup?.userData?.setCharge) {
+        bowGroup.userData.setCharge(drawRatio);
       }
     }
 
@@ -1664,8 +1705,14 @@ async function sendScoreToExternal(score) {
       requestAnimationFrame(animate);
 
       const dt = Math.min(0.033, game.clock.getDelta());
+      const elapsed = game.clock.elapsedTime;
 
       if (!game.isGameOver) {
+
+        // 実装済みの弓アニメーションを毎フレーム呼ぶ
+        if (game.bowRoot?.children?.[0]?.userData?.updateBowAnimation) {
+            game.bowRoot.children[0].userData.updateBowAnimation(dt, elapsed);
+        }
         updateCharge(dt);
         updateFlyingArrows(dt);
         updateCameraFollow(dt);
