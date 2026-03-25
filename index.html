@@ -1,0 +1,1754 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ドキドキアーチェリー</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #87ceeb;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    #hud {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      z-index: 20;
+      min-width: 290px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+      line-height: 1.55;
+      user-select: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    #chargeWrap {
+      margin-top: 8px;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    #chargeBar {
+      width: 0%;
+      height: 100%;
+      background: rgba(255,255,255,.92);
+      transition: width 0.03s linear;
+    }
+
+    #crosshair {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 20;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,.96);
+      border-radius: 2px;
+    }
+
+    #crosshair::before { width: 18px; height: 2px; }
+    #crosshair::after  { width: 2px;  height: 18px; }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      z-index: 30;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #overlay.hidden {
+      display: none;
+    }
+
+    #gameOverScreen {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      z-index: 40;
+      pointer-events: none;
+      color: #fff;
+      font-size: clamp(48px, 10vw, 120px);
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    #gameOverScreen.visible {
+      display: grid;
+    }
+
+    #gameOverScreen.isCelebration {
+      color: #f7fbff;
+      text-shadow:
+        0 0 10px rgba(180, 242, 255, 0.95),
+        0 0 22px rgba(90, 210, 255, 0.8),
+        0 0 42px rgba(76, 146, 255, 0.68),
+        0 0 64px rgba(185, 120, 255, 0.42),
+        0 10px 28px rgba(0, 0, 0, 0.32);
+      animation: congratulations-neon 2.2s ease-in-out infinite alternate;
+    }
+
+    #celebrationLayer {
+      position: fixed;
+      inset: 0;
+      z-index: 15;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .confetti-burst {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -18vh;
+      width: var(--confetti-width, 10px);
+      height: var(--confetti-height, 18px);
+      left: var(--confetti-left, 50vw);
+      opacity: 0;
+      border-radius: 2px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.85) 0%,
+          rgba(255,255,255,0.18) 28%,
+          var(--confetti-color, #ffffff) 28%,
+          var(--confetti-color, #ffffff) 100%
+        );
+      box-shadow: 0 0 10px rgba(255,255,255,0.25);
+      animation: confetti-fall var(--confetti-duration, 3s) ease-out var(--confetti-delay, 0s) forwards;
+      transform: translate3d(0, 0, 0) rotate(var(--confetti-rotate-start, 0deg));
+      transform-origin: center;
+      will-change: transform, opacity;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, -10vh, 0) rotate(var(--confetti-rotate-start, 0deg)) scale(0.8);
+      }
+
+      12% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform:
+          translate3d(var(--confetti-drift-x, 0vw), var(--confetti-fall-distance, 110vh), 0)
+          rotate(var(--confetti-rotate-end, 540deg))
+          scale(1.05);
+      }
+    }
+
+    @keyframes congratulations-neon {
+      0% {
+        text-shadow:
+          0 0 8px rgba(180, 242, 255, 0.8),
+          0 0 16px rgba(90, 210, 255, 0.62),
+          0 0 30px rgba(76, 146, 255, 0.5),
+          0 0 48px rgba(185, 120, 255, 0.28),
+          0 10px 28px rgba(0, 0, 0, 0.32);
+      }
+
+      100% {
+        text-shadow:
+          0 0 12px rgba(205, 248, 255, 1),
+          0 0 26px rgba(120, 224, 255, 0.88),
+          0 0 48px rgba(89, 170, 255, 0.72),
+          0 0 72px rgba(198, 132, 255, 0.42),
+          0 10px 28px rgba(0, 0, 0, 0.32);
+      }
+    }
+
+    .card {
+      max-width: 780px;
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .overlayStack {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+    }
+
+    .overlayTitle {
+      padding: 14px 28px 18px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(71,142,230,.96) 0%, rgba(33,94,184,.96) 50%, rgba(17,65,143,.96) 100%);
+      border: 1px solid rgba(255,255,255,.28);
+      box-shadow:
+        0 12px 24px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.45),
+        inset 0 -2px 0 rgba(10,41,96,.55);
+    }
+
+    .overlayTitle h1 {
+      margin: 0;
+      font-size: clamp(36px, 6vw, 56px);
+      line-height: 1.05;
+      letter-spacing: .08em;
+      color: #f7fbff;
+      text-shadow:
+        0 1px 0 #dcecff,
+        0 2px 0 #b8d8ff,
+        0 3px 0 #8bb6f2,
+        0 4px 0 #4d80d2,
+        0 10px 18px rgba(0,0,0,.34);
+    }
+
+    .card p {
+      margin: 8px 0;
+      opacity: .96;
+    }
+
+    .kbd {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+
+    #errorBox {
+      margin-top: 12px;
+      text-align: left;
+      white-space: pre-wrap;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(255,255,255,.15);
+      display: none;
+      font-size: 12px;
+    }
+  </style>
+
+  <!-- import map で "three" の参照先を明示 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="hud">
+    <div id="hudText"></div>
+    <div id="chargeWrap"><div id="chargeBar"></div></div>
+  </div>
+
+  <div id="crosshair"></div>
+  <div id="celebrationLayer" aria-hidden="true"></div>
+
+  <div id="overlay">
+    <div class="overlayStack">
+      <div class="overlayTitle">
+        <h1>ドキドキアーチェリー</h1>
+      </div>
+      <div class="card">
+        <p>画面クリックで開始（マウス固定）</p>
+        <p>
+          <span class="kbd">左クリック長押し</span> でチャージ →
+          <span class="kbd">左クリックを離す</span> で発射
+        </p>
+        <p>
+          矢が止まったら <span class="kbd">左クリック</span> で元の視点に戻る /
+          <span class="kbd">ESC</span> でマウス解除
+        </p>
+        <p>矢は常に画面中央から奥へ飛び、矢の向きは水平のままです。</p>
+        <div id="errorBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameOverScreen">GAME OVER</div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
+
+    // ============================================================
+    // 3D アーチェリーゲーム
+    // ------------------------------------------------------------
+    // 役割ごとにメソッド分けして、後で修正しやすい構成にしている
+    //
+    // createCore()         : Scene / Camera / Renderer / Controls
+    // createEnvironment()  : 空・地面・照明・背景演出
+    // createTargetSystem() : 的
+    // createBowSystem()    : 弓と装填中の矢
+    // createArrowModel()   : 飛ぶ矢の共通モデル
+    // setupInput()         : 入力処理
+    // update*()            : 毎フレーム更新
+    // ============================================================
+
+    // ------------------------------------------------------------
+    // DOM
+    // ------------------------------------------------------------
+    const overlay = document.getElementById("overlay");
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const errorBox = document.getElementById("errorBox");
+    const hudText = document.getElementById("hudText");
+    const chargeBar = document.getElementById("chargeBar");
+    const celebrationLayer = document.getElementById("celebrationLayer");
+    const WIND_DIRECTIONS = [
+      {
+        label: "左",
+        symbol: "←",
+        vector: new THREE.Vector3(-1, 0, 0)
+      },
+      {
+        label: "右",
+        symbol: "→",
+        vector: new THREE.Vector3(1, 0, 0)
+      }
+    ];
+    const CONFETTI_COLORS = [
+      "#ffe066",
+      "#ff8fab",
+      "#7bdff2",
+      "#b8f2a1",
+      "#cdb4ff",
+      "#ffffff"
+    ];
+    const CONFETTI_PIECES_PER_HIT = 40;
+    const MAX_ACTIVE_CONFETTI_BURSTS = 3;
+
+    function showError(message) {
+      errorBox.style.display = "block";
+      errorBox.textContent = message;
+    }
+
+    // ------------------------------------------------------------
+    // グローバル状態
+    // ------------------------------------------------------------
+    const game = {
+      scene: null,
+      camera: null,
+      renderer: null,
+      controls: null,
+      clock: new THREE.Clock(),
+
+      // ワールド
+      targetFace: null,
+      targetRadius: 0.8,
+
+      // 手元の弓まわり
+      bowRoot: null,
+      bowString: null,
+      loadedArrow: null,
+
+      // ゲーム状態
+      isCharging: false,
+      chargeTime: 0,
+      maxChargeTime: 1.7,
+      hasLoadedArrow: true,
+
+      shots: 0,
+      hits: 0,
+      score: 0,
+      hasStarted: false,
+      isGameOver: false,
+      timeLimit: 30,
+      timeRemaining: 30,
+
+      // 発射済み矢
+      flyingArrows: [],
+
+      // 追従カメラ
+      followArrow: null,
+      isHoldingOnImpact: false,
+      isReturningCamera: false,
+      impactHoldTime: 0,
+      savedCameraPosition: new THREE.Vector3(),
+      savedCameraQuaternion: new THREE.Quaternion(),
+      followOffsetDistance: 3.2,
+      followOffsetHeight: 0.65,
+      followLookAhead: 5.0,
+      followLerpSpeed: 6.5,
+      returnLerpSpeed: 5.5,
+
+      // 調整値
+      gravity: new THREE.Vector3(0, -9.8, 0),
+      windAccelerationScale: 1.35,
+      wind: {
+        directionIndex: 0,
+        speed: 0
+      },
+      minSpeed: 18,
+      maxSpeed: 56,
+      maxLifetime: 10.0
+    };
+
+    // ============================================================
+　　// 外部連携設定（PowerShell受信用）
+　　// ============================================================
+　　const SCORE_POST_URL = "http://localhost:5000/score"; // PowerShell側
+　　const ENABLE_SCORE_POST = true; // ON/OFF切り替え
+
+    // ------------------------------------------------------------
+    // 起動
+    // ------------------------------------------------------------
+    try {
+      init();
+      animate();
+    } catch (err) {
+      showError("初期化エラー:\n" + (err?.stack || err?.message || String(err)));
+    }
+
+    // ============================================================
+    // 初期化
+    // ============================================================
+    function init() {
+      createCore();
+      createEnvironment();
+      createTargetSystem();
+      createBowSystem();
+      setupInput();
+      setupResize();
+      updateHUD();
+    }
+
+    // ============================================================
+    // Core: Scene / Camera / Renderer / Controls
+    // ============================================================
+    function createCore() {
+      // シーン
+      game.scene = new THREE.Scene();
+      game.scene.background = new THREE.Color(0x87ceeb); // 青空
+
+      // カメラ
+      game.camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        800
+      );
+      game.camera.position.set(0, 1.6, 8);
+      game.savedCameraPosition.copy(game.camera.position);
+      game.savedCameraQuaternion.copy(game.camera.quaternion);
+
+      // レンダラ
+      game.renderer = new THREE.WebGLRenderer({ antialias: true });
+      game.renderer.setSize(window.innerWidth, window.innerHeight);
+      game.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      document.body.appendChild(game.renderer.domElement);
+
+      // 視点操作
+      game.controls = new PointerLockControls(game.camera, document.body);
+
+      overlay.addEventListener("click", () => {
+        if (game.isGameOver) return;
+        game.controls.lock();
+      });
+
+      game.controls.addEventListener("lock", () => {
+        overlay.classList.add("hidden");
+
+        if (!game.hasStarted) {
+          startGame();
+        }
+      });
+
+      game.controls.addEventListener("unlock", () => {
+        if (!game.isGameOver) {
+          overlay.classList.remove("hidden");
+        }
+      });
+    }
+
+    // ============================================================
+    // Environment: 背景 / 地面 / 照明 / 背景デザイン
+    // ============================================================
+    function createEnvironment() {
+      createLights();
+      createGround();
+      setGradientSky()
+      createSkyDecoration();
+      createMountains()
+    }
+
+    function createLights() {
+      // 半球ライトで空と地面からの柔らかい光を表現
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x335566, 0.95);
+      game.scene.add(hemi);
+
+      // 方向ライトで立体感を足す
+      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(8, 14, 4);
+      game.scene.add(dir);
+    }
+
+    function createGround() {
+
+    // ===== 草テクスチャをCanvasで生成 =====
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 256;
+  
+    const ctx = canvas.getContext("2d");
+    
+    // ベースの草色
+    ctx.fillStyle = "#4ea14e";
+    ctx.fillRect(0, 0, 256, 256);
+
+    // 草の色ムラを作る
+    for (let i = 0; i < 5000; i++) {
+
+      const x = Math.random() * 256;
+      const y = Math.random() * 256;
+
+      const green = 120 + Math.random() * 80;
+
+      ctx.fillStyle = `rgb(${30 + Math.random()*30}, ${green}, ${30})`;
+      ctx.fillRect(x, y, 2, 2);
+    }
+
+    // CanvasをThree.jsテクスチャに変換
+    const texture = new THREE.CanvasTexture(canvas);
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(60, 60);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(1000, 1000),
+      new THREE.MeshStandardMaterial({
+        map: texture,
+        roughness: 1.0,
+        metalness: 0.0
+      })
+    );
+
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = 0;
+
+    game.scene.add(ground);
+  }
+
+  function setGradientSky() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+
+    // 上空（深い青〜少し紫）
+    gradient.addColorStop(0, "#0b1d51");
+
+    // 中間（濃い青）
+    gradient.addColorStop(0.3, "#1e3fa3");
+
+    // 少し明るい青
+    gradient.addColorStop(0.55, "#3f77ff");
+
+    // 地平線付近（霞っぽい）
+    gradient.addColorStop(0.8, "#87bfff");
+
+    // 一番下（白に近い青）
+    gradient.addColorStop(1, "#d6ecff");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1, 512);
+
+    // ☀️ 太陽っぽいハイライト（ほんのり）
+    const sunGradient = ctx.createRadialGradient(0.5, 400, 10, 0.5, 400, 120);
+    sunGradient.addColorStop(0, "rgba(255,255,255,0.25)");
+    sunGradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.fillStyle = sunGradient;
+    ctx.fillRect(0, 0, 1, 512);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.magFilter = THREE.LinearFilter;
+
+    game.scene.background = texture;
+  }
+
+
+    function createSkyDecoration() {
+      // 雲っぽいオブジェクトを遠景に置いて、少しだけ見た目を良くする
+      const cloudMat = new THREE.MeshStandardMaterial({
+        color: 0xdff0ff,
+        transparent: true,
+        opacity: 0.28,
+        roughness: 1.0
+      });
+
+      for (let i = 0; i < 7; i++) {
+        const cloud = new THREE.Mesh(
+          new THREE.SphereGeometry(1.6 + Math.random() * 1.6, 16, 16),
+          cloudMat
+        );
+        cloud.position.set(
+          -24 + i * 8,
+          9 + Math.random() * 4,
+          -24 - Math.random() * 40
+        );
+        cloud.scale.set(1.9, 0.7, 0.9);
+        game.scene.add(cloud);
+      }
+    }
+
+    function createMountains() {
+    const geo = new THREE.ConeGeometry(10, 20, 4);
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x446688,
+      roughness: 1
+    });
+
+    for (let i = 0; i < 20; i++) {
+      const m = new THREE.Mesh(geo, mat);
+
+      m.position.set(
+        (Math.random() - 0.5) * 600,
+        10,
+        -200 - Math.random() * 200
+      );
+
+      game.scene.add(m);
+    }
+  }
+
+    // ============================================================
+    // Target: 的の生成
+    // ============================================================
+    function createTargetSystem() {
+      const targetGroup = new THREE.Group();
+      game.targetRadius = 0.8;
+      const targetThickness = 0.14;
+      const targetCenter = new THREE.Vector3(0, 1.6, -30);
+
+      // 的の正面
+      const face = new THREE.Mesh(
+        new THREE.CircleGeometry(game.targetRadius, 64),
+        new THREE.MeshStandardMaterial({
+          map: createTargetTexture(),
+          roughness: 0.92
+        })
+      );
+      face.position.copy(targetCenter);
+      face.position.z += targetThickness / 2 + 0.01;
+      targetGroup.add(face);
+
+      // 的の厚み
+      const back = new THREE.Mesh(
+        new THREE.CylinderGeometry(game.targetRadius, game.targetRadius, targetThickness, 48, 1, true),
+        new THREE.MeshStandardMaterial({
+          color: 0xd2b48c,
+          roughness: 1.0
+        })
+      );
+      back.position.copy(targetCenter);
+      back.rotation.x = Math.PI / 2;
+      targetGroup.add(back);
+
+      // 支柱
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.07, 2.6, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x6b4f2a,
+          roughness: 1.0
+        })
+      );
+      pole.position.set(0, 0.85, -30);
+      targetGroup.add(pole);
+
+      game.targetFace = face;
+      game.scene.add(targetGroup);
+    }
+
+    function createTargetTexture(size = 1024) {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+
+      const cx = size / 2;
+      const cy = size / 2;
+
+      // アーチェリーの的 (FITA/WA 標準ターゲット配色)
+      // 外側から中心に向かって描画
+      const unit = (size / 2) / 10;
+
+      const rings = [
+        // White (1, 2)
+        { r: unit * 10, color: "#ffffff", stroke: "#d0d0d0" },
+        { r: unit * 9,  color: "#ffffff", stroke: "#d0d0d0" },
+        // Black (3, 4)
+        { r: unit * 8,  color: "#111111", stroke: "#555555" },
+        { r: unit * 7,  color: "#111111", stroke: "#555555" },
+        // Blue (5, 6)
+        { r: unit * 6,  color: "#0099ff", stroke: "rgba(0,0,0,0.2)" },
+        { r: unit * 5,  color: "#0099ff", stroke: "rgba(0,0,0,0.2)" },
+        // Red (7, 8)
+        { r: unit * 4,  color: "#ff0000", stroke: "rgba(0,0,0,0.2)" },
+        { r: unit * 3,  color: "#ff0000", stroke: "rgba(0,0,0,0.2)" },
+        // Gold (9, 10)
+        { r: unit * 2,  color: "#ffe500", stroke: "rgba(160,140,0,0.4)" },
+        { r: unit * 1,  color: "#ffe500", stroke: "rgba(160,140,0,0.4)" }
+      ];
+
+      ctx.lineWidth = size * 0.003; // 少し細めの線
+
+      for (const ring of rings) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
+        ctx.closePath();
+        
+        ctx.fillStyle = ring.color;
+        ctx.fill();
+        
+        ctx.strokeStyle = ring.stroke;
+        ctx.stroke();
+      }
+
+      // 中心点 (+)
+      ctx.fillStyle = "#222222";
+      ctx.font = `bold ${unit * 0.6}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("+", cx, cy);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
+      texture.anisotropy = game.renderer.capabilities.getMaxAnisotropy();
+      return texture;
+    }
+
+    // ============================================================
+    // Bow: 弓と装填中の矢
+    // ============================================================
+    function createBowSystem() {
+      // bowRoot はカメラに追従する“手元”全体
+      const bowRoot = new THREE.Group();
+
+      // 弓本体
+      const bowGroup = createBowModel();
+      bowRoot.add(bowGroup);
+
+      // 装填中の矢
+      const loadedArrow = createArrowModel();
+      bowRoot.add(loadedArrow);
+
+      // カメラにぶら下げる
+      game.camera.add(bowRoot);
+      game.scene.add(game.camera);
+
+      game.bowRoot = bowRoot;
+      game.loadedArrow = loadedArrow;
+
+      updateLoadedArrowVisual();
+      updateBowDraw(0);
+    }
+
+    function createBowModel() {
+  const bowGroup = new THREE.Group();
+
+  // --------------------------------------------------
+  // 基本設定
+  // --------------------------------------------------
+  const baseX = 0.56;
+  const baseY = -0.38;
+  const baseZ = -1.00;
+
+  const bowHalfLen = 0.80;
+  const maxDraw = 0.44;
+  const bowTiltY = 0.16;
+
+  // --------------------------------------------------
+  // 弓のカーブ
+  // draw: 0～1
+  // kick: リリース直後のしなり
+  //
+  // 見た目は前回版を維持しつつ、
+  // 「末端が傾く」ように先端側の制御点だけ強く動かす
+  // --------------------------------------------------
+  function createBowCurve(draw = 0, kick = 0) {
+    const flex = draw * 0.055 + kick * 0.030;
+
+    // 末端がしなる量
+    const tipForward = flex * 1.8;   // 先端が前に出る
+    const tipSide = flex * 0.9;      // 先端が少し外へ逃げる
+    const midBend = flex * 0.35;     // 中腹は少しだけ追従
+    const centerBack = flex * 0.22;  // 中央は軽く後ろへ
+
+    return new THREE.CatmullRomCurve3([
+      // 下端：引くほど先端が前へ倒れる
+      new THREE.Vector3(0.000,  -bowHalfLen,         0.125 + tipForward),
+      new THREE.Vector3(0.030 + tipSide * 0.55, -bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
+      new THREE.Vector3(0.058 + tipSide * 0.35, -bowHalfLen * 0.52, 0.030 + midBend),
+
+      // 中央付近は見た目を大きく変えない
+      new THREE.Vector3(0.090,  -bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
+      new THREE.Vector3(0.094,   0.00,              -0.050 - centerBack),
+
+      new THREE.Vector3(0.090,   bowHalfLen * 0.18, -0.012 - centerBack * 0.35),
+
+      // 上端：引くほど先端が前へ倒れる
+      new THREE.Vector3(0.058 + tipSide * 0.35,  bowHalfLen * 0.52, 0.030 + midBend),
+      new THREE.Vector3(0.030 + tipSide * 0.55,  bowHalfLen * 0.84, 0.090 + tipForward * 0.85),
+      new THREE.Vector3(0.000,   bowHalfLen,        0.125 + tipForward)
+    ]);
+  }
+
+  // --------------------------------------------------
+  // 弓本体
+  // --------------------------------------------------
+  const bowMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4b2e14,
+    roughness: 0.92,
+    metalness: 0.04
+  });
+
+  const bowBody = new THREE.Mesh(
+    new THREE.TubeGeometry(createBowCurve(0, 0), 60, 0.020, 12, false),
+    bowMaterial
+  );
+
+  bowBody.position.set(baseX, baseY, baseZ);
+  bowBody.rotation.y = bowTiltY;
+  bowGroup.add(bowBody);
+
+  // --------------------------------------------------
+  // グリップ
+  // --------------------------------------------------
+  const grip = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.031, 0.034, 0.21, 14),
+    new THREE.MeshStandardMaterial({
+      color: 0x24150d,
+      roughness: 1.0
+    })
+  );
+  grip.position.set(baseX + 0.018, baseY, baseZ - 0.010);
+  grip.rotation.y = bowTiltY;
+  bowGroup.add(grip);
+
+  // --------------------------------------------------
+  // 弦のローカル基準点
+  // ※ 弓の末端しなりに合わせて先端位置も少し動かす
+  // --------------------------------------------------
+  function getStringLocals(draw = 0, kick = 0) {
+    const flex = draw * 0.055 + kick * 0.030;
+    const tipForward = flex * 1.8;
+    const tipSide = flex * 0.9;
+
+    return {
+      topLocal: new THREE.Vector3(
+        0.000 + tipSide * 0.06,
+        bowHalfLen,
+        0.115 + tipForward * 0.92
+      ),
+      midLocal: new THREE.Vector3(
+        0.0,
+        0.0,
+        -draw * maxDraw
+      ),
+      botLocal: new THREE.Vector3(
+        0.000 + tipSide * 0.06,
+        -bowHalfLen,
+        0.115 + tipForward * 0.92
+      )
+    };
+  }
+
+  function toWorld(local) {
+    return local.clone()
+      .applyEuler(new THREE.Euler(0, bowTiltY, 0, "XYZ"))
+      .add(new THREE.Vector3(baseX, baseY, baseZ));
+  }
+
+  // --------------------------------------------------
+  // 弦
+  // --------------------------------------------------
+  const initLocals = getStringLocals(0, 0);
+
+  const stringGeo = new THREE.BufferGeometry().setFromPoints([
+    toWorld(initLocals.topLocal),
+    toWorld(initLocals.midLocal),
+    toWorld(initLocals.botLocal)
+  ]);
+
+  const string = new THREE.Line(
+    stringGeo,
+    new THREE.LineBasicMaterial({ color: 0xffffff })
+  );
+
+  bowGroup.add(string);
+  game.bowString = string;
+
+  // --------------------------------------------------
+  // 矢接続位置
+  // --------------------------------------------------
+  const arrowAttach = new THREE.Object3D();
+  arrowAttach.position.copy(toWorld(initLocals.midLocal));
+  bowGroup.add(arrowAttach);
+
+  // --------------------------------------------------
+  // 状態
+  // --------------------------------------------------
+  bowGroup.userData.charge = 0;
+  bowGroup.userData.drawAmount = 0;
+  bowGroup.userData.releaseVelocity = 0;
+  bowGroup.userData.stringVibration = 0;
+  bowGroup.userData.bowKick = 0;
+  bowGroup.userData.attachedArrow = null;
+  bowGroup.userData.arrowAttach = arrowAttach;
+
+  // --------------------------------------------------
+  // 弓形状再構築
+  // --------------------------------------------------
+  function rebuildBow(draw = 0, kick = 0) {
+    const newGeo = new THREE.TubeGeometry(createBowCurve(draw, kick), 60, 0.020, 12, false);
+    bowBody.geometry.dispose();
+    bowBody.geometry = newGeo;
+  }
+
+  // --------------------------------------------------
+  // 弦更新
+  // --------------------------------------------------
+  function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0) {
+    const locals = getStringLocals(draw, kick);
+
+    const top = toWorld(locals.topLocal);
+    const mid = toWorld(
+      locals.midLocal.clone().add(new THREE.Vector3(0, 0, Math.sin(vibePhase) * vibeAmp))
+    );
+    const bot = toWorld(locals.botLocal);
+
+    const pos = string.geometry.attributes.position;
+    pos.setXYZ(0, top.x, top.y, top.z);
+    pos.setXYZ(1, mid.x, mid.y, mid.z);
+    pos.setXYZ(2, bot.x, bot.y, bot.z);
+    pos.needsUpdate = true;
+
+    arrowAttach.position.copy(mid);
+
+    const arrow = bowGroup.userData.attachedArrow;
+    if (arrow) {
+      arrow.position.copy(mid);
+      arrow.rotation.y = bowTiltY;
+    }
+  }
+
+  // --------------------------------------------------
+  // チャージ
+  // --------------------------------------------------
+  bowGroup.userData.setCharge = function (value) {
+    const c = THREE.MathUtils.clamp(value, 0, 1);
+    bowGroup.userData.charge = c;
+    bowGroup.userData.drawAmount = c;
+
+    rebuildBow(c, 0);
+    updateString(c, 0, 0, 0);
+  };
+
+  // --------------------------------------------------
+  // 矢接続
+  // --------------------------------------------------
+  bowGroup.userData.attachArrow = function (arrow) {
+    bowGroup.userData.attachedArrow = arrow;
+    if (!arrow) return;
+
+    arrow.position.copy(arrowAttach.position);
+    arrow.rotation.y = bowTiltY;
+  };
+
+  // --------------------------------------------------
+  // リリース
+  // --------------------------------------------------
+  bowGroup.userData.releaseString = function () {
+    const power = bowGroup.userData.drawAmount;
+
+    bowGroup.userData.releaseVelocity = Math.max(0.22, power * 0.52);
+    bowGroup.userData.stringVibration = 0.024 + power * 0.040;
+    bowGroup.userData.bowKick = 0.60 + power * 0.72;
+    bowGroup.userData.charge = 0;
+  };
+
+  // --------------------------------------------------
+  // 毎フレーム更新
+  // --------------------------------------------------
+  bowGroup.userData.updateBowAnimation = function (dt, elapsed) {
+    if (bowGroup.userData.drawAmount > 0) {
+      bowGroup.userData.drawAmount -= bowGroup.userData.releaseVelocity * dt * 5.4;
+      if (bowGroup.userData.drawAmount < 0) {
+        bowGroup.userData.drawAmount = 0;
+      }
+    }
+
+    bowGroup.userData.stringVibration *= Math.exp(-dt * 11.0);
+    bowGroup.userData.bowKick *= Math.exp(-dt * 9.0);
+
+    // リリース時だけ先端が軽くしなる
+    const kick = Math.sin(elapsed * 26.0) * bowGroup.userData.bowKick * 0.055;
+
+    rebuildBow(bowGroup.userData.drawAmount, kick);
+    updateString(
+      bowGroup.userData.drawAmount,
+      kick,
+      elapsed * 64.0,
+      bowGroup.userData.stringVibration
+    );
+  };
+
+  // 初期状態
+  rebuildBow(0, 0);
+  updateString(0, 0, 0, 0);
+
+  return bowGroup;
+}
+
+  // ============================================================
+// Arrow: 矢モデル生成
+// ------------------------------------------------------------
+// この矢モデルは「+X方向に矢じりが向く」基準で作る。
+// そうすると、後で進行方向へ回すのが簡単になる。
+// ============================================================
+function createArrowModel() {
+  const group = new THREE.Group();
+
+  // 軸（細め）
+  const shaftRadius = 0.012;
+  const shaft = new THREE.Mesh(
+    new THREE.CylinderGeometry(shaftRadius, shaftRadius, 0.95, 12),
+    new THREE.MeshStandardMaterial({
+      color: 0x2f2f2f,
+      roughness: 0.82
+    })
+  );
+  shaft.rotation.z = -Math.PI / 2;
+  group.add(shaft);
+
+  // 矢じり（円錐、軸よりしっかり大きめ）
+  const tip = new THREE.Mesh(
+    new THREE.ConeGeometry(0.032, 0.16, 18),
+    new THREE.MeshStandardMaterial({
+      color: 0x8d8d8d,
+      roughness: 0.35
+    })
+  );
+  tip.rotation.z = -Math.PI / 2;
+  tip.position.x = 0.95 / 2 + 0.08;
+  group.add(tip);
+
+  // 羽根材質
+  const featherBaseMat = new THREE.MeshStandardMaterial({
+    color: 0xf28c28,
+    roughness: 0.88,
+    side: THREE.DoubleSide
+  });
+
+  // 羽の取り付け位置（後方）
+  const featherX = -0.95 / 2 + 0.13;
+
+  // ------------------------------------------------------------
+  // 羽形状
+  // ------------------------------------------------------------
+  // ローカル座標で
+  // - X: 矢の進行方向
+  // - Y: 軸から外側へ立ち上がる方向
+  // - Z: 羽の薄み
+  //
+  // y = 0 の下辺（最長辺）が「軸に接着される辺」
+  // になるように形状を作る
+  // ------------------------------------------------------------
+  function createVaneGeometry() {
+    const shape = new THREE.Shape();
+
+    // 最長辺（接地辺）
+    shape.moveTo(-0.060, 0.000);
+    shape.lineTo( 0.082, 0.000);
+
+    // 上側輪郭
+    shape.lineTo( 0.088, 0.010);
+    shape.lineTo( 0.078, 0.030);
+    shape.lineTo( 0.058, 0.046);
+    shape.lineTo( 0.028, 0.056);
+    shape.lineTo(-0.004, 0.043);
+    shape.lineTo(-0.028, 0.026);
+    shape.lineTo(-0.046, 0.012);
+    shape.lineTo(-0.060, 0.000);
+    shape.closePath();
+
+    const geom = new THREE.ExtrudeGeometry(shape, {
+      depth: 0.0012,
+      bevelEnabled: false
+    });
+
+    // 薄み方向の中心を原点へ
+    geom.translate(0, 0, -0.0006);
+
+    return geom;
+  }
+
+  const featherGeom = createVaneGeometry();
+
+  // 接着面を少しだけ軸の外へ逃がしてZ-fightingを防ぐ
+  const contactLift = 0.0002;
+
+  function createFeather(radialAngle, color) {
+    const mat = featherBaseMat.clone();
+    mat.color.setHex(color);
+
+    const feather = new THREE.Mesh(featherGeom, mat);
+
+    // 羽の前後を反転
+    feather.scale.x = -1;
+
+    // 軸周りに回転
+    feather.rotation.x = radialAngle;
+
+    // y=0 の最長辺全体が軸に接するように配置
+    feather.position.set(
+      featherX,
+      Math.cos(radialAngle) * (shaftRadius + contactLift),
+      Math.sin(radialAngle) * (shaftRadius + contactLift)
+    );
+
+    return feather;
+  }
+
+  // 4枚の薄い羽
+  const f1 = createFeather(0,             0xf28c28);
+  const f2 = createFeather(Math.PI / 2,   0xffffff);
+  const f3 = createFeather(Math.PI,       0xf28c28);
+  const f4 = createFeather(Math.PI * 1.5, 0xffffff);
+
+  group.add(f1, f2, f3, f4);
+
+  return group;
+}
+
+    // ============================================================
+    // Input
+    // ============================================================
+    function setupInput() {
+      // 左クリック押下でチャージ開始 / 停止後なら元視点へ戻る
+      window.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+
+        if (game.followArrow && game.isHoldingOnImpact) {
+          startCameraReturn();
+          return;
+        }
+
+        beginCharge();
+      });
+
+      // 左クリックを離したら発射
+      window.addEventListener("mouseup", (e) => {
+        if (e.button !== 0) return;
+        releaseArrow();
+      });
+    }
+
+    function setupResize() {
+      window.addEventListener("resize", () => {
+        game.camera.aspect = window.innerWidth / window.innerHeight;
+        game.camera.updateProjectionMatrix();
+        game.renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    // ============================================================
+    // チャージ / 発射 / リロード
+    // ============================================================
+    function beginCharge() {
+      if (game.isGameOver) return;
+      if (!game.controls.isLocked) return;
+      if (isCameraInCinematicMode()) return;
+      if (!game.hasLoadedArrow) return;
+
+      game.isCharging = true;
+      game.chargeTime = 0;
+    }
+
+    function releaseArrow() {
+      // チャージ中でなければ何もしない
+      if (!game.isCharging) return;
+
+      game.isCharging = false;
+
+      // 矢が装填されていなければ発射しない
+      if (!game.hasLoadedArrow) return;
+
+      // 0〜1 のチャージ率
+      const chargeRatio = THREE.MathUtils.clamp(
+        game.chargeTime / game.maxChargeTime,
+        0,
+        1
+      );
+
+      // チャージが長いほど遠くへ
+      const speed = THREE.MathUtils.lerp(game.minSpeed, game.maxSpeed, chargeRatio);
+
+      // カメラ前方向を水平化
+      const horizontalDir = getHorizontalForward();
+
+      // 飛ぶ矢を新規生成
+      const arrow = createArrowModel();
+
+      // 発射位置は画面中央の少し前
+      arrow.position.copy(getMuzzlePosition());
+
+      // 矢じりを進行方向に向ける
+      orientArrowHorizontally(arrow, horizontalDir);
+
+      game.scene.add(arrow);
+
+      // 速度
+      // 姿勢は水平固定だが、少しだけ上方向速度を足して自然に見せる
+      const velocity = horizontalDir.clone().multiplyScalar(speed);
+      velocity.y += 1.5 + 2.3 * chargeRatio;
+
+      const arrowData = {
+        mesh: arrow,
+        velocity,
+        age: 0,
+        horizontalDir: horizontalDir.clone(),
+        stuck: false
+      };
+      game.flyingArrows.push(arrowData);
+      startArrowFollow(arrowData);
+
+      // 装填矢を消す
+      game.hasLoadedArrow = false;
+      game.shots++;
+
+      updateLoadedArrowVisual();
+      updateBowDraw(0);
+      updateHUD();
+    }
+
+    function reloadArrow() {
+      if (game.isGameOver) return;
+
+      game.hasLoadedArrow = true;
+      game.isCharging = false;
+      game.chargeTime = 0;
+
+      updateLoadedArrowVisual();
+      updateBowDraw(0);
+      updateHUD();
+    }
+
+    // ============================================================
+    // 手元の弓矢の見た目更新
+    // ============================================================
+    function updateLoadedArrowVisual() {
+      if (!game.loadedArrow) return;
+
+      game.loadedArrow.visible = game.hasLoadedArrow;
+
+      if (!game.hasLoadedArrow) return;
+
+      // 手元の矢の位置
+      game.loadedArrow.position.set(0.28, -0.20, -0.98);
+
+      // 手元の矢も前向き（奥向き）にしておく
+      orientArrowHorizontally(game.loadedArrow, new THREE.Vector3(0, 0, -1));
+    }
+
+    function updateBowDraw(ratio) {
+      const drawRatio = THREE.MathUtils.clamp(ratio, 0, 1);
+
+      if (!game.bowString) return;
+
+      // 弦の中央だけ手前に引く
+      const pullAmount = 0.24 * drawRatio;
+
+      const pos = game.bowString.geometry.attributes.position;
+      pos.setXYZ(1, 0.70, -0.34, -1.02 + pullAmount);
+      pos.needsUpdate = true;
+
+      // 装填中の矢も一緒に引く
+      if (game.loadedArrow && game.loadedArrow.visible) {
+        game.loadedArrow.position.z = -0.98 + pullAmount;
+      }
+    }
+
+    // ============================================================
+    // 方向・姿勢
+    // ============================================================
+    function getHorizontalForward() {
+      const dir = new THREE.Vector3(0, 0, -1);
+      dir.applyQuaternion(game.camera.quaternion);
+
+      // 水平成分だけ使う
+      dir.y = 0;
+
+      // 真上/真下近くを向いた時の保険
+      if (dir.lengthSq() < 1e-6) {
+        dir.set(0, 0, -1);
+      }
+
+      dir.normalize();
+      return dir;
+    }
+
+    function getMuzzlePosition() {
+      const pos = new THREE.Vector3();
+      game.camera.getWorldPosition(pos);
+
+      // 画面中央から少し前へ
+      const forward = new THREE.Vector3(0, 0, -1)
+        .applyQuaternion(game.camera.quaternion)
+        .normalize();
+
+      pos.addScaledVector(forward, 0.85);
+
+      // ほんの少し下げて視認性を上げる
+      pos.y -= 0.05;
+
+      return pos;
+    }
+
+    function getCurrentWindDirection() {
+      return WIND_DIRECTIONS[game.wind.directionIndex] || WIND_DIRECTIONS[0];
+    }
+
+    function getWindAcceleration() {
+      return getCurrentWindDirection().vector
+        .clone()
+        .multiplyScalar(game.wind.speed * game.windAccelerationScale);
+    }
+
+    function randomizeWind() {
+      game.wind.directionIndex = Math.floor(Math.random() * WIND_DIRECTIONS.length);
+      game.wind.speed = THREE.MathUtils.lerp(1.5, 7.0, Math.random());
+    }
+
+    function orientArrowHorizontally(arrow, horizontalDir) {
+      // この矢モデルは +X が先端方向
+      const from = new THREE.Vector3(1, 0, 0);
+      const to = horizontalDir.clone().normalize();
+
+      const q = new THREE.Quaternion().setFromUnitVectors(from, to);
+      arrow.quaternion.copy(q);
+    }
+
+    function isCameraInCinematicMode() {
+      return !!game.followArrow || game.isHoldingOnImpact || game.isReturningCamera;
+    }
+
+    function startArrowFollow(arrowData) {
+      game.savedCameraPosition.copy(game.camera.position);
+      game.savedCameraQuaternion.copy(game.camera.quaternion);
+      game.followArrow = arrowData;
+      game.isHoldingOnImpact = false;
+      game.isReturningCamera = false;
+      game.impactHoldTime = 0;
+
+      if (game.bowRoot) {
+        game.bowRoot.visible = false;
+      }
+    }
+
+    function startImpactHold() {
+      if (!game.followArrow || game.isHoldingOnImpact) return;
+
+      game.isHoldingOnImpact = true;
+      game.impactHoldTime = 0;
+    }
+
+    function startCameraReturn() {
+      if (!isCameraInCinematicMode()) return;
+
+      game.followArrow = null;
+      game.isHoldingOnImpact = false;
+      game.isReturningCamera = true;
+      game.impactHoldTime = 0;
+    }
+
+    function finishCameraReturn() {
+      game.camera.position.copy(game.savedCameraPosition);
+      game.camera.quaternion.copy(game.savedCameraQuaternion);
+      game.followArrow = null;
+      game.isHoldingOnImpact = false;
+      game.isReturningCamera = false;
+      game.impactHoldTime = 0;
+
+      if (game.bowRoot) {
+        game.bowRoot.visible = true;
+      }
+
+      reloadArrow();
+    }
+
+    function updateCameraFollow(dt) {
+      if (game.followArrow) {
+        const arrowData = game.followArrow;
+
+        if (!arrowData.mesh.parent) {
+          startCameraReturn();
+          return;
+        }
+
+        const followDir = arrowData.horizontalDir.clone().normalize();
+        const targetPosition = arrowData.mesh.position.clone()
+          .addScaledVector(followDir, -game.followOffsetDistance);
+        targetPosition.y += game.followOffsetHeight;
+
+        const followAlpha = 1 - Math.exp(-game.followLerpSpeed * dt);
+        game.camera.position.lerp(targetPosition, followAlpha);
+
+        const lookTarget = arrowData.mesh.position.clone()
+          .addScaledVector(followDir, game.followLookAhead);
+        const lookMatrix = new THREE.Matrix4().lookAt(
+          game.camera.position,
+          lookTarget,
+          game.camera.up
+        );
+        const targetQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookMatrix);
+        game.camera.quaternion.slerp(targetQuaternion, followAlpha);
+
+        if (arrowData.stuck) {
+          startImpactHold();
+          game.impactHoldTime += dt;
+        }
+        return;
+      }
+
+      if (!game.isReturningCamera) {
+        if (game.bowRoot) {
+          game.bowRoot.visible = true;
+        }
+        return;
+      }
+
+      const returnAlpha = 1 - Math.exp(-game.returnLerpSpeed * dt);
+      game.camera.position.lerp(game.savedCameraPosition, returnAlpha);
+      game.camera.quaternion.slerp(game.savedCameraQuaternion, returnAlpha);
+
+      if (
+        game.camera.position.distanceToSquared(game.savedCameraPosition) < 1e-4 &&
+        game.camera.quaternion.angleTo(game.savedCameraQuaternion) < 0.01
+      ) {
+        finishCameraReturn();
+      }
+    }
+
+    // ============================================================
+    // 当たり判定 / スコア
+    // ============================================================
+    function checkTargetHit(prevPos, nextPos) {
+      const center = game.targetFace.getWorldPosition(new THREE.Vector3());
+
+      // 的の法線
+      const normal = new THREE.Vector3(0, 0, 1)
+        .applyQuaternion(game.targetFace.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize();
+
+      const d1 = prevPos.clone().sub(center).dot(normal);
+      const d2 = nextPos.clone().sub(center).dot(normal);
+
+      // 平面を跨いでいなければヒットしない
+      if (d1 * d2 > 0) return null;
+
+      const t = d1 / (d1 - d2);
+      if (t < 0 || t > 1) return null;
+
+      const hitPos = prevPos.clone().lerp(nextPos, t);
+
+      const offset = hitPos.clone().sub(center);
+      const planar = offset.sub(normal.clone().multiplyScalar(offset.dot(normal)));
+      const dist = planar.length();
+
+      if (dist <= game.targetRadius) {
+        return { hitPos, dist };
+      }
+
+      return null;
+    }
+
+    function scoreFromDistance(dist) {
+      const normalized = 1 - dist / game.targetRadius;
+      return Math.max(1, Math.round(normalized * 10));
+    }
+
+    function triggerHitCelebration() {
+      if (!celebrationLayer) return;
+
+      while (celebrationLayer.childElementCount >= MAX_ACTIVE_CONFETTI_BURSTS) {
+        celebrationLayer.firstElementChild?.remove();
+      }
+
+      const burst = document.createElement("div");
+      burst.className = "confetti-burst";
+
+      let maxLifetimeMs = 0;
+
+      for (let i = 0; i < CONFETTI_PIECES_PER_HIT; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+
+        const width = 8 + Math.random() * 8;
+        const height = 12 + Math.random() * 12;
+        const durationMs = 2400 + Math.random() * 1300;
+        const delayMs = Math.random() * 180;
+        const driftX = -18 + Math.random() * 36;
+        const fallDistance = 85 + Math.random() * 30;
+        const rotateStart = -160 + Math.random() * 320;
+        const rotateEnd = rotateStart + (Math.random() < 0.5 ? -1 : 1) * (540 + Math.random() * 540);
+        const left = Math.random() * 100;
+        const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+
+        piece.style.setProperty("--confetti-width", `${width.toFixed(1)}px`);
+        piece.style.setProperty("--confetti-height", `${height.toFixed(1)}px`);
+        piece.style.setProperty("--confetti-left", `${left.toFixed(2)}vw`);
+        piece.style.setProperty("--confetti-color", color);
+        piece.style.setProperty("--confetti-duration", `${durationMs.toFixed(0)}ms`);
+        piece.style.setProperty("--confetti-delay", `${delayMs.toFixed(0)}ms`);
+        piece.style.setProperty("--confetti-drift-x", `${driftX.toFixed(2)}vw`);
+        piece.style.setProperty("--confetti-fall-distance", `${fallDistance.toFixed(2)}vh`);
+        piece.style.setProperty("--confetti-rotate-start", `${rotateStart.toFixed(1)}deg`);
+        piece.style.setProperty("--confetti-rotate-end", `${rotateEnd.toFixed(1)}deg`);
+
+        burst.appendChild(piece);
+        maxLifetimeMs = Math.max(maxLifetimeMs, durationMs + delayMs);
+      }
+
+      celebrationLayer.appendChild(burst);
+      window.setTimeout(() => burst.remove(), maxLifetimeMs + 120);
+    }
+
+    function startGame() {
+      randomizeWind();
+      game.hasStarted = true;
+      game.timeRemaining = game.timeLimit;
+      updateHUD();
+    }
+
+// ============================================================
+// スコア送信（PowerShell連携）
+// ※失敗しても絶対にエラーにしない
+// ============================================================
+async function sendScoreToExternal(score) {
+  if (!ENABLE_SCORE_POST) return;
+
+  try {
+    await fetch(SCORE_POST_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        score: score,
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch (e) {
+    // ★重要：完全に無視（エラーにしない）
+    console.warn("スコア送信失敗（無視）", e);
+  }
+}
+
+    function endGame() {
+      if (game.isGameOver) return;
+
+      game.isGameOver = true;
+      game.timeRemaining = 0;
+      game.isCharging = false;
+      game.chargeTime = 0;
+      finishCameraReturn();
+      overlay.classList.add("hidden");
+      const isCelebration = game.score >= 11;
+      gameOverScreen.textContent =
+        isCelebration ? "CONGRATULATIONS!!" : "GAME OVER";
+      gameOverScreen.classList.toggle("isCelebration", isCelebration);
+      gameOverScreen.classList.add("visible");
+
+      updateBowDraw(0);
+      updateLoadedArrowVisual();
+      updateHUD();
+
+      if (game.controls.isLocked) {
+        game.controls.unlock();
+      }
+
+      // スコア送信（非同期・失敗しても無視）
+      sendScoreToExternal(game.score);
+    }
+
+    function updateTimer(dt) {
+      if (!game.hasStarted || game.isGameOver) return;
+
+      game.timeRemaining = Math.max(0, game.timeRemaining - dt);
+
+      if (game.timeRemaining <= 0) {
+        endGame();
+      }
+    }
+
+    function formatTimeRemaining(seconds) {
+      return `${Math.max(0, Math.ceil(seconds))}s`;
+    }
+
+    // ============================================================
+    // HUD
+    // ============================================================
+    function updateHUD() {
+      const ratio = THREE.MathUtils.clamp(game.chargeTime / game.maxChargeTime, 0, 1);
+      const percent = Math.round(ratio * 100);
+      const windDirection = getCurrentWindDirection();
+      const windText = game.hasStarted
+        ? `${windDirection.label} ${windDirection.symbol} / ${game.wind.speed.toFixed(1)} m/s`
+        : "-";
+      const cameraMode = game.followArrow
+        ? game.isHoldingOnImpact
+          ? "WAIT"
+          : "FOLLOW"
+        : game.isReturningCamera
+          ? "RETURN"
+          : "PLAYER";
+
+      chargeBar.style.width = (game.isCharging ? percent : 0) + "%";
+
+      hudText.innerHTML = `
+        <div>Loaded: <b>${game.hasLoadedArrow ? "YES" : "NO"}</b></div>
+        <div>Charge: <b>${game.isCharging ? percent + "%" : "-"}</b></div>
+        <div>Camera: <b>${cameraMode}</b></div>
+        <div>Shots: <b>${game.shots}</b> / Hits: <b>${game.hits}</b> / Score: <b>${game.score}</b></div>
+        <div>Time Limit: <b>${formatTimeRemaining(game.timeRemaining)}</b></div>
+        <div>Wind: <b>${windText}</b></div>
+      `;
+    }
+
+    // ============================================================
+    // 更新
+    // ============================================================
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min(0.033, game.clock.getDelta());
+
+      if (!game.isGameOver) {
+        updateCharge(dt);
+        updateFlyingArrows(dt);
+        updateCameraFollow(dt);
+        updateTimer(dt);
+      }
+
+      updateHUD();
+
+      game.renderer.render(game.scene, game.camera);
+    }
+
+    function updateCharge(dt) {
+      if (!game.isCharging) return;
+
+      game.chargeTime = Math.min(game.maxChargeTime, game.chargeTime + dt);
+
+      const ratio = game.chargeTime / game.maxChargeTime;
+      updateBowDraw(ratio);
+    }
+
+    function updateFlyingArrows(dt) {
+      for (let i = game.flyingArrows.length - 1; i >= 0; i--) {
+        const arrowData = game.flyingArrows[i];
+
+        if (arrowData.stuck) continue;
+
+        arrowData.age += dt;
+
+        // 長く飛びすぎた矢は削除
+        if (arrowData.age > game.maxLifetime) {
+          game.scene.remove(arrowData.mesh);
+          game.flyingArrows.splice(i, 1);
+          continue;
+        }
+
+        const prevPos = arrowData.mesh.position.clone();
+
+        // 重力反映
+        arrowData.velocity.addScaledVector(game.gravity, dt);
+        arrowData.velocity.addScaledVector(getWindAcceleration(), dt);
+
+        const horizontalVelocity = arrowData.velocity.clone();
+        horizontalVelocity.y = 0;
+        if (horizontalVelocity.lengthSq() > 1e-6) {
+          arrowData.horizontalDir.copy(horizontalVelocity.normalize());
+        }
+
+        // 位置更新
+        arrowData.mesh.position.addScaledVector(arrowData.velocity, dt);
+
+        const nextPos = arrowData.mesh.position.clone();
+
+        // --------------------------------------------------------
+        // 要件:
+        // 矢は「地面と平行の向き」のまま
+        // 矢じりは「現在の進行方向（水平成分）」を向く
+        //
+        // つまり、落下しても矢は上下に傾けない。
+        // 風で横流れしても、向きは水平のまま追従する。
+        // --------------------------------------------------------
+        orientArrowHorizontally(arrowData.mesh, arrowData.horizontalDir);
+
+        // 地面に落ちたら停止
+        if (arrowData.mesh.position.y <= 0.05) {
+          arrowData.mesh.position.y = 0.05;
+          arrowData.velocity.set(0, 0, 0);
+          arrowData.stuck = true;
+          continue;
+        }
+
+        // 的ヒット判定
+        const hit = checkTargetHit(prevPos, nextPos);
+        if (hit) {
+          arrowData.mesh.position.copy(hit.hitPos);
+          arrowData.velocity.set(0, 0, 0);
+          arrowData.stuck = true;
+
+          game.hits++;
+          game.score += scoreFromDistance(hit.dist);
+          triggerHitCelebration();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
