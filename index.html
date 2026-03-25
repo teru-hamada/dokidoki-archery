@@ -292,7 +292,6 @@
           矢が止まったら <span class="kbd">左クリック</span> で元の視点に戻る /
           <span class="kbd">ESC</span> でマウス解除
         </p>
-        <p>矢は常に画面中央から奥へ飛び、矢の向きは水平のままです。</p>
         <div id="errorBox"></div>
       </div>
     </div>
@@ -508,16 +507,18 @@
               <span class="kbd">ドラッグ</span> で視点移動 /
               矢が止まったら <span class="kbd">タップ</span> で元の視点に戻る
             </p>
-            <p>矢は常に画面中央から奥へ飛び、矢の向きは水平のままです。</p>
             <div id="errorBox"></div>
           `;
         }
       }
 
-      overlay.addEventListener("click", () => {
+      function handleOverlayStart(e) {
         if (game.isGameOver) return;
 
         if (isTouchDevice) {
+          e.preventDefault();
+          e.stopPropagation();
+
           overlay.classList.add("hidden");
 
           if (!game.hasStarted) {
@@ -527,7 +528,10 @@
         }
 
         game.controls.lock();
-      });
+      }
+
+      overlay.addEventListener("click", handleOverlayStart);
+      overlay.addEventListener("touchstart", handleOverlayStart, { passive: false });
 
       game.controls.addEventListener("lock", () => {
         overlay.classList.add("hidden");
@@ -1146,14 +1150,15 @@
 
       // 矢じり
       const tip = new THREE.Mesh(
-        new THREE.ConeGeometry(shaftRadius, 0.16, 18),
+        // 円錐の底面の半径,高さ, 円周分割数
+        new THREE.ConeGeometry(shaftRadius, 0.05, 30),
         new THREE.MeshStandardMaterial({
           color: 0x8d8d8d,
           roughness: 0.35
         })
       );
       tip.rotation.z = -Math.PI / 2;
-      tip.position.x = 0.95 / 2 + 0.08;
+      tip.position.x = 0.95 / 2 + 0.025;
       group.add(tip);
 
       // 羽根材質
