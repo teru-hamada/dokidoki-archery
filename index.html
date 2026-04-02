@@ -1114,52 +1114,330 @@
   }
 
   function createRiserMesh() {
-    const geo = new THREE.ExtrudeGeometry(createRiserShape(), {
-      depth: 0.050,
-      steps: 1,
-      bevelEnabled: true,
-      bevelSegments: 10,
-      bevelSize: 0.003,
-      bevelThickness: 0.003,
-      curveSegments: 128
-    });
+    const riserGroup = new THREE.Group();
 
-    // ライザー全体を少し小さくする
-    geo.scale(0.78, 0.78, 1.0);
+    const fullDepth = 0.06;
+    const insetDepth = 0.030;
 
-    geo.center();
+    const frontZ = fullDepth;
+    const backZ = 0.0;
+    const recessedBackZ = backZ + insetDepth;
+
+    const baseMat = riserMaterial.clone();
+    const wallMat = riserMaterial.clone();
+
+    baseMat.side = THREE.DoubleSide;
+    wallMat.side = THREE.DoubleSide;
 
     // --------------------------------------------------
-    // 中央シルバー → 上下端ブラック のグラデーション
+    // 1) 前面
     // --------------------------------------------------
-    geo.computeBoundingBox();
+    const frontShape = createRiserShape();
+    const frontGeo = new THREE.ShapeGeometry(frontShape, 128);
+    const frontMesh = new THREE.Mesh(frontGeo, baseMat);
+    frontMesh.position.z = frontZ;
+    riserGroup.add(frontMesh);
 
-    const pos = geo.attributes.position;
-    const colors = [];
-    const minY = geo.boundingBox.min.y;
-    const maxY = geo.boundingBox.max.y;
-    const halfH = Math.max(Math.abs(minY), Math.abs(maxY));
+    // --------------------------------------------------
+    // 2) 外周側壁
+    // くぼみ帯の左右だけ奥側を recessedBackZ にする
+    // --------------------------------------------------
+    const outlinePoints = getShapeOutlinePoints(frontShape, 512);
 
-    const centerColor = new THREE.Color(0xcfd4db); // シルバー
-    const edgeColor   = new THREE.Color(0x121418); // ブラック寄り
+    const recessYMin = 0.0;
+    const recessYMax = 0.28;
 
-    for (let i = 0; i < pos.count; i++) {
-      const y = pos.getY(i);
+    const outerWall = createAdaptiveOuterWall(
+      outlinePoints,
+      backZ,
+      recessedBackZ,
+      frontZ,
+      recessYMin,
+      recessYMax,
+      wallMat
+    );
+    riserGroup.add(outerWall);
 
-      // 中央 0.0 / 上下端 1.0
-      let t = Math.abs(y) / halfH;
-      t = THREE.MathUtils.clamp(Math.pow(t, 0.85), 0, 1);
+    // --------------------------------------------------
+    // 3) 背面上部
+    // --------------------------------------------------
+    const backTopShape = createBackTopShape();
+    const backTopGeo = new THREE.ShapeGeometry(backTopShape, 128);
+    const backTopMesh = new THREE.Mesh(backTopGeo, wallMat);
+    backTopMesh.position.z = backZ;
+    riserGroup.add(backTopMesh);
 
-      const c = centerColor.clone().lerp(edgeColor, t);
-      colors.push(c.r, c.g, c.b);
+    // --------------------------------------------------
+    // 4) 背面下部
+    // --------------------------------------------------
+    const backBottomShape = createBackBottomShape();
+    const backBottomGeo = new THREE.ShapeGeometry(backBottomShape, 128);
+    const backBottomMesh = new THREE.Mesh(backBottomGeo, wallMat);
+    backBottomMesh.position.z = backZ;
+    riserGroup.add(backBottomMesh);
+
+    // --------------------------------------------------
+    // 5) くぼみ底面
+    // --------------------------------------------------
+    const recessShape = createRecessBandShape();
+    const recessGeo = new THREE.ShapeGeometry(recessShape, 128);
+    const recessMesh = new THREE.Mesh(recessGeo, wallMat);
+    recessMesh.position.z = recessedBackZ;
+    riserGroup.add(recessMesh);
+
+    // --------------------------------------------------
+    // 6) くぼみ上端・下端の段差壁
+    // --------------------------------------------------
+    riserGroup.add(createQuadWall(
+      new THREE.Vector2(-0.030, 0.280),
+      new THREE.Vector2( 0.060, 0.280),
+      backZ,
+      recessedBackZ,
+      wallMat
+    ));
+
+    riserGroup.add(createQuadWall(
+      new THREE.Vector2(-0.018, 0.000),
+      new THREE.Vector2( 0.082, 0.000),
+      recessedBackZ,
+      backZ,
+      wallMat
+    ));
+
+    // --------------------------------------------------
+    // 8) グラデーション復活
+    // --------------------------------------------------
+    applyVerticalGradientToGroup(riserGroup);
+
+    // --------------------------------------------------
+    // 9) 中央へ寄せて縮小
+    // --------------------------------------------------
+    const box = new THREE.Box3().setFromObject(riserGroup);
+    const center = box.getCenter(new THREE.Vector3());
+
+    riserGroup.position.sub(center);
+    riserGroup.scale.set(0.78, 0.78, 1.0);
+
+    return riserGroup;
+  }
+
+  function createAdaptiveOuterWall(points, backZ, recessedBackZ, frontZ, recessYMin, recessYMax, material) {
+    const positions = [];
+
+    function getBackZForPoint(p) {
+      const inRecessBand = p.y >= recessYMin && p.y <= recessYMax;
+      const onLeftSide = p.x < 0;
+      const onRightSide = p.x > 0.05;
+
+      if (inRecessBand && (onLeftSide || onRightSide)) {
+        return recessedBackZ;
+      }
+
+      return backZ;
     }
 
-    geo.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    for (let i = 0; i < points.length; i++) {
+      const a = points[i];
+      const b = points[(i + 1) % points.length];
 
-    const mat = riserMaterial.clone();
-    mat.vertexColors = true;
+      const aBackZ = getBackZForPoint(a);
+      const bBackZ = getBackZForPoint(b);
 
-    return new THREE.Mesh(geo, mat);
+      positions.push(
+        a.x, a.y, aBackZ,
+        b.x, b.y, bBackZ,
+        a.x, a.y, frontZ,
+
+        b.x, b.y, bBackZ,
+        b.x, b.y, frontZ,
+        a.x, a.y, frontZ
+      );
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(positions), 3)
+    );
+    geom.computeVertexNormals();
+
+    return new THREE.Mesh(geom, material);
+  }
+
+  function applyVerticalGradientToGroup(group) {
+    const box = new THREE.Box3().setFromObject(group);
+    const minY = box.min.y;
+    const maxY = box.max.y;
+    const halfH = Math.max(Math.abs(minY), Math.abs(maxY));
+
+    const centerColor = new THREE.Color(0xcfd4db);
+    const edgeColor = new THREE.Color(0x121418);
+
+    group.updateMatrixWorld(true);
+
+    group.traverse(obj => {
+      if (!obj.isMesh || !obj.geometry?.attributes?.position) return;
+
+      const pos = obj.geometry.attributes.position;
+      const colors = [];
+
+      for (let i = 0; i < pos.count; i++) {
+        const local = new THREE.Vector3(
+          pos.getX(i),
+          pos.getY(i),
+          pos.getZ(i)
+        );
+
+        const world = local.clone().applyMatrix4(obj.matrixWorld);
+
+        let t = Math.abs(world.y) / halfH;
+        t = THREE.MathUtils.clamp(Math.pow(t, 0.85), 0, 1);
+
+        const c = centerColor.clone().lerp(edgeColor, t);
+        colors.push(c.r, c.g, c.b);
+      }
+
+      obj.geometry.setAttribute(
+        "color",
+        new THREE.Float32BufferAttribute(colors, 3)
+      );
+
+      obj.material = obj.material.clone();
+      obj.material.vertexColors = true;
+    });
+  }
+
+  function getShapeOutlinePoints(shape, divisions = 512) {
+    const pts = shape.getPoints(divisions);
+
+    // 最後が最初と重複している場合があるので取り除く
+    if (pts.length >= 2) {
+      const first = pts[0];
+      const last = pts[pts.length - 1];
+
+      if (
+        Math.abs(first.x - last.x) < 1e-6 &&
+        Math.abs(first.y - last.y) < 1e-6
+      ) {
+        pts.pop();
+      }
+    }
+
+    return pts.map(p => new THREE.Vector2(p.x, p.y));
+  }
+
+  function createQuadWall(p1, p2, z1, z2, material) {
+    const positions = new Float32Array([
+      p1.x, p1.y, z1,
+      p2.x, p2.y, z1,
+      p1.x, p1.y, z2,
+
+      p2.x, p2.y, z1,
+      p2.x, p2.y, z2,
+      p1.x, p1.y, z2
+    ]);
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geom.computeVertexNormals();
+
+    return new THREE.Mesh(geom, material);
+  }
+
+  function createRecessBandShape() {
+    const s = new THREE.Shape();
+
+    // --------------------------------------------------
+    // 背面に作る「削り込み帯」専用の輪郭
+    // 元ライザーのくぼみを保ちたいので、別shapeで明示的に持つ
+    // --------------------------------------------------
+    const points = [
+      // 左下
+      new THREE.Vector2(-0.018, 0.000),
+
+      // 左側のくぼみを保ちながら上へ
+      new THREE.Vector2(-0.012, 0.040),
+      new THREE.Vector2(-0.010, 0.080),
+      new THREE.Vector2(-0.010, 0.120),
+      new THREE.Vector2(-0.014, 0.170),
+      new THREE.Vector2(-0.022, 0.220),
+      new THREE.Vector2(-0.030, 0.280),
+
+      // 上端
+      new THREE.Vector2(0.060, 0.280),
+
+      // 右側を下へ
+      new THREE.Vector2(0.072, 0.230),
+      new THREE.Vector2(0.082, 0.170),
+      new THREE.Vector2(0.088, 0.110),
+      new THREE.Vector2(0.088, 0.050),
+      new THREE.Vector2(0.082, 0.000)
+    ];
+
+    s.moveTo(points[0].x, points[0].y);
+
+    for (let i = 1; i < points.length; i++) {
+      s.lineTo(points[i].x, points[i].y);
+    }
+
+    s.closePath();
+    return s;
+  }
+
+  function createBackTopShape() {
+    const s = new THREE.Shape();
+
+    const points = [
+      new THREE.Vector2(-0.030, 0.280),
+      new THREE.Vector2(-0.040, 0.275),
+      new THREE.Vector2(-0.050, 0.335),
+      new THREE.Vector2(-0.060, 0.384),
+      new THREE.Vector2( 0.010, 0.418),
+      new THREE.Vector2( 0.026, 0.385),
+      new THREE.Vector2( 0.066, 0.320),
+      new THREE.Vector2( 0.060, 0.280)
+    ];
+
+    s.moveTo(points[0].x, points[0].y);
+
+    for (let i = 1; i < points.length; i++) {
+      s.lineTo(points[i].x, points[i].y);
+    }
+
+    s.closePath();
+    return s;
+  }
+
+  function createBackBottomShape() {
+    const s = new THREE.Shape();
+
+    const points = [
+      new THREE.Vector2(-0.040, -0.430),
+      new THREE.Vector2(-0.062, -0.402),
+      new THREE.Vector2(-0.060, -0.350),
+      new THREE.Vector2(-0.050, -0.305),
+      new THREE.Vector2(-0.040, -0.245),
+      new THREE.Vector2(-0.030, -0.185),
+      new THREE.Vector2(-0.020, -0.120),
+      new THREE.Vector2(-0.010, -0.070),
+      new THREE.Vector2(-0.010, -0.020),
+      new THREE.Vector2(-0.018,  0.000),
+      new THREE.Vector2( 0.082,  0.000),
+      new THREE.Vector2( 0.096, -0.140),
+      new THREE.Vector2( 0.084, -0.250),
+      new THREE.Vector2( 0.066, -0.340),
+      new THREE.Vector2( 0.026, -0.400),
+      new THREE.Vector2( 0.010, -0.430)
+    ];
+
+    s.moveTo(points[0].x, points[0].y);
+
+    for (let i = 1; i < points.length; i++) {
+      s.lineTo(points[i].x, points[i].y);
+    }
+
+    s.closePath();
+    return s;
   }
 
   // --------------------------------------------------
