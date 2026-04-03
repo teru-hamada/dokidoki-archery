@@ -1533,32 +1533,52 @@
     new THREE.CapsuleGeometry(0.026, 0.118, 8, 18),
     gripMaterial
   );
-  grip.position.set(-0.010, -0.020, 0.010);
+  // グリップ位置（ライザーの向きと同期しているので他の位置とは設定方法が異なる）
+  //　左右（プラスで奥へ）、上下（プラスで上へ）、前後（プラスで右へ）
+  grip.position.set(-0.040, -0.100, 0.000);
   grip.rotation.z = 0.12;
   riserGroup.add(grip);
 
-  // サイトバー
+  // サイトバー形状（ハンドルにつけられている部分）
   const sightBar = new THREE.Mesh(
-    new THREE.BoxGeometry(0.014, 0.170, 0.014),
+    new THREE.BoxGeometry(0.02, 0.05, 0.30),
     detailMaterial
   );
-  sightBar.position.set(-0.060, 0.078, 0.010);
+  // サイトバー位置
+  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
+  sightBar.position.set(0.030, 0.180, -0.100);
   sightGroup.add(sightBar);
 
+  // サイトアーム形状（サイトバーから出ている標準の棒）
   const sightArm = new THREE.Mesh(
-    new THREE.BoxGeometry(0.120, 0.009, 0.009),
+    new THREE.BoxGeometry(0.060, 0.009, 0.009),
     detailMaterial
   );
-  sightArm.position.set(-0.120, 0.145, 0.010);
+  // サイトバー位置
+  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
+  sightArm.position.set(-0.050, 0.190, -0.150);
   sightGroup.add(sightArm);
 
+  // 標準形状
   const sightRing = new THREE.Mesh(
     new THREE.TorusGeometry(0.018, 0.0032, 12, 66),
     detailMaterial
   );
-  sightRing.position.set(-0.180, 0.145, 0.010);
+  // 標準位置
+  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
+  sightRing.position.set(-0.100, 0.190, -0.150);
   sightRing.rotation.y = Math.PI / 1;
   sightGroup.add(sightRing);
+
+  // 標準中央形状（ハンドルにつけられている部分）
+  const sightPin = new THREE.Mesh(
+    new THREE.BoxGeometry(0.001, 0.015, 0.005),
+    detailMaterial
+  );
+  // 標準中央位置
+  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
+  sightPin.position.set(-0.100, 0.184, -0.150);
+  sightGroup.add(sightPin);
 
   
   // limb pocket（接続部を自然に）
