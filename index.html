@@ -1513,12 +1513,10 @@
   // グループ類
   // --------------------------------------------------
   const riserGroup = new THREE.Group();
-  const sightGroup = new THREE.Group();
   const limbGroup = new THREE.Group();
   const tipGroup = new THREE.Group();
 
   bowGroup.add(riserGroup);
-  bowGroup.add(sightGroup);
   bowGroup.add(limbGroup);
   bowGroup.add(tipGroup);
 
@@ -1544,42 +1542,49 @@
     new THREE.BoxGeometry(0.02, 0.05, 0.30),
     detailMaterial
   );
-  // サイトバー位置
-  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
-  sightBar.position.set(0.030, 0.180, -0.100);
-  sightGroup.add(sightBar);
+  // サイトをライザーのローカル座標系で配置
+  // ライザーが-5度回転しているので、サイトを+5度回転させて相殺
+  const sightCompensation = 4.9;
+  
+  // 元の位置からY軸周りに補正回転を適用
+  const sightBarPos = new THREE.Vector3(0.030, 0.180, -0.100);
+  sightBarPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
+  sightBar.position.copy(sightBarPos);
+  sightBar.rotation.y = sightCompensation;
+  riserGroup.add(sightBar);
 
   // サイトアーム形状（サイトバーから出ている標準の棒）
   const sightArm = new THREE.Mesh(
     new THREE.BoxGeometry(0.060, 0.009, 0.009),
     detailMaterial
   );
-  // サイトバー位置
-  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
-  sightArm.position.set(-0.050, 0.190, -0.150);
-  sightGroup.add(sightArm);
+  const sightArmPos = new THREE.Vector3(-0.050, 0.190, -0.150);
+  sightArmPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
+  sightArm.position.copy(sightArmPos);
+  sightArm.rotation.y = sightCompensation;
+  riserGroup.add(sightArm);
 
   // 標準形状
   const sightRing = new THREE.Mesh(
     new THREE.TorusGeometry(0.018, 0.0032, 12, 66),
     detailMaterial
   );
-  // 標準位置
-  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
-  sightRing.position.set(-0.100, 0.190, -0.150);
-  sightRing.rotation.y = Math.PI / 1;
-  sightGroup.add(sightRing);
+  const sightRingPos = new THREE.Vector3(-0.100, 0.190, -0.150);
+  sightRingPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
+  sightRing.position.copy(sightRingPos);
+  sightRing.rotation.y = Math.PI + sightCompensation;
+  riserGroup.add(sightRing);
 
   // 標準中央形状（ハンドルにつけられている部分）
   const sightPin = new THREE.Mesh(
     new THREE.BoxGeometry(0.001, 0.015, 0.005),
     detailMaterial
   );
-  // 標準中央位置
-  //　左右（プラスで右へ）、上下（プラスで上へ）、前後（プラスで手前へ）
-  sightPin.position.set(-0.100, 0.184, -0.150);
-  sightGroup.add(sightPin);
-
+  const sightPinPos = new THREE.Vector3(-0.100, 0.184, -0.150);
+  sightPinPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
+  sightPin.position.copy(sightPinPos);
+  sightPin.rotation.y = sightCompensation;
+  riserGroup.add(sightPin);
   
   // limb pocket（接続部を自然に）
   function createLimbPocket(localY, isUpper) {
@@ -1611,10 +1616,6 @@
   // riser 配置
   riserGroup.position.copy(toWorld(new THREE.Vector3(0, 0, 0)));
   riserGroup.rotation.set(0, bowTiltY + riserYawOffset, 0, "XYZ");
-
-  // sight 配置
-  sightGroup.position.copy(toWorld(new THREE.Vector3(0, 0, 0)));
-  sightGroup.rotation.set(0, bowTiltY, 0, "XYZ");
 
   // --------------------------------------------------
   // limb メッシュ
