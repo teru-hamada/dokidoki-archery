@@ -1698,16 +1698,25 @@
     const tipForward = flex * 2.05;
     const tipSide = flex * 1.10;
 
+    // 弦を左へ移動させるオフセット（値を大きくすると左へ）
+    const stringLeftOffset = 0.05;
+    
+    // 弦を手前へ移動させるオフセット（値を大きくすると手前へ）
+    const stringForwardOffset = 0.10;
+    
+    // 弦を上へ移動させるオフセット（値を大きくすると上へ）
+    const stringUpOffset = 0.05;
+
     const topLocal = new THREE.Vector3(
-      0.002 + tipSide * 0.08,
-      bowHalfLen,
-      0.146 + tipForward * 0.96
+      0.002 + tipSide * 0.08 - stringLeftOffset,
+      bowHalfLen + stringUpOffset,  // Y座標を上へ
+      0.146 + tipForward * 0.96 + stringForwardOffset
     );
 
     const botLocal = new THREE.Vector3(
-      0.002 + tipSide * 0.08,
-      -bowHalfLen,
-      0.146 + tipForward * 0.96
+      0.002 + tipSide * 0.08 - stringLeftOffset,
+      -bowHalfLen + stringUpOffset,  // Y座標を上へ
+      0.146 + tipForward * 0.96 + stringForwardOffset
     );
 
     const straightMid = topLocal.clone().lerp(botLocal, 0.5);
@@ -2259,7 +2268,7 @@
         .normalize();
 
       pos.addScaledVector(forward, 0.85);
-
+  
       // ほんの少し下げて視認性を上げる
       pos.y -= 0.05;
 
