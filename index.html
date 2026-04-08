@@ -1698,7 +1698,7 @@
         const tipSide = flex * 1.10;
 
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
-        const stringLeftOffset = 0.05;
+        const stringLeftOffset = 0.12;
         
         // 弦を手前へ移動させるオフセット（値を大きくすると手前へ）
         const stringForwardOffset = 0.10;
@@ -1720,9 +1720,19 @@
 
         const straightMid = topLocal.clone().lerp(botLocal, 0.5);
 
-        const midLocal = straightMid.clone().add(
-          new THREE.Vector3(0, 0, draw * maxDraw)
-        );
+        // 装填矢を引いた時の矢の向き
+        const loadedArrowDrawDirLocal = new THREE.Vector3(0, 0, -1)
+          .applyEuler(new THREE.Euler(
+            0,
+            -0.30,
+            0,
+            "XYZ"
+          ))
+          .normalize();
+
+          const midLocal = straightMid.clone().sub(
+            loadedArrowDrawDirLocal.clone().multiplyScalar(draw * maxDraw)
+          );
 
         return { topLocal, midLocal, botLocal };
       }
@@ -2219,14 +2229,32 @@
         return;
       }
 
-      // まず向きを決める
-      orientArrowHorizontally(game.loadedArrow, new THREE.Vector3(0, 0, -1));
+      const shaftDir = new THREE.Vector3(0, 0, -1)
+        .applyEuler(new THREE.Euler(
+          -0.03,  // X: 少し上向き/下向き
+          -0.10,  // Y: 左右の基本向き
+           0.00,  // Z: ひねり
+          "XYZ"
+        ))
+        .normalize();
+
+      orientArrowToDirection(game.loadedArrow, shaftDir);
 
       // 再装填時も必ず弓へ再接続する
       if (bowGroup?.userData?.attachArrow) {
          bowGroup.userData.attachArrow(game.loadedArrow);
       }
 
+    }
+    function orientArrowToDirection(arrow, dir) {
+      // この矢モデルは +X が先端方向
+      const from = new THREE.Vector3(1, 0, 0);
+      const to = dir.clone().normalize();
+
+      if (to.lengthSq() < 1e-8) return;
+
+      const q = new THREE.Quaternion().setFromUnitVectors(from, to);
+      arrow.quaternion.copy(q);
     }
 
     function updateBowDraw(ratio) {
