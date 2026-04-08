@@ -1699,26 +1699,38 @@
 
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
         const stringLeftOffset = 0.12;
-        
+
         // 弦を手前へ移動させるオフセット（値を大きくすると手前へ）
         const stringForwardOffset = 0.10;
-        
-        // 弦を上へ移動させるオフセット（値を大きくすると上へ）
+
+        // 弦全体を上下に移動させるオフセット
         const stringUpOffset = 0.05;
 
-        const topLocal = new THREE.Vector3(
+        // 弦の上下長を短くする量（値を大きくすると短くなる）
+        const stringShorten = 0.13;
+
+        // まず「今まで通り」の上下端を作る
+        const baseTopLocal = new THREE.Vector3(
           0.002 + tipSide * 0.08 - stringLeftOffset,
-          bowHalfLen + stringUpOffset,  // Y座標を上へ
+          bowHalfLen + stringUpOffset,
           0.146 + tipForward * 0.96 + stringForwardOffset
         );
 
-        const botLocal = new THREE.Vector3(
+        const baseBotLocal = new THREE.Vector3(
           0.002 + tipSide * 0.08 - stringLeftOffset,
-          -bowHalfLen + stringUpOffset,  // Y座標を上へ
+          -bowHalfLen + stringUpOffset,
           0.146 + tipForward * 0.96 + stringForwardOffset
         );
 
-        const straightMid = topLocal.clone().lerp(botLocal, 0.5);
+        // 矢の初期位置の基準になる中心は、元のまま固定
+        const straightMid = baseTopLocal.clone().lerp(baseBotLocal, 0.5);
+
+        // 上下端だけ中央へ寄せる
+        const topLocal = baseTopLocal.clone();
+        const botLocal = baseBotLocal.clone();
+
+        topLocal.y -= stringShorten;
+        botLocal.y += stringShorten;
 
         // 装填矢を引いた時の矢の向き
         const loadedArrowDrawDirLocal = new THREE.Vector3(0, 0, -1)
@@ -1730,9 +1742,10 @@
           ))
           .normalize();
 
-          const midLocal = straightMid.clone().sub(
-            loadedArrowDrawDirLocal.clone().multiplyScalar(draw * maxDraw)
-          );
+        // midLocal は従来の中心基準からだけ作る
+        const midLocal = straightMid.clone().sub(
+          loadedArrowDrawDirLocal.clone().multiplyScalar(draw * maxDraw)
+        );
 
         return { topLocal, midLocal, botLocal };
       }
