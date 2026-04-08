@@ -1557,7 +1557,7 @@
         new THREE.BoxGeometry(0.100, 0.009, 0.009),
         detailMaterial
       );
-      const sightArmPos = new THREE.Vector3(-0.03, 0.197, -0.160);
+      const sightArmPos = new THREE.Vector3(-0.03, 0.197, -0.230);
       sightArmPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightArm.position.copy(sightArmPos);
       sightArm.rotation.set(0, sightCompensation, 0);
@@ -1568,7 +1568,7 @@
         new THREE.TorusGeometry(0.018, 0.0032, 15, 66),
         detailMaterial
       );
-      const sightRingPos = new THREE.Vector3(-0.100, 0.197, -0.150);
+      const sightRingPos = new THREE.Vector3(-0.100, 0.197, -0.230);
       sightRingPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightRing.position.copy(sightRingPos);
       sightRing.rotation.set(0, Math.PI + sightCompensation, 0);
@@ -1579,7 +1579,7 @@
         new THREE.BoxGeometry(0.001, 0.015, 0.005),
         detailMaterial
       );
-      const sightPinPos = new THREE.Vector3(-0.100, 0.186, -0.150);
+      const sightPinPos = new THREE.Vector3(-0.100, 0.186, -0.230);
       sightPinPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightPin.position.copy(sightPinPos);
       sightPin.rotation.set(0, sightCompensation, 0);
