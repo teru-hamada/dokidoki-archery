@@ -1543,13 +1543,13 @@
       );
       // サイトをライザーのローカル座標系で配置
       // ライザーが-5度回転しているので、サイトを+5度回転させて相殺
-      const sightCompensation = 4.9;
-      
+      const sightCompensation = 4.9; // Y軸
+         
       // 元の位置からY軸周りに補正回転を適用
       const sightBarPos = new THREE.Vector3(0.030, 0.180, -0.100);
       sightBarPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightBar.position.copy(sightBarPos);
-      sightBar.rotation.y = sightCompensation;
+      sightBar.rotation.set(0.5, sightCompensation, 0.5);
       riserGroup.add(sightBar);
 
       // サイトアーム形状（サイトバーから出ている標準の棒）
@@ -1557,21 +1557,21 @@
         new THREE.BoxGeometry(0.060, 0.009, 0.009),
         detailMaterial
       );
-      const sightArmPos = new THREE.Vector3(-0.050, 0.190, -0.150);
+      const sightArmPos = new THREE.Vector3(-0.050, 0.197, -0.160);
       sightArmPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightArm.position.copy(sightArmPos);
-      sightArm.rotation.y = sightCompensation;
+      sightArm.rotation.set(0, sightCompensation, 0);
       riserGroup.add(sightArm);
 
       // 標準形状
       const sightRing = new THREE.Mesh(
-        new THREE.TorusGeometry(0.018, 0.0032, 12, 66),
+        new THREE.TorusGeometry(0.018, 0.0032, 15, 66),
         detailMaterial
       );
-      const sightRingPos = new THREE.Vector3(-0.100, 0.190, -0.150);
+      const sightRingPos = new THREE.Vector3(-0.100, 0.197, -0.150);
       sightRingPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightRing.position.copy(sightRingPos);
-      sightRing.rotation.y = Math.PI + sightCompensation;
+      sightRing.rotation.set(0, Math.PI + sightCompensation, 0);
       riserGroup.add(sightRing);
 
       // 標準中央形状（ハンドルにつけられている部分）
@@ -1579,10 +1579,10 @@
         new THREE.BoxGeometry(0.001, 0.015, 0.005),
         detailMaterial
       );
-      const sightPinPos = new THREE.Vector3(-0.100, 0.184, -0.150);
+      const sightPinPos = new THREE.Vector3(-0.100, 0.186, -0.150);
       sightPinPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightPin.position.copy(sightPinPos);
-      sightPin.rotation.y = sightCompensation;
+      sightPin.rotation.set(0, sightCompensation, 0);
       riserGroup.add(sightPin);
       
       // limb pocket（接続部を自然に）
