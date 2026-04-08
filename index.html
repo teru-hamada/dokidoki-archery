@@ -947,33 +947,110 @@
       // 返りのある現代リカーブ風
       // --------------------------------------------------
       function createUpperLimbCurve(draw = 0, kick = 0) {
-        const flex = draw * 0.070 + kick * 0.040;
+        // 今の弦そのものに合わせる（弦は変更しない）
+        const stringLocals = getStringLocals(0, 0);
+        const tipTarget = stringLocals.topLocal.clone();
 
-        const tipForward = flex * 2.20;
-        const tipSide = flex * 1.10;
-        const midBend = flex * 0.70;
-        const rootBack = flex * 0.28;
+        // 接続部は今の limb pocket に近いまま
+        const root = new THREE.Vector3(0.014, 0.286, -0.002);
+
+        // 初期形状を少しだけ上下に短く見せるため、
+        // 中間点を少し内側へ詰める
+        const lengthTuck = 0.045;
+
+        // しなり量は少し抑え、根元→中間→先端へなめらかに配分
+        const flex = draw * 0.082 + kick * 0.030;
+
+        const z1 = 0.010 + flex * 0.16;
+        const z2 = 0.040 + flex * 0.42;
+        const z3 = 0.082 + flex * 0.72;
+        const z4 = 0.120 + flex * 0.96;
+
+        const x1 = 0.018 + flex * 0.010;
+        const x2 = 0.028 + flex * 0.016;
+        const x3 = 0.034 + flex * 0.020;
+        const x4 = 0.020 + flex * 0.012;
 
         return new THREE.CatmullRomCurve3([
-          // ライザー上端から自然に立ち上がる
-          new THREE.Vector3(0.010, 0.305, -0.012 - rootBack * 0.40),
-          new THREE.Vector3(0.020, 0.355, -0.004 - rootBack * 0.20),
+          new THREE.Vector3(root.x, root.y, root.z),
 
-          // 根元は太くて平たい感じを残しつつ前方へ
-          new THREE.Vector3(0.038 + tipSide * 0.06, 0.470, 0.018 + midBend * 0.30),
-          new THREE.Vector3(0.050 + tipSide * 0.18, 0.610, 0.052 + midBend * 0.72),
-          new THREE.Vector3(0.040 + tipSide * 0.30, 0.745, 0.100 + tipForward * 0.80),
-          new THREE.Vector3(0.018 + tipSide * 0.20, 0.850, 0.140 + tipForward * 0.96),
+          new THREE.Vector3(
+            x1,
+            0.345 - lengthTuck * 0.15,
+            z1
+          ),
 
-          // 先端
-          new THREE.Vector3(0.004, bowHalfLen, 0.168 + tipForward * 1.04)
+          new THREE.Vector3(
+            x2,
+            0.490 - lengthTuck * 0.45,
+            z2
+          ),
+
+          new THREE.Vector3(
+            x3,
+            0.640 - lengthTuck * 0.75,
+            z3
+          ),
+
+          new THREE.Vector3(
+            x4,
+            0.790 - lengthTuck,
+            z4
+          ),
+
+          tipTarget
         ]);
       }
 
       function createLowerLimbCurve(draw = 0, kick = 0) {
-        const upper = createUpperLimbCurve(draw, kick);
-        const points = upper.points.map(p => new THREE.Vector3(p.x, -p.y, p.z));
-        return new THREE.CatmullRomCurve3(points.reverse());
+        // 今の弦そのものに合わせる（弦は変更しない）
+        const stringLocals = getStringLocals(0, 0);
+        const tipTarget = stringLocals.botLocal.clone();
+
+        const root = new THREE.Vector3(0.014, -0.286, -0.002);
+
+        const lengthTuck = 0.045;
+        const flex = draw * 0.082 + kick * 0.030;
+
+        const z1 = 0.010 + flex * 0.16;
+        const z2 = 0.040 + flex * 0.42;
+        const z3 = 0.082 + flex * 0.72;
+        const z4 = 0.120 + flex * 0.96;
+
+        const x1 = 0.018 + flex * 0.010;
+        const x2 = 0.028 + flex * 0.016;
+        const x3 = 0.034 + flex * 0.020;
+        const x4 = 0.020 + flex * 0.012;
+
+        return new THREE.CatmullRomCurve3([
+          tipTarget,
+
+          new THREE.Vector3(
+            x4,
+            -0.790 + lengthTuck,
+            z4
+          ),
+
+          new THREE.Vector3(
+            x3,
+            -0.640 + lengthTuck * 0.75,
+            z3
+          ),
+
+          new THREE.Vector3(
+            x2,
+            -0.490 + lengthTuck * 0.45,
+            z2
+          ),
+
+          new THREE.Vector3(
+            x1,
+            -0.345 + lengthTuck * 0.15,
+            z1
+          ),
+
+          new THREE.Vector3(root.x, root.y, root.z)
+        ]);
       }
 
       // --------------------------------------------------
@@ -1662,31 +1739,33 @@
 
       function updateTipTransform(tipMesh, curve, isUpper) {
         const t = isUpper ? 1 : 0;
+        const sampleT = isUpper ? 0.985 : 0.015;
+
         const localPos = curve.getPointAt(t);
-        const tangent = curve.getTangentAt(t).normalize();
+        const tangent = (
+          isUpper
+            ? curve.getPointAt(t).clone().sub(curve.getPointAt(sampleT))
+            : curve.getPointAt(sampleT).clone().sub(curve.getPointAt(t))
+        ).normalize();
 
         tipMesh.position.copy(toWorld(localPos));
 
-        const dir = tangent.clone();
-        const target = localPos.clone().add(dir);
+        const worldPos = toWorld(localPos);
+        const worldTarget = toWorld(localPos.clone().add(tangent));
 
         const m = new THREE.Matrix4().lookAt(
-          localPos,
-          target,
+          worldPos,
+          worldTarget,
           new THREE.Vector3(0, 1, 0)
         );
 
-        const qWorld = new THREE.Quaternion()
+        const q = new THREE.Quaternion()
           .setFromRotationMatrix(m)
           .multiply(new THREE.Quaternion().setFromEuler(
             new THREE.Euler(0, Math.PI / 2, 0)
           ));
 
-        const baseQ = new THREE.Quaternion().setFromEuler(
-          new THREE.Euler(0, bowTiltY, 0)
-        );
-
-        tipMesh.quaternion.copy(qWorld.premultiply(baseQ));
+        tipMesh.quaternion.copy(q);
       }
 
       // --------------------------------------------------
