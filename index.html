@@ -1546,7 +1546,7 @@
       const sightCompensation = 4.9; // Y軸
          
       // 元の位置からY軸周りに補正回転を適用
-      const sightBarPos = new THREE.Vector3(0.030, 0.180, -0.100);
+      const sightBarPos = new THREE.Vector3(0.030, 0.190, -0.100);
       sightBarPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightBar.position.copy(sightBarPos);
       sightBar.rotation.set(0.5, sightCompensation, 0.5);
@@ -1554,10 +1554,10 @@
 
       // サイトアーム形状（サイトバーから出ている標準の棒）
       const sightArm = new THREE.Mesh(
-        new THREE.BoxGeometry(0.060, 0.009, 0.009),
+        new THREE.BoxGeometry(0.100, 0.009, 0.009),
         detailMaterial
       );
-      const sightArmPos = new THREE.Vector3(-0.050, 0.197, -0.160);
+      const sightArmPos = new THREE.Vector3(-0.03, 0.197, -0.160);
       sightArmPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), sightCompensation);
       sightArm.position.copy(sightArmPos);
       sightArm.rotation.set(0, sightCompensation, 0);
