@@ -951,51 +951,44 @@
         const locals = stringLocals ?? getStringLocals(draw, kick);
         const tipTarget = locals.topLocal.clone();
 
-        // 根元を少し左へ
         const root = new THREE.Vector3(0.000, 0.286, -0.002);
 
-        const stringDir = tipTarget.clone().sub(root).normalize();
-        const flex = draw * 0.080 + kick * 0.030;
+        const span = tipTarget.clone().sub(root);
+        const spanDir = span.clone().normalize();
 
-        // 根元から段階的にしなる
-        const p1 = new THREE.Vector3(0.006, 0.332, 0.004)
-          .addScaledVector(stringDir, flex * 0.06);
+        // 全体の傾き量
+        const flex = draw * 0.060 + kick * 0.022;
+        const tiltVec = spanDir.clone().multiplyScalar(flex * 0.75);
 
-        const p2 = new THREE.Vector3(0.012, 0.425, 0.014)
-          .addScaledVector(stringDir, flex * 0.16);
+        // シンプルな基本形
+        const p1 = new THREE.Vector3(0.006, 0.332, 0.004);
+        const p2 = new THREE.Vector3(0.012, 0.425, 0.014);
+        const p3 = new THREE.Vector3(0.020, 0.525, 0.028);
+        const p4 = new THREE.Vector3(0.026, 0.625, 0.047);
+        const p5 = new THREE.Vector3(0.028, 0.715, 0.070);
+        const p6 = new THREE.Vector3(0.020, 0.805, 0.098);
 
-        const p3 = new THREE.Vector3(0.020, 0.525, 0.028)
-          .addScaledVector(stringDir, flex * 0.30);
+        // 根元から先端へ段階的に同じ方向へ傾ける
+        p1.addScaledVector(tiltVec, 0.10);
+        p2.addScaledVector(tiltVec, 0.24);
+        p3.addScaledVector(tiltVec, 0.42);
+        p4.addScaledVector(tiltVec, 0.62);
+        p5.addScaledVector(tiltVec, 0.82);
+        p6.addScaledVector(tiltVec, 1.00);
 
-        const p4 = new THREE.Vector3(0.026, 0.625, 0.047)
-          .addScaledVector(stringDir, flex * 0.46);
+        // 先端だけ少し接続方向へ寄せる
+        p5.addScaledVector(spanDir, flex * 0.08);
+        p6.addScaledVector(spanDir, flex * 0.12);
 
-        const p5 = new THREE.Vector3(0.028, 0.715, 0.070)
-          .addScaledVector(stringDir, flex * 0.62);
-
-        const p6 = new THREE.Vector3(0.022, 0.790, 0.094)
-          .addScaledVector(stringDir, flex * 0.78);
-
-        // 返りの開始点
-        const p7 = new THREE.Vector3(0.010, 0.845, 0.125)
-          .addScaledVector(stringDir, flex * 0.86);
-
-        // 返りを少しだけ強調
-        p7.y += 0.010;
-        p7.z += 0.012;
-
-        // 最後は tip へ自然接続
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.18);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.18);
-
-        p7.x = THREE.MathUtils.lerp(p7.x, tipTarget.x, 0.30);
-        p7.y = THREE.MathUtils.lerp(p7.y, tipTarget.y, 0.18);
-        p7.z = THREE.MathUtils.lerp(p7.z, tipTarget.z, 0.30);
+        // tipへ急に折れないように弱くつなぐ
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.10);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.05);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.10);
 
         return new THREE.CatmullRomCurve3([
-          root, p1, p2, p3, p4, p5, p6, p7, tipTarget
+          root, p1, p2, p3, p4, p5, p6, tipTarget
         ]);
-      }
+      }  
 
       function createLowerLimbCurve(draw = 0, kick = 0, stringLocals = null) {
         const locals = stringLocals ?? getStringLocals(draw, kick);
@@ -1003,42 +996,35 @@
 
         const root = new THREE.Vector3(0.000, -0.286, -0.002);
 
-        const stringDir = tipTarget.clone().sub(root).normalize();
-        const flex = draw * 0.080 + kick * 0.030;
+        const span = tipTarget.clone().sub(root);
+        const spanDir = span.clone().normalize();
 
-        const p1 = new THREE.Vector3(0.006, -0.332, 0.004)
-          .addScaledVector(stringDir, flex * 0.06);
+        const flex = draw * 0.060 + kick * 0.022;
+        const tiltVec = spanDir.clone().multiplyScalar(flex * 0.75);
 
-        const p2 = new THREE.Vector3(0.012, -0.425, 0.014)
-          .addScaledVector(stringDir, flex * 0.16);
+        const p1 = new THREE.Vector3(0.006, -0.332, 0.004);
+        const p2 = new THREE.Vector3(0.012, -0.425, 0.014);
+        const p3 = new THREE.Vector3(0.020, -0.525, 0.028);
+        const p4 = new THREE.Vector3(0.026, -0.625, 0.047);
+        const p5 = new THREE.Vector3(0.028, -0.715, 0.070);
+        const p6 = new THREE.Vector3(0.020, -0.805, 0.098);
 
-        const p3 = new THREE.Vector3(0.020, -0.525, 0.028)
-          .addScaledVector(stringDir, flex * 0.30);
+        p1.addScaledVector(tiltVec, 0.10);
+        p2.addScaledVector(tiltVec, 0.24);
+        p3.addScaledVector(tiltVec, 0.42);
+        p4.addScaledVector(tiltVec, 0.62);
+        p5.addScaledVector(tiltVec, 0.82);
+        p6.addScaledVector(tiltVec, 1.00);
 
-        const p4 = new THREE.Vector3(0.026, -0.625, 0.047)
-          .addScaledVector(stringDir, flex * 0.46);
+        p5.addScaledVector(spanDir, flex * 0.08);
+        p6.addScaledVector(spanDir, flex * 0.12);
 
-        const p5 = new THREE.Vector3(0.028, -0.715, 0.070)
-          .addScaledVector(stringDir, flex * 0.62);
-
-        const p6 = new THREE.Vector3(0.022, -0.790, 0.094)
-          .addScaledVector(stringDir, flex * 0.78);
-
-        const p7 = new THREE.Vector3(0.010, -0.845, 0.125)
-          .addScaledVector(stringDir, flex * 0.86);
-
-        p7.y -= 0.010;
-        p7.z += 0.012;
-
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.18);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.18);
-
-        p7.x = THREE.MathUtils.lerp(p7.x, tipTarget.x, 0.30);
-        p7.y = THREE.MathUtils.lerp(p7.y, tipTarget.y, 0.18);
-        p7.z = THREE.MathUtils.lerp(p7.z, tipTarget.z, 0.30);
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.10);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.05);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.10);
 
         return new THREE.CatmullRomCurve3([
-          root, p1, p2, p3, p4, p5, p6, p7, tipTarget
+          root, p1, p2, p3, p4, p5, p6, tipTarget
         ]);
       }
 
