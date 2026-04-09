@@ -952,43 +952,35 @@
         const tipTarget = locals.topLocal.clone();
 
         const root = new THREE.Vector3(0.014, 0.286, -0.002);
-
-        // 弦方向（根元→先端）
         const stringDir = tipTarget.clone().sub(root).normalize();
+        const flex = draw * 0.085 + kick * 0.035;
 
-        // しなり量
-        const flex = draw * 0.11 + kick * 0.045;
+        // 点を増やして、曲がりを分散させる
+        const p1 = new THREE.Vector3(0.016, 0.340, 0.008)
+          .addScaledVector(stringDir, flex * 0.10);
 
-        // 元のリカーブ感を少し残す基礎点
-        const p1Base = new THREE.Vector3(0.018, 0.350, 0.010);
-        const p2Base = new THREE.Vector3(0.028, 0.505, 0.040);
-        const p3Base = new THREE.Vector3(0.034, 0.660, 0.082);
-        const p4Base = new THREE.Vector3(0.020, 0.805, 0.120);
+        const p2 = new THREE.Vector3(0.022, 0.445, 0.020)
+          .addScaledVector(stringDir, flex * 0.22);
 
-        // 先端ほど強く弦方向へ寄せる
-        const p1 = p1Base.clone().addScaledVector(stringDir, flex * 0.18);
-        const p2 = p2Base.clone().addScaledVector(stringDir, flex * 0.42);
-        const p3 = p3Base.clone().addScaledVector(stringDir, flex * 0.72);
-        const p4 = p4Base.clone().addScaledVector(stringDir, flex * 1.05);
+        const p3 = new THREE.Vector3(0.028, 0.555, 0.038)
+          .addScaledVector(stringDir, flex * 0.38);
 
-        // 先端付近は tipTarget に向けて少し横方向も揃える
-        p3.lerp(
-          new THREE.Vector3(
-            THREE.MathUtils.lerp(p3.x, tipTarget.x, 0.20),
-            p3.y,
-            THREE.MathUtils.lerp(p3.z, tipTarget.z, 0.20)
-          ),
-          0.6
-        );
+        const p4 = new THREE.Vector3(0.030, 0.660, 0.060)
+          .addScaledVector(stringDir, flex * 0.56);
 
-        p4.lerp(
-          new THREE.Vector3(
-            THREE.MathUtils.lerp(p4.x, tipTarget.x, 0.55),
-            THREE.MathUtils.lerp(p4.y, tipTarget.y, 0.15),
-            THREE.MathUtils.lerp(p4.z, tipTarget.z, 0.55)
-          ),
-          0.9
-        );
+        const p5 = new THREE.Vector3(0.027, 0.750, 0.085)
+          .addScaledVector(stringDir, flex * 0.74);
+
+        const p6 = new THREE.Vector3(0.018, 0.820, 0.108)
+          .addScaledVector(stringDir, flex * 0.90);
+
+        // tipへ急に折れないよう、最後だけ軽く寄せる
+        p5.x = THREE.MathUtils.lerp(p5.x, tipTarget.x, 0.12);
+        p5.z = THREE.MathUtils.lerp(p5.z, tipTarget.z, 0.12);
+
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.22);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.08);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.22);
 
         return new THREE.CatmullRomCurve3([
           root,
@@ -996,6 +988,8 @@
           p2,
           p3,
           p4,
+          p5,
+          p6,
           tipTarget
         ]);
       }
@@ -1005,37 +999,33 @@
         const tipTarget = locals.botLocal.clone();
 
         const root = new THREE.Vector3(0.014, -0.286, -0.002);
-
         const stringDir = tipTarget.clone().sub(root).normalize();
-        const flex = draw * 0.11 + kick * 0.045;
+        const flex = draw * 0.085 + kick * 0.035;
 
-        const p1Base = new THREE.Vector3(0.018, -0.350, 0.010);
-        const p2Base = new THREE.Vector3(0.028, -0.505, 0.040);
-        const p3Base = new THREE.Vector3(0.034, -0.660, 0.082);
-        const p4Base = new THREE.Vector3(0.020, -0.805, 0.120);
+        const p1 = new THREE.Vector3(0.016, -0.340, 0.008)
+          .addScaledVector(stringDir, flex * 0.10);
 
-        const p1 = p1Base.clone().addScaledVector(stringDir, flex * 0.18);
-        const p2 = p2Base.clone().addScaledVector(stringDir, flex * 0.42);
-        const p3 = p3Base.clone().addScaledVector(stringDir, flex * 0.72);
-        const p4 = p4Base.clone().addScaledVector(stringDir, flex * 1.05);
+        const p2 = new THREE.Vector3(0.022, -0.445, 0.020)
+          .addScaledVector(stringDir, flex * 0.22);
 
-        p3.lerp(
-          new THREE.Vector3(
-            THREE.MathUtils.lerp(p3.x, tipTarget.x, 0.20),
-            p3.y,
-            THREE.MathUtils.lerp(p3.z, tipTarget.z, 0.20)
-          ),
-          0.6
-        );
+        const p3 = new THREE.Vector3(0.028, -0.555, 0.038)
+          .addScaledVector(stringDir, flex * 0.38);
 
-        p4.lerp(
-          new THREE.Vector3(
-            THREE.MathUtils.lerp(p4.x, tipTarget.x, 0.55),
-            THREE.MathUtils.lerp(p4.y, tipTarget.y, 0.15),
-            THREE.MathUtils.lerp(p4.z, tipTarget.z, 0.55)
-          ),
-          0.9
-        );
+        const p4 = new THREE.Vector3(0.030, -0.660, 0.060)
+          .addScaledVector(stringDir, flex * 0.56);
+
+        const p5 = new THREE.Vector3(0.027, -0.750, 0.085)
+          .addScaledVector(stringDir, flex * 0.74);
+
+        const p6 = new THREE.Vector3(0.018, -0.820, 0.108)
+          .addScaledVector(stringDir, flex * 0.90);
+
+        p5.x = THREE.MathUtils.lerp(p5.x, tipTarget.x, 0.12);
+        p5.z = THREE.MathUtils.lerp(p5.z, tipTarget.z, 0.12);
+
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.22);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.08);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.22);
 
         return new THREE.CatmullRomCurve3([
           root,
@@ -1043,6 +1033,8 @@
           p2,
           p3,
           p4,
+          p5,
+          p6,
           tipTarget
         ]);
       }
@@ -1051,7 +1043,7 @@
       // リム断面: 根元太く・平べったく、先端へ細く
       // --------------------------------------------------
       function createTaperedLimbGeometry(curve) {
-        const tubularSegments = 40;
+        const tubularSegments = 72;
         const radialSegments = 18;
 
         const frames = curve.computeFrenetFrames(tubularSegments, false);
@@ -1723,6 +1715,9 @@
         groove.position.set(0.012, 0, 0);
         g.add(groove);
 
+        // tipグループ原点から見た「弦がかかる位置」
+        g.userData.grooveLocal = groove.position.clone();
+
         return g;
       }
 
@@ -1742,8 +1737,6 @@
             : curve.getPointAt(sampleT).clone().sub(curve.getPointAt(t))
         ).normalize();
 
-        tipMesh.position.copy(toWorld(localPos));
-
         const worldPos = toWorld(localPos);
         const worldTarget = toWorld(localPos.clone().add(tangent));
 
@@ -1760,6 +1753,13 @@
           ));
 
         tipMesh.quaternion.copy(q);
+
+        // groove のローカル位置を回転後のワールド方向へ変換
+        const grooveLocal = (tipMesh.userData.grooveLocal ?? new THREE.Vector3(0, 0, 0)).clone();
+        const grooveWorldOffset = grooveLocal.applyQuaternion(q);
+
+        // groove が limb先端(localPos) に一致するように、tip本体を逆オフセット
+        tipMesh.position.copy(worldPos.clone().sub(grooveWorldOffset));
       }
 
       // --------------------------------------------------
@@ -1773,7 +1773,7 @@
         const tipSide = flex * 0.00;
 
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
-        const stringLeftOffset = 0.12;
+        const stringLeftOffset = 0.08;
 
         // 弦を手前へ移動させるオフセット（値を大きくすると手前へ）
         const stringForwardOffset = 0.10;
@@ -1782,7 +1782,7 @@
         const stringUpOffset = 0.05;
 
         // 弦の上下長を短くする量（値を大きくすると短くなる）
-        const stringShorten = 0.13;
+        const stringShorten = 0.10;
 
         // まず「今まで通り」の上下端を作る
         const baseTopLocal = new THREE.Vector3(
