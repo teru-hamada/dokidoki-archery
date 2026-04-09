@@ -951,46 +951,49 @@
         const locals = stringLocals ?? getStringLocals(draw, kick);
         const tipTarget = locals.topLocal.clone();
 
-        const root = new THREE.Vector3(0.014, 0.286, -0.002);
+        // 根元を少し左へ
+        const root = new THREE.Vector3(0.000, 0.286, -0.002);
+
         const stringDir = tipTarget.clone().sub(root).normalize();
-        const flex = draw * 0.085 + kick * 0.035;
+        const flex = draw * 0.080 + kick * 0.030;
 
-        // 点を増やして、曲がりを分散させる
-        const p1 = new THREE.Vector3(0.016, 0.340, 0.008)
-          .addScaledVector(stringDir, flex * 0.10);
+        // 根元から段階的にしなる
+        const p1 = new THREE.Vector3(0.006, 0.332, 0.004)
+          .addScaledVector(stringDir, flex * 0.06);
 
-        const p2 = new THREE.Vector3(0.022, 0.445, 0.020)
-          .addScaledVector(stringDir, flex * 0.22);
+        const p2 = new THREE.Vector3(0.012, 0.425, 0.014)
+          .addScaledVector(stringDir, flex * 0.16);
 
-        const p3 = new THREE.Vector3(0.028, 0.555, 0.038)
-          .addScaledVector(stringDir, flex * 0.38);
+        const p3 = new THREE.Vector3(0.020, 0.525, 0.028)
+          .addScaledVector(stringDir, flex * 0.30);
 
-        const p4 = new THREE.Vector3(0.030, 0.660, 0.060)
-          .addScaledVector(stringDir, flex * 0.56);
+        const p4 = new THREE.Vector3(0.026, 0.625, 0.047)
+          .addScaledVector(stringDir, flex * 0.46);
 
-        const p5 = new THREE.Vector3(0.027, 0.750, 0.085)
-          .addScaledVector(stringDir, flex * 0.74);
+        const p5 = new THREE.Vector3(0.028, 0.715, 0.070)
+          .addScaledVector(stringDir, flex * 0.62);
 
-        const p6 = new THREE.Vector3(0.018, 0.820, 0.108)
-          .addScaledVector(stringDir, flex * 0.90);
+        const p6 = new THREE.Vector3(0.022, 0.790, 0.094)
+          .addScaledVector(stringDir, flex * 0.78);
 
-        // tipへ急に折れないよう、最後だけ軽く寄せる
-        p5.x = THREE.MathUtils.lerp(p5.x, tipTarget.x, 0.12);
-        p5.z = THREE.MathUtils.lerp(p5.z, tipTarget.z, 0.12);
+        // 返りの開始点
+        const p7 = new THREE.Vector3(0.010, 0.845, 0.125)
+          .addScaledVector(stringDir, flex * 0.86);
 
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.22);
-        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.08);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.22);
+        // 返りを少しだけ強調
+        p7.y += 0.010;
+        p7.z += 0.012;
+
+        // 最後は tip へ自然接続
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.18);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.18);
+
+        p7.x = THREE.MathUtils.lerp(p7.x, tipTarget.x, 0.30);
+        p7.y = THREE.MathUtils.lerp(p7.y, tipTarget.y, 0.18);
+        p7.z = THREE.MathUtils.lerp(p7.z, tipTarget.z, 0.30);
 
         return new THREE.CatmullRomCurve3([
-          root,
-          p1,
-          p2,
-          p3,
-          p4,
-          p5,
-          p6,
-          tipTarget
+          root, p1, p2, p3, p4, p5, p6, p7, tipTarget
         ]);
       }
 
@@ -998,44 +1001,44 @@
         const locals = stringLocals ?? getStringLocals(draw, kick);
         const tipTarget = locals.botLocal.clone();
 
-        const root = new THREE.Vector3(0.014, -0.286, -0.002);
+        const root = new THREE.Vector3(0.000, -0.286, -0.002);
+
         const stringDir = tipTarget.clone().sub(root).normalize();
-        const flex = draw * 0.085 + kick * 0.035;
+        const flex = draw * 0.080 + kick * 0.030;
 
-        const p1 = new THREE.Vector3(0.016, -0.340, 0.008)
-          .addScaledVector(stringDir, flex * 0.10);
+        const p1 = new THREE.Vector3(0.006, -0.332, 0.004)
+          .addScaledVector(stringDir, flex * 0.06);
 
-        const p2 = new THREE.Vector3(0.022, -0.445, 0.020)
-          .addScaledVector(stringDir, flex * 0.22);
+        const p2 = new THREE.Vector3(0.012, -0.425, 0.014)
+          .addScaledVector(stringDir, flex * 0.16);
 
-        const p3 = new THREE.Vector3(0.028, -0.555, 0.038)
-          .addScaledVector(stringDir, flex * 0.38);
+        const p3 = new THREE.Vector3(0.020, -0.525, 0.028)
+          .addScaledVector(stringDir, flex * 0.30);
 
-        const p4 = new THREE.Vector3(0.030, -0.660, 0.060)
-          .addScaledVector(stringDir, flex * 0.56);
+        const p4 = new THREE.Vector3(0.026, -0.625, 0.047)
+          .addScaledVector(stringDir, flex * 0.46);
 
-        const p5 = new THREE.Vector3(0.027, -0.750, 0.085)
-          .addScaledVector(stringDir, flex * 0.74);
+        const p5 = new THREE.Vector3(0.028, -0.715, 0.070)
+          .addScaledVector(stringDir, flex * 0.62);
 
-        const p6 = new THREE.Vector3(0.018, -0.820, 0.108)
-          .addScaledVector(stringDir, flex * 0.90);
+        const p6 = new THREE.Vector3(0.022, -0.790, 0.094)
+          .addScaledVector(stringDir, flex * 0.78);
 
-        p5.x = THREE.MathUtils.lerp(p5.x, tipTarget.x, 0.12);
-        p5.z = THREE.MathUtils.lerp(p5.z, tipTarget.z, 0.12);
+        const p7 = new THREE.Vector3(0.010, -0.845, 0.125)
+          .addScaledVector(stringDir, flex * 0.86);
 
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.22);
-        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.08);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.22);
+        p7.y -= 0.010;
+        p7.z += 0.012;
+
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.18);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.18);
+
+        p7.x = THREE.MathUtils.lerp(p7.x, tipTarget.x, 0.30);
+        p7.y = THREE.MathUtils.lerp(p7.y, tipTarget.y, 0.18);
+        p7.z = THREE.MathUtils.lerp(p7.z, tipTarget.z, 0.30);
 
         return new THREE.CatmullRomCurve3([
-          root,
-          p1,
-          p2,
-          p3,
-          p4,
-          p5,
-          p6,
-          tipTarget
+          root, p1, p2, p3, p4, p5, p6, p7, tipTarget
         ]);
       }
 
@@ -1767,10 +1770,17 @@
       // --------------------------------------------------
       function getStringLocals(draw = 0, kick = 0) {
         const flex = draw * 0.045 + kick * 0.025;
+
         // 矢を引いた時の弦の先端の移動量（前方向）
         const tipForward = flex * 1.00;
+
         // 矢を引いた時の弦の横方向の移動量（左右）
         const tipSide = flex * 0.00;
+
+        // 追加: 矢を引いた時の弦端の上下移動量
+        // 上側は下へ、下側は上へ
+        const topTipDown = draw * 0.050;
+        const bottomTipUp = draw * 0.030;
 
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
         const stringLeftOffset = 0.08;
@@ -1784,7 +1794,6 @@
         // 弦の上下長を短くする量（値を大きくすると短くなる）
         const stringShorten = 0.10;
 
-        // まず「今まで通り」の上下端を作る
         const baseTopLocal = new THREE.Vector3(
           0.002 + tipSide * 0.08 - stringLeftOffset,
           bowHalfLen + stringUpOffset,
@@ -1797,27 +1806,23 @@
           0.146 + tipForward * 0.96 + stringForwardOffset
         );
 
-        // 矢の初期位置の基準になる中心は、元のまま固定
         const straightMid = baseTopLocal.clone().lerp(baseBotLocal, 0.5);
 
-        // 上下端だけ中央へ寄せる
         const topLocal = baseTopLocal.clone();
         const botLocal = baseBotLocal.clone();
 
+        // 既存の上下短縮
         topLocal.y -= stringShorten;
         botLocal.y += stringShorten;
 
-        // 装填矢を引いた時の矢の向き
+        // 追加: draw時の上下変位
+        topLocal.y -= topTipDown;
+        botLocal.y += bottomTipUp;
+
         const loadedArrowDrawDirLocal = new THREE.Vector3(0, 0, -1)
-          .applyEuler(new THREE.Euler(
-            0,
-            -0.30,
-            0,
-            "XYZ"
-          ))
+          .applyEuler(new THREE.Euler(0, -0.30, 0, "XYZ"))
           .normalize();
 
-        // midLocal は従来の中心基準からだけ作る
         const midLocal = straightMid.clone().sub(
           loadedArrowDrawDirLocal.clone().multiplyScalar(draw * maxDraw)
         );
