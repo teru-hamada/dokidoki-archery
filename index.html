@@ -880,7 +880,8 @@
       const baseZ = -1.02;
 
       const bowHalfLen = 0.90;
-      const maxDraw = 0.46;
+      // 装填中の矢が最大でどれだけ後退するか
+      const maxDraw = 0.38;
       const bowTiltY = 0.17;
       // ハンドルを向きはここで回転させる(0の時真横、-5でゲームの向きに)
       const riserYawOffset = -5.00;
@@ -946,110 +947,103 @@
       // リム中心線
       // 返りのある現代リカーブ風
       // --------------------------------------------------
-      function createUpperLimbCurve(draw = 0, kick = 0) {
-        // 今の弦そのものに合わせる（弦は変更しない）
-        const stringLocals = getStringLocals(0, 0);
-        const tipTarget = stringLocals.topLocal.clone();
+      function createUpperLimbCurve(draw = 0, kick = 0, stringLocals = null) {
+        const locals = stringLocals ?? getStringLocals(draw, kick);
+        const tipTarget = locals.topLocal.clone();
 
-        // 接続部は今の limb pocket に近いまま
         const root = new THREE.Vector3(0.014, 0.286, -0.002);
 
-        // 初期形状を少しだけ上下に短く見せるため、
-        // 中間点を少し内側へ詰める
-        const lengthTuck = 0.045;
+        // 弦方向（根元→先端）
+        const stringDir = tipTarget.clone().sub(root).normalize();
 
-        // しなり量は少し抑え、根元→中間→先端へなめらかに配分
-        const flex = draw * 0.082 + kick * 0.030;
+        // しなり量
+        const flex = draw * 0.11 + kick * 0.045;
 
-        const z1 = 0.010 + flex * 0.16;
-        const z2 = 0.040 + flex * 0.42;
-        const z3 = 0.082 + flex * 0.72;
-        const z4 = 0.120 + flex * 0.96;
+        // 元のリカーブ感を少し残す基礎点
+        const p1Base = new THREE.Vector3(0.018, 0.350, 0.010);
+        const p2Base = new THREE.Vector3(0.028, 0.505, 0.040);
+        const p3Base = new THREE.Vector3(0.034, 0.660, 0.082);
+        const p4Base = new THREE.Vector3(0.020, 0.805, 0.120);
 
-        const x1 = 0.018 + flex * 0.010;
-        const x2 = 0.028 + flex * 0.016;
-        const x3 = 0.034 + flex * 0.020;
-        const x4 = 0.020 + flex * 0.012;
+        // 先端ほど強く弦方向へ寄せる
+        const p1 = p1Base.clone().addScaledVector(stringDir, flex * 0.18);
+        const p2 = p2Base.clone().addScaledVector(stringDir, flex * 0.42);
+        const p3 = p3Base.clone().addScaledVector(stringDir, flex * 0.72);
+        const p4 = p4Base.clone().addScaledVector(stringDir, flex * 1.05);
+
+        // 先端付近は tipTarget に向けて少し横方向も揃える
+        p3.lerp(
+          new THREE.Vector3(
+            THREE.MathUtils.lerp(p3.x, tipTarget.x, 0.20),
+            p3.y,
+            THREE.MathUtils.lerp(p3.z, tipTarget.z, 0.20)
+          ),
+          0.6
+        );
+
+        p4.lerp(
+          new THREE.Vector3(
+            THREE.MathUtils.lerp(p4.x, tipTarget.x, 0.55),
+            THREE.MathUtils.lerp(p4.y, tipTarget.y, 0.15),
+            THREE.MathUtils.lerp(p4.z, tipTarget.z, 0.55)
+          ),
+          0.9
+        );
 
         return new THREE.CatmullRomCurve3([
-          new THREE.Vector3(root.x, root.y, root.z),
-
-          new THREE.Vector3(
-            x1,
-            0.345 - lengthTuck * 0.15,
-            z1
-          ),
-
-          new THREE.Vector3(
-            x2,
-            0.490 - lengthTuck * 0.45,
-            z2
-          ),
-
-          new THREE.Vector3(
-            x3,
-            0.640 - lengthTuck * 0.75,
-            z3
-          ),
-
-          new THREE.Vector3(
-            x4,
-            0.790 - lengthTuck,
-            z4
-          ),
-
+          root,
+          p1,
+          p2,
+          p3,
+          p4,
           tipTarget
         ]);
       }
 
-      function createLowerLimbCurve(draw = 0, kick = 0) {
-        // 今の弦そのものに合わせる（弦は変更しない）
-        const stringLocals = getStringLocals(0, 0);
-        const tipTarget = stringLocals.botLocal.clone();
+      function createLowerLimbCurve(draw = 0, kick = 0, stringLocals = null) {
+        const locals = stringLocals ?? getStringLocals(draw, kick);
+        const tipTarget = locals.botLocal.clone();
 
         const root = new THREE.Vector3(0.014, -0.286, -0.002);
 
-        const lengthTuck = 0.045;
-        const flex = draw * 0.082 + kick * 0.030;
+        const stringDir = tipTarget.clone().sub(root).normalize();
+        const flex = draw * 0.11 + kick * 0.045;
 
-        const z1 = 0.010 + flex * 0.16;
-        const z2 = 0.040 + flex * 0.42;
-        const z3 = 0.082 + flex * 0.72;
-        const z4 = 0.120 + flex * 0.96;
+        const p1Base = new THREE.Vector3(0.018, -0.350, 0.010);
+        const p2Base = new THREE.Vector3(0.028, -0.505, 0.040);
+        const p3Base = new THREE.Vector3(0.034, -0.660, 0.082);
+        const p4Base = new THREE.Vector3(0.020, -0.805, 0.120);
 
-        const x1 = 0.018 + flex * 0.010;
-        const x2 = 0.028 + flex * 0.016;
-        const x3 = 0.034 + flex * 0.020;
-        const x4 = 0.020 + flex * 0.012;
+        const p1 = p1Base.clone().addScaledVector(stringDir, flex * 0.18);
+        const p2 = p2Base.clone().addScaledVector(stringDir, flex * 0.42);
+        const p3 = p3Base.clone().addScaledVector(stringDir, flex * 0.72);
+        const p4 = p4Base.clone().addScaledVector(stringDir, flex * 1.05);
+
+        p3.lerp(
+          new THREE.Vector3(
+            THREE.MathUtils.lerp(p3.x, tipTarget.x, 0.20),
+            p3.y,
+            THREE.MathUtils.lerp(p3.z, tipTarget.z, 0.20)
+          ),
+          0.6
+        );
+
+        p4.lerp(
+          new THREE.Vector3(
+            THREE.MathUtils.lerp(p4.x, tipTarget.x, 0.55),
+            THREE.MathUtils.lerp(p4.y, tipTarget.y, 0.15),
+            THREE.MathUtils.lerp(p4.z, tipTarget.z, 0.55)
+          ),
+          0.9
+        );
 
         return new THREE.CatmullRomCurve3([
-          tipTarget,
-
-          new THREE.Vector3(
-            x4,
-            -0.790 + lengthTuck,
-            z4
-          ),
-
-          new THREE.Vector3(
-            x3,
-            -0.640 + lengthTuck * 0.75,
-            z3
-          ),
-
-          new THREE.Vector3(
-            x2,
-            -0.490 + lengthTuck * 0.45,
-            z2
-          ),
-
-          new THREE.Vector3(
-            x1,
-            -0.345 + lengthTuck * 0.15,
-            z1
-          ),
-
-          new THREE.Vector3(root.x, root.y, root.z)
+          root,
+          p1,
+          p2,
+          p3,
+          p4,
+          tipTarget
         ]);
       }
 
@@ -1772,9 +1766,11 @@
       // 弦のローカル基準点
       // --------------------------------------------------
       function getStringLocals(draw = 0, kick = 0) {
-        const flex = draw * 0.070 + kick * 0.040;
-        const tipForward = flex * 2.05;
-        const tipSide = flex * 1.10;
+        const flex = draw * 0.045 + kick * 0.025;
+        // 矢を引いた時の弦の先端の移動量（前方向）
+        const tipForward = flex * 1.00;
+        // 矢を引いた時の弦の横方向の移動量（左右）
+        const tipSide = flex * 0.00;
 
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
         const stringLeftOffset = 0.12;
@@ -1882,8 +1878,10 @@
       // 弓形状再構築
       // --------------------------------------------------
       function rebuildBow(draw = 0, kick = 0) {
-        const upperCurve = createUpperLimbCurve(draw, kick);
-        const lowerCurve = createLowerLimbCurve(draw, kick);
+        const stringLocals = getStringLocals(draw, kick);
+
+        const upperCurve = createUpperLimbCurve(draw, kick, stringLocals);
+        const lowerCurve = createLowerLimbCurve(draw, kick, stringLocals);
 
         const upperGeo = createTaperedLimbGeometry(upperCurve);
         const lowerGeo = createTaperedLimbGeometry(lowerCurve);
@@ -1896,13 +1894,15 @@
 
         updateTipTransform(upperTip, upperCurve, true);
         updateTipTransform(lowerTip, lowerCurve, false);
+
+        return stringLocals;
       }
 
       // --------------------------------------------------
       // 弦更新
       // --------------------------------------------------
-      function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0) {
-        const locals = getStringLocals(draw, kick);
+      function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0, stringLocals = null) {
+        const locals = stringLocals ?? getStringLocals(draw, kick);
 
         const top = toWorld(locals.topLocal);
         const mid = toWorld(
@@ -1934,8 +1934,8 @@
         bowGroup.userData.charge = c;
         bowGroup.userData.drawAmount = c;
 
-        rebuildBow(c, 0);
-        updateString(c, 0, 0, 0);
+        const stringLocals = rebuildBow(c, 0);
+        updateString(c, 0, 0, 0, stringLocals);
       };
 
       // --------------------------------------------------
@@ -1976,18 +1976,21 @@
 
         const kick = Math.sin(elapsed * 26.0) * bowGroup.userData.bowKick * 0.055;
 
-        rebuildBow(bowGroup.userData.drawAmount, kick);
+        const stringLocals = rebuildBow(bowGroup.userData.drawAmount, kick);
         updateString(
           bowGroup.userData.drawAmount,
           kick,
           elapsed * 64.0,
-          bowGroup.userData.stringVibration
+          bowGroup.userData.stringVibration,
+          stringLocals
         );
       };
 
       // 初期状態
-      rebuildBow(0, 0);
-      updateString(0, 0, 0, 0);
+      {
+        const stringLocals = rebuildBow(0, 0);
+        updateString(0, 0, 0, 0, stringLocals);
+      }
 
       return bowGroup;
     }
