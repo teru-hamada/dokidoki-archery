@@ -949,18 +949,25 @@
       // --------------------------------------------------
       function createUpperLimbCurve(draw = 0, kick = 0, stringLocals = null) {
         const locals = stringLocals ?? getStringLocals(draw, kick);
+
+        // 先端は弦端に接続したまま
         const tipTarget = locals.topLocal.clone();
 
+        // 傾き方向は「矢と弦の接続点」
+        const bendTarget = locals.midLocal.clone();
+
+        // 根元は固定
         const root = new THREE.Vector3(0.000, 0.286, -0.002);
 
-        const span = tipTarget.clone().sub(root);
-        const spanDir = span.clone().normalize();
+        // 傾き方向は root → midLocal
+        const bendDir = bendTarget.clone().sub(root).normalize();
 
-        // 全体の傾き量
-        const flex = draw * 0.060 + kick * 0.022;
-        const tiltVec = spanDir.clone().multiplyScalar(flex * 0.75);
+        // tip接続用の方向は別で持つ
+        const tipDir = tipTarget.clone().sub(root).normalize();
 
-        // シンプルな基本形
+        const flex = draw * 0.062 + kick * 0.022;
+        const tiltVec = bendDir.clone().multiplyScalar(flex * 0.95);
+
         const p1 = new THREE.Vector3(0.006, 0.332, 0.004);
         const p2 = new THREE.Vector3(0.012, 0.425, 0.014);
         const p3 = new THREE.Vector3(0.020, 0.525, 0.028);
@@ -968,7 +975,7 @@
         const p5 = new THREE.Vector3(0.028, 0.715, 0.070);
         const p6 = new THREE.Vector3(0.020, 0.805, 0.098);
 
-        // 根元から先端へ段階的に同じ方向へ傾ける
+        // 根元から先端へだんだん大きく、midLocal方向へ傾ける
         p1.addScaledVector(tiltVec, 0.10);
         p2.addScaledVector(tiltVec, 0.24);
         p3.addScaledVector(tiltVec, 0.42);
@@ -976,31 +983,33 @@
         p5.addScaledVector(tiltVec, 0.82);
         p6.addScaledVector(tiltVec, 1.00);
 
-        // 先端だけ少し接続方向へ寄せる
-        p5.addScaledVector(spanDir, flex * 0.08);
-        p6.addScaledVector(spanDir, flex * 0.12);
+        // 先端側だけは弦端接続に向けて少し戻す
+        p5.addScaledVector(tipDir, flex * 0.03);
+        p6.addScaledVector(tipDir, flex * 0.05);
 
-        // tipへ急に折れないように弱くつなぐ
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.10);
-        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.05);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.10);
+        // tip直前の折れを防ぐ
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.08);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.04);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.08);
 
         return new THREE.CatmullRomCurve3([
           root, p1, p2, p3, p4, p5, p6, tipTarget
         ]);
-      }  
+      }
 
       function createLowerLimbCurve(draw = 0, kick = 0, stringLocals = null) {
         const locals = stringLocals ?? getStringLocals(draw, kick);
+
         const tipTarget = locals.botLocal.clone();
+        const bendTarget = locals.midLocal.clone();
 
         const root = new THREE.Vector3(0.000, -0.286, -0.002);
 
-        const span = tipTarget.clone().sub(root);
-        const spanDir = span.clone().normalize();
+        const bendDir = bendTarget.clone().sub(root).normalize();
+        const tipDir = tipTarget.clone().sub(root).normalize();
 
-        const flex = draw * 0.060 + kick * 0.022;
-        const tiltVec = spanDir.clone().multiplyScalar(flex * 0.75);
+        const flex = draw * 0.062 + kick * 0.022;
+        const tiltVec = bendDir.clone().multiplyScalar(flex * 0.95);
 
         const p1 = new THREE.Vector3(0.006, -0.332, 0.004);
         const p2 = new THREE.Vector3(0.012, -0.425, 0.014);
@@ -1016,12 +1025,12 @@
         p5.addScaledVector(tiltVec, 0.82);
         p6.addScaledVector(tiltVec, 1.00);
 
-        p5.addScaledVector(spanDir, flex * 0.08);
-        p6.addScaledVector(spanDir, flex * 0.12);
+        p5.addScaledVector(tipDir, flex * 0.03);
+        p6.addScaledVector(tipDir, flex * 0.05);
 
-        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.10);
-        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.05);
-        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.10);
+        p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.08);
+        p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.04);
+        p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.08);
 
         return new THREE.CatmullRomCurve3([
           root, p1, p2, p3, p4, p5, p6, tipTarget
