@@ -29,13 +29,32 @@
       box-shadow: 0 8px 24px rgba(0,0,0,.18);
     }
 
+    .hudLabel {
+      display: inline-block;
+      width: 80px;
+      text-align: left;
+    }
+
+    .powerRow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .powerLabel {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     #chargeWrap {
-      margin-top: 8px;
-      height: 10px;
+      flex: 1;
+      height: 24px;
       border-radius: 999px;
-      overflow: hidden;
+      overflow: visible;
       background: rgba(255,255,255,.16);
       border: 1px solid rgba(255,255,255,.2);
+      position: relative;
     }
 
     #chargeBar {
@@ -43,6 +62,19 @@
       height: 100%;
       background: rgba(255,255,255,.92);
       transition: width 0.03s linear;
+      border-radius: 999px;
+    }
+
+    #chargeText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      color: #fff;
     }
 
     #crosshair {
@@ -271,7 +303,6 @@
 <body>
   <div id="hud">
     <div id="hudText"></div>
-    <div id="chargeWrap"><div id="chargeBar"></div></div>
   </div>
 
   <div id="crosshair"></div>
@@ -324,7 +355,6 @@
     const gameOverScreen = document.getElementById("gameOverScreen");
     const errorBox = document.getElementById("errorBox");
     const hudText = document.getElementById("hudText");
-    const chargeBar = document.getElementById("chargeBar");
     const celebrationLayer = document.getElementById("celebrationLayer");
     const WIND_DIRECTIONS = [
       {
@@ -332,8 +362,7 @@
         symbol: "←",
         vector: new THREE.Vector3(-1, 0, 0)
       },
-      {
-        label: "右",
+      {        label: "右",
         symbol: "→",
         vector: new THREE.Vector3(1, 0, 0)
       }
@@ -868,7 +897,6 @@
       game.camera.updateProjectionMatrix();
     }
 
-    // ★★弓のモデルを生成する関数
     function createBowModel() {
       const bowGroup = new THREE.Group();
 
@@ -1996,7 +2024,6 @@
 
       return bowGroup;
     }
-    // ★★弓のモデルを生成する関数
   
     // ============================================================
     // Arrow: 矢モデル生成
@@ -2707,25 +2734,20 @@
       const percent = Math.round(ratio * 100);
       const windDirection = getCurrentWindDirection();
       const windText = game.hasStarted
-        ? `${windDirection.label} ${windDirection.symbol} / ${game.wind.speed.toFixed(1)} m/s`
+        ? `${windDirection.symbol}  ${game.wind.speed.toFixed(1)} m/s`
         : "-";
-      const cameraMode = game.followArrow
-        ? game.isHoldingOnImpact
-          ? "WAIT"
-          : "FOLLOW"
-        : game.isReturningCamera
-          ? "RETURN"
-          : "PLAYER";
-
-      chargeBar.style.width = (game.isCharging ? percent : 0) + "%";
 
       hudText.innerHTML = `
-        <div>Loaded: <b>${game.hasLoadedArrow ? "YES" : "NO"}</b></div>
-        <div>Charge: <b>${game.isCharging ? percent + "%" : "-"}</b></div>
-        <div>Camera: <b>${cameraMode}</b></div>
-        <div>Shots: <b>${game.shots}</b> / Hits: <b>${game.hits}</b> / Score: <b>${game.score}</b></div>
-        <div>Time Limit: <b>${formatTimeRemaining(game.timeRemaining)}</b></div>
-        <div>Wind: <b>${windText}</b></div>
+        <div><span class="hudLabel">スコア</span>: <b>${game.score}点（${game.shots}ショット中${game.hits}本命中）</b></div>
+        <div><span class="hudLabel">残り時間</span>: <b>${formatTimeRemaining(game.timeRemaining)}</b></div>
+        <div><span class="hudLabel">風速</span>: <b>${windText}</b></div>
+        <div class="powerRow">
+          <div class="powerLabel"><span class="hudLabel">パワー</span>:</div>
+          <div id="chargeWrap">
+            <div id="chargeBar" style="width: ${game.isCharging ? percent : 0}%;"></div>
+            <div id="chargeText">${game.isCharging ? percent + "%" : "0%"}</div>
+          </div>
+        </div>
       `;
     }
 
