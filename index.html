@@ -2504,7 +2504,15 @@
 
     function finishCameraReturn() {
       game.camera.position.copy(game.savedCameraPosition);
-      game.camera.quaternion.copy(game.savedCameraQuaternion);
+
+      // 視点を正面（デフォルト）にリセット
+      game.camera.rotation.set(0, 0, 0, "YXZ");
+      game.camera.quaternion.setFromEuler(game.camera.rotation);
+
+      // タッチ用の yaw/pitch もリセット
+      game.touchLook.yaw = 0;
+      game.touchLook.pitch = 0;
+
       game.followArrow = null;
       game.isHoldingOnImpact = false;
       game.isReturningCamera = false;
