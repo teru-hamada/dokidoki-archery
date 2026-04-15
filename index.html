@@ -423,6 +423,14 @@
       targetFace: null,
       targetRadius: 0.8,
 
+      // 風のエフェクト
+      windFX: {
+        streaks: [],
+        textures: {
+          streak: null
+        }
+      },
+
       // 手元の弓まわり
       bowRoot: null,
       bowString: null,
@@ -504,6 +512,7 @@
     function init() {
       createCore();
       createEnvironment();
+      createWindFX();
       createTargetSystem();
       createBowSystem();
       setupInput();
@@ -608,6 +617,116 @@
       setGradientSky()
       createSkyDecoration();
       createMountains()
+    }
+
+    function createWindFX() {
+      createWindFXTextures();
+      createWindStreakSprites();
+    }
+
+    function createWindFXTextures() {
+      const streakCanvas = document.createElement("canvas");
+      streakCanvas.width = 128;
+      streakCanvas.height = 32;
+      const sctx = streakCanvas.getContext("2d");
+
+      const streakGrad = sctx.createLinearGradient(0, 16, 128, 16);
+      streakGrad.addColorStop(0, "rgba(255,255,255,0)");
+      streakGrad.addColorStop(0.18, "rgba(255,255,255,0.18)");
+      streakGrad.addColorStop(0.50, "rgba(255,255,255,0.55)");
+      streakGrad.addColorStop(0.82, "rgba(255,255,255,0.18)");
+      streakGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+      sctx.fillStyle = streakGrad;
+      sctx.beginPath();
+      sctx.roundRect(0, 10, 128, 12, 6);
+      sctx.fill();
+
+      game.windFX.textures.streak = new THREE.CanvasTexture(streakCanvas);
+    }
+
+    function createWindStreakSprites() {
+      const count = 40;
+
+      for (let i = 0; i < count; i++) {
+        const material = new THREE.SpriteMaterial({
+          map: game.windFX.textures.streak,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false
+        });
+
+        const sprite = new THREE.Sprite(material);
+        game.scene.add(sprite);
+
+        // x を広げて横方向の流れるエリアを拡大
+        // y を広げて上の空間まで風を出す
+        // z を広げて奥まで風を出す
+        // width を伸ばして筋を長くする
+        // height を上げて少し太くする
+        const p = {
+          sprite,
+          x: (Math.random() - 0.5) * 160,
+          y: 0.2 + Math.random() * 5.2,
+          z: -3 - Math.random() * 65,
+          width: 2.8 + Math.random() * 5.0,
+          height: 0.22 + Math.random() * 0.22,
+          speedScale: 0.8 + Math.random() * 1.0,
+          swayPhase: Math.random() * Math.PI * 2
+        };
+
+        sprite.position.set(p.x, p.y, p.z);
+        sprite.scale.set(p.width, p.height, 1);
+
+        game.windFX.streaks.push(p);
+      }
+    }
+
+    function resetWindFXParticleX(p, dirSign, rangeX = 90) {
+      p.x = dirSign > 0
+        ? -rangeX - Math.random() * 8
+        :  rangeX + Math.random() * 8;
+    }
+
+    function updateWindFX(dt, elapsed) {
+      if (!game.windFX) return;
+      if (typeof getCurrentWindDirection !== "function") return;
+
+      const windDir = getCurrentWindDirection();
+      if (!windDir?.vector) return;
+
+      const dirSign = windDir.vector.x >= 0 ? 1 : -1;
+      const windSpeed = game.hasStarted ? game.wind.speed : 0;
+      const visibility = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
+
+      updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility);
+    }
+
+    function updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility) {
+      const activeCount = Math.floor(3 + visibility * game.windFX.streaks.length);
+
+      for (let i = 0; i < game.windFX.streaks.length; i++) {
+        const p = game.windFX.streaks[i];
+        const active = i < activeCount;
+
+        p.sprite.visible = active;
+        if (!active) continue;
+
+        p.x += dirSign * (1.2 + windSpeed * 2.6) * p.speedScale * dt;
+
+        if (dirSign > 0 && p.x > 90) resetWindFXParticleX(p, dirSign, 90);
+        if (dirSign < 0 && p.x < -90) resetWindFXParticleX(p, dirSign, 90);
+
+        const bob = Math.sin(elapsed * (1.2 + p.speedScale) + p.swayPhase) * 0.05;
+
+        p.sprite.position.set(p.x, p.y + bob, p.z);
+        p.sprite.material.opacity = 0.16 + visibility * 0.28;
+        p.sprite.scale.set(
+          p.width * (1.9 + visibility * 0.8),
+          p.height * (2.8 + visibility * 1.1),
+          1
+        );
+      }
     }
 
     function createLights() {
@@ -2818,6 +2937,7 @@
         updateTimer(dt);
       }
 
+      updateWindFX(dt, elapsed);
       updateHUD();
 
       game.renderer.render(game.scene, game.camera);
