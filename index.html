@@ -2846,30 +2846,19 @@
 
         const prevPos = arrowData.mesh.position.clone();
 
-        // 重力反映
+        // 重力・風
         arrowData.velocity.addScaledVector(game.gravity, dt);
         arrowData.velocity.addScaledVector(getWindAcceleration(), dt);
-
-        const horizontalVelocity = arrowData.velocity.clone();
-        horizontalVelocity.y = 0;
-        if (horizontalVelocity.lengthSq() > 1e-6) {
-          arrowData.horizontalDir.copy(horizontalVelocity.normalize());
-        }
 
         // 位置更新
         arrowData.mesh.position.addScaledVector(arrowData.velocity, dt);
 
         const nextPos = arrowData.mesh.position.clone();
 
-        // --------------------------------------------------------
-        // 要件:
-        // 矢は「地面と平行の向き」のまま
-        // 矢じりは「現在の進行方向（水平成分）」を向く
-        //
-        // つまり、落下しても矢は上下に傾けない。
-        // 風で横流れしても、向きは水平のまま追従する。
-        // --------------------------------------------------------
-        orientArrowHorizontally(arrowData.mesh, arrowData.horizontalDir);
+        // 進行方向そのものへ向ける
+        if (arrowData.velocity.lengthSq() > 1e-6) {
+          orientArrowToDirection(arrowData.mesh, arrowData.velocity);
+        }
 
         // 地面に落ちたら停止
         if (arrowData.mesh.position.y <= 0.05) {
