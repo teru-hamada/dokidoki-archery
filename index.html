@@ -670,9 +670,16 @@
           y: 0.2 + Math.random() * 5.2,
           z: -3 - Math.random() * 65,
           width: 2.8 + Math.random() * 5.0,
-          height: 0.22 + Math.random() * 0.22,
+          height: 0.12 + Math.random() * 0.22,
           speedScale: 0.8 + Math.random() * 1.0,
-          swayPhase: Math.random() * Math.PI * 2
+          swayPhase: Math.random() * Math.PI * 2,
+
+          // ゆらぎ追加
+          driftPhase: Math.random() * Math.PI * 2,
+          stretchPhase: Math.random() * Math.PI * 2,
+          swayAmpY: 0.03 + Math.random() * 0.05,
+          swayAmpZ: 0.04 + Math.random() * 0.10,
+          speedJitter: 0.85 + Math.random() * 0.35
         };
 
         sprite.position.set(p.x, p.y, p.z);
@@ -712,18 +719,42 @@
         p.sprite.visible = active;
         if (!active) continue;
 
-        p.x += dirSign * (1.2 + windSpeed * 2.6) * p.speedScale * dt;
+        // 速度にゆるい揺らぎを入れる
+        const speedWave =
+          1 +
+          Math.sin(elapsed * (1.6 + p.speedScale * 0.7) + p.driftPhase) * 0.16 +
+          Math.sin(elapsed * (3.4 + p.speedScale * 0.4) + p.driftPhase * 1.7) * 0.06;
+
+        const moveSpeed =
+          (1.2 + windSpeed * 2.6) *
+          p.speedScale *
+          p.speedJitter *
+          speedWave;
+
+        p.x += dirSign * moveSpeed * dt;
 
         if (dirSign > 0 && p.x > 90) resetWindFXParticleX(p, dirSign, 90);
         if (dirSign < 0 && p.x < -90) resetWindFXParticleX(p, dirSign, 90);
 
-        const bob = Math.sin(elapsed * (1.2 + p.speedScale) + p.swayPhase) * 0.05;
+        // 上下だけでなく奥行きにも微妙な揺れ
+        const bobY =
+          Math.sin(elapsed * (1.2 + p.speedScale) + p.swayPhase) * p.swayAmpY +
+          Math.sin(elapsed * (2.7 + p.speedScale * 0.6) + p.swayPhase * 1.9) * p.swayAmpY * 0.45;
 
-        p.sprite.position.set(p.x, p.y + bob, p.z);
+        const bobZ =
+          Math.sin(elapsed * (1.8 + p.speedScale * 0.5) + p.driftPhase) * p.swayAmpZ;
+
+        // 長さをわずかに伸び縮み
+        const stretch =
+          1 +
+          Math.sin(elapsed * (2.2 + p.speedScale * 0.5) + p.stretchPhase) * 0.10;
+
+        p.sprite.position.set(p.x, p.y + bobY, p.z + bobZ);
         p.sprite.material.opacity = 0.16 + visibility * 0.28;
+
         p.sprite.scale.set(
-          p.width * (1.9 + visibility * 0.8),
-          p.height * (2.8 + visibility * 1.1),
+          p.width * (1.9 + visibility * 0.8) * stretch,
+          p.height * (2.8 + visibility * 1.1) * (0.96 + (2 - stretch) * 0.04),
           1
         );
       }
