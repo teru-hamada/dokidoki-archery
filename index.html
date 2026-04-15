@@ -2327,6 +2327,9 @@
       const velocity = horizontalDir.clone().multiplyScalar(speed);
       velocity.y += 1.5 + 2.3 * chargeRatio;
 
+      // 発射直後から軌道方向へ向ける
+      orientArrowToDirection(arrow, velocity);
+
       const arrowData = {
         mesh: arrow,
         velocity,
