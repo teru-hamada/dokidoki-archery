@@ -2481,6 +2481,42 @@
       game.chargeTime = 0;
     }
 
+    function getLaunchDirection() {
+      const dir = new THREE.Vector3();
+      game.camera.getWorldDirection(dir);
+
+      // 上下角を少しだけ反映
+      // 完全にカメラ通りにすると変化が強すぎるので弱める
+      dir.y *= 0.35;
+
+      // 真上/真下に近づきすぎないように軽く制限
+      dir.y = THREE.MathUtils.clamp(dir.y, -0.22, 0.22);
+
+      return dir.normalize();
+    }
+
+    function getWindAccelerationWithJitter(elapsed) {
+      const base = getWindAcceleration().clone();
+
+      // 風速が 0 に近い時はそのまま
+      if (base.lengthSq() < 1e-8) return base;
+
+      // 左右風に対して、ごく弱い上下揺らぎを足す
+      const vertical =
+        Math.sin(elapsed * 1.9) * 0.10 +
+        Math.sin(elapsed * 3.7 + 1.2) * 0.05;
+
+      // 風の強さ自体も少しだけ脈動させる
+      const gust = 1.0 +
+        Math.sin(elapsed * 1.4 + 0.6) * 0.10 +
+        Math.sin(elapsed * 2.8 + 2.1) * 0.05;
+
+      base.multiplyScalar(gust);
+      base.y += vertical * game.windAccelerationScale;
+
+      return base;
+    }
+
     function releaseArrow() {
       // チャージ中でなければ何もしない
       if (!game.isCharging) return;
@@ -2500,8 +2536,8 @@
       // チャージが長いほど遠くへ
       const speed = THREE.MathUtils.lerp(game.minSpeed, game.maxSpeed, chargeRatio);
 
-      // カメラ前方向を水平化
-      const horizontalDir = getHorizontalForward();
+      // カメラ前方向をベースに、上下角も少し反映
+      const launchDir = getLaunchDirection();
 
       // 飛ぶ矢を新規生成
       const arrow = createArrowModel();
@@ -2510,14 +2546,15 @@
       arrow.position.copy(getMuzzlePosition());
 
       // 矢じりを進行方向に向ける
-      orientArrowHorizontally(arrow, horizontalDir);
+      orientArrowToDirection(arrow, launchDir);
 
       game.scene.add(arrow);
 
       // 速度
-      // 姿勢は水平固定だが、少しだけ上方向速度を足して自然に見せる
-      const velocity = horizontalDir.clone().multiplyScalar(speed);
-      velocity.y += 1.5 + 2.3 * chargeRatio;
+      const velocity = launchDir.clone().multiplyScalar(speed);
+
+      // 既存の「少し持ち上げる」成分は弱めに残す
+      velocity.y += 0.7 + 1.3 * chargeRatio;    
 
       // 発射直後から軌道方向へ向ける
       orientArrowToDirection(arrow, velocity);
@@ -2526,7 +2563,7 @@
         mesh: arrow,
         velocity,
         age: 0,
-        horizontalDir: horizontalDir.clone(),
+        horizontalDir: launchDir.clone(),
         stuck: false
       };
       game.flyingArrows.push(arrowData);
@@ -3044,7 +3081,10 @@
 
         // 重力・風
         arrowData.velocity.addScaledVector(game.gravity, dt);
-        arrowData.velocity.addScaledVector(getWindAcceleration(), dt);
+        arrowData.velocity.addScaledVector(
+          getWindAccelerationWithJitter(game.clock.elapsedTime),
+          dt
+        );
 
         // 位置更新
         arrowData.mesh.position.addScaledVector(arrowData.velocity, dt);
