@@ -2448,7 +2448,11 @@
 
         const touch = e.touches[0];
 
-        if (game.followArrow && game.isHoldingOnImpact) {
+        if (
+          game.followArrow &&
+          game.isHoldingOnImpact &&
+          game.impactHoldTime >= 1.0
+        ) {
           startCameraReturn();
           return;
         }
