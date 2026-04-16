@@ -409,6 +409,9 @@
       errorBox.textContent = message;
     }
 
+    // ゼロ風・80%チャージ時にセンターへ寄せるための基準上向き補正
+    const DEFAULT_ARROW_PITCH_BIAS = 0.012;
+
     // ------------------------------------------------------------
     // グローバル状態
     // ------------------------------------------------------------
@@ -2518,46 +2521,44 @@
     }
 
     function releaseArrow() {
-      // チャージ中でなければ何もしない
       if (!game.isCharging) return;
 
       game.isCharging = false;
 
-      // 矢が装填されていなければ発射しない
-      if (!game.hasLoadedArrow) return;
+      if (!game.hasLoadedArrow || !game.loadedArrow) return;
 
-      // 0〜1 のチャージ率
       const chargeRatio = THREE.MathUtils.clamp(
         game.chargeTime / game.maxChargeTime,
         0,
         1
       );
 
-      // チャージが長いほど遠くへ
-      const speed = THREE.MathUtils.lerp(game.minSpeed, game.maxSpeed, chargeRatio);
+      const speed = THREE.MathUtils.lerp(
+        game.minSpeed,
+        game.maxSpeed,
+        chargeRatio
+      );
 
-      // カメラ前方向をベースに、上下角も少し反映
-      const launchDir = getLaunchDirection();
+      // まずは従来どおり水平ベースの前方方向を使う
+      const horizontalDir = getHorizontalForward();
 
-      // 飛ぶ矢を新規生成
+      // そこへ少しだけ上向き補正を加える
+      const launchDir = horizontalDir.clone();
+      launchDir.y += DEFAULT_ARROW_PITCH_BIAS;
+      launchDir.normalize();
+
       const arrow = createArrowModel();
-
-      // 発射位置は画面中央の少し前
       arrow.position.copy(getMuzzlePosition());
 
-      // 矢じりを進行方向に向ける
+      // 矢の向きも launchDir に合わせる
       orientArrowToDirection(arrow, launchDir);
 
       game.scene.add(arrow);
 
-      // 速度
       const velocity = launchDir.clone().multiplyScalar(speed);
 
-      // 既存の「少し持ち上げる」成分は弱めに残す
-      velocity.y += 0.7 + 1.3 * chargeRatio;    
-
-      // 発射直後から軌道方向へ向ける
-      orientArrowToDirection(arrow, velocity);
+      // 既存の上向き速度は維持
+      velocity.y += 1.5 + 2.3 * chargeRatio;
 
       const arrowData = {
         mesh: arrow,
@@ -2566,20 +2567,15 @@
         horizontalDir: launchDir.clone(),
         stuck: false
       };
+
       game.flyingArrows.push(arrowData);
       startArrowFollow(arrowData);
 
-      // 装填矢を消す
       game.hasLoadedArrow = false;
-      game.shots++;
-
-      const bowGroup = game.bowRoot?.children?.[0];
-      if (bowGroup?.userData?.releaseString) {
-        bowGroup.userData.releaseString();
-      }
-
+      game.chargeTime = 0;
       updateLoadedArrowVisual();
-      updateBowDraw(0);
+
+      game.shots++;
       updateHUD();
     }
 
