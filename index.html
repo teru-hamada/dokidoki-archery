@@ -412,6 +412,10 @@
     // ゼロ風・80%チャージ時にセンターへ寄せるための基準上向き補正
     const DEFAULT_ARROW_PITCH_BIAS = 0.012;
 
+    // 草の色の基準と、ランダムな明るさの振れ幅
+    const GRASS_BASE_COLOR = "#9aea90";
+    const GRASS_LIGHTNESS_JITTER = 0.12;
+
     // ------------------------------------------------------------
     // グローバル状態
     // ------------------------------------------------------------
@@ -432,6 +436,11 @@
         textures: {
           streak: null
         }
+      },
+
+      // 草のエフェクト
+      grassFX: {
+        patches: []
       },
 
       // 手元の弓まわり
@@ -617,6 +626,7 @@
     function createEnvironment() {
       createLights();
       createGround();
+      createGrassFX();
       setGradientSky()
       createSkyDecoration();
       createMountains()
@@ -855,6 +865,122 @@
       ground.position.y = 0;
 
       game.scene.add(ground);
+    }
+
+    function createGrassBladeGeometry(height = 0.18, width = 0.035) {
+      const shape = new THREE.Shape();
+
+      // 根元は少し幅があり、先端は尖らせる
+      shape.moveTo(-width * 0.5, 0);
+      shape.quadraticCurveTo(-width * 0.42, height * 0.45, -width * 0.18, height * 0.82);
+      shape.lineTo(0, height);
+      shape.lineTo(width * 0.18, height * 0.82);
+      shape.quadraticCurveTo(width * 0.42, height * 0.45, width * 0.5, 0);
+      shape.closePath();
+
+      const geo = new THREE.ShapeGeometry(shape);
+      geo.translate(0, 0, 0);
+
+      return geo;
+    }
+
+    function createGrassFX() {
+      const bladeGeo = createGrassBladeGeometry(0.16, 0.030);
+
+      // 草のパッチ数（1パッチに複数枚の葉が生える）
+      const patchCount = 3000;
+
+      // カメラ初期位置を中心に、近いほど高密度・遠いほど疎にする
+      const cameraStartX = 0;
+      const cameraStartZ = 8;
+
+      // 草を生やす最大半径
+      const grassRadius = 90;
+
+      for (let i = 0; i < patchCount; i++) {
+        // 中心寄りほど出やすくする
+        const radialBias = Math.random() ** 1.5;
+
+        const radius = radialBias * grassRadius;
+        const angle = Math.random() * Math.PI * 2;
+
+        const x = cameraStartX + Math.cos(angle) * radius;
+        const z = cameraStartZ + Math.sin(angle) * radius;
+
+        const patch = new THREE.Group();
+        patch.position.set(x, 0.002, z);
+
+        // 1パッチに複数枚の葉をランダム生成
+        const bladeCount = 3 + Math.floor(Math.random() * 4);
+
+        for (let j = 0; j < bladeCount; j++) {
+          const bladeColor = new THREE.Color(GRASS_BASE_COLOR);
+          const lightnessOffset = (Math.random() - 0.5) * GRASS_LIGHTNESS_JITTER;
+          bladeColor.offsetHSL(0, 0, lightnessOffset);
+
+          const bladeMat = new THREE.MeshStandardMaterial({
+            color: bladeColor,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+          });
+
+          const blade = new THREE.Mesh(bladeGeo, bladeMat);
+
+          blade.position.set(
+            (Math.random() - 0.5) * 0.10,
+            0,
+            (Math.random() - 0.5) * 0.10
+          );
+
+          blade.rotation.y = Math.random() * Math.PI;
+          blade.rotation.z = (Math.random() - 0.5) * 0.18;
+          blade.scale.set(
+            0.85 + Math.random() * 0.45,
+            0.85 + Math.random() * 0.55,
+            1
+          );
+
+          blade.userData.baseRotZ = blade.rotation.z;
+          blade.userData.phase = Math.random() * Math.PI * 2;
+          blade.userData.sway = 0.03 + Math.random() * 0.035;
+
+          patch.add(blade);
+        }
+
+        patch.userData.phase = Math.random() * Math.PI * 2;
+        game.scene.add(patch);
+        game.grassFX.patches.push(patch);
+      }
+    }
+
+    function updateGrassFX(dt, elapsed) {
+      if (!game.grassFX?.patches?.length) return;
+
+      const windDir = typeof getCurrentWindDirection === "function"
+        ? getCurrentWindDirection()
+        : null;
+
+      const dirSign = windDir?.vector?.x >= 0 ? 1 : -1;
+      const windSpeed = game.hasStarted ? game.wind.speed : 0;
+      const windStrength = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
+
+      for (const patch of game.grassFX.patches) {
+        for (const blade of patch.children) {
+          const baseRotZ = blade.userData.baseRotZ ?? 0;
+          const phase = blade.userData.phase ?? 0;
+          const sway = blade.userData.sway ?? 0.03;
+
+          const flutter =
+            Math.sin(elapsed * 2.2 + phase) * sway * 0.75 +
+            Math.sin(elapsed * 4.4 + phase * 1.6) * sway * 0.25;
+
+          blade.rotation.z =
+            baseRotZ +
+            flutter +
+            dirSign * windStrength * sway * 1.8;
+        }
+      }
     }
 
     function setGradientSky() {
@@ -3084,6 +3210,7 @@
       }
 
       updateWindFX(dt, elapsed);
+      updateGrassFX(dt, elapsed);
       updateHUD();
 
       game.renderer.render(game.scene, game.camera);
