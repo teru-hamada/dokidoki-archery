@@ -935,16 +935,58 @@
       back.rotation.x = Math.PI / 2;
       targetGroup.add(back);
 
-      // 支柱
-      const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06, 0.07, 2.6, 16),
-        new THREE.MeshStandardMaterial({
-          color: 0x6b4f2a,
-          roughness: 1.0
-        })
+      // 三脚スタンド
+      const standMaterial = new THREE.MeshStandardMaterial({
+        color: 0x6b4f2a,
+        roughness: 1.0
+      });
+
+      // 2点を結ぶ支柱を作る
+      function addSupportBetweenPoints(start, end, radius = 0.03) {
+        const dir = new THREE.Vector3().subVectors(end, start);
+        const length = dir.length();
+
+        const leg = new THREE.Mesh(
+          new THREE.CylinderGeometry(radius, radius * 1.15, length, 12),
+          standMaterial
+        );
+
+        const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+        leg.position.copy(mid);
+
+        // Cylinder は Y 軸方向が長手なので、start→end に向ける
+        leg.quaternion.setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0),
+          dir.clone().normalize()
+        );
+
+        targetGroup.add(leg);
+      }
+
+      // 支柱の合体点（的の上部中央）
+      const topJointPos = new THREE.Vector3(0.00, 2.28, -30.10);
+
+      // 前面左支柱：的の表側左
+      const frontLeftFoot  = new THREE.Vector3(-0.70, 0.00, -29.98);
+
+      // 前面右支柱：的の表側右
+      const frontRightFoot = new THREE.Vector3( 0.70, 0.00, -29.98);
+
+      // 後部中央支柱：後ろから支える
+      const rearCenterFoot = new THREE.Vector3(0.00, 0.00, -30.95);
+
+      // 3本の支柱
+      addSupportBetweenPoints(frontLeftFoot,  topJointPos, 0.060);
+      addSupportBetweenPoints(frontRightFoot, topJointPos, 0.060);
+      addSupportBetweenPoints(rearCenterFoot, topJointPos, 0.066);
+
+      // 上部ジョイント
+      const tripodJoint = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 16, 16),
+        standMaterial
       );
-      pole.position.set(0, 0.85, -30);
-      targetGroup.add(pole);
+      tripodJoint.position.copy(topJointPos);
+      targetGroup.add(tripodJoint);
 
       game.targetFace = face;
       game.scene.add(targetGroup);
