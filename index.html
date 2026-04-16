@@ -775,36 +775,72 @@
     }
 
     function createGround() {
-
-      // ===== 草テクスチャをCanvasで生成 =====
       const canvas = document.createElement("canvas");
-      canvas.width = 256;
-      canvas.height = 256;
-    
+      canvas.width = 1024;
+      canvas.height = 1024;
+
       const ctx = canvas.getContext("2d");
-      
-      // ベースの草色
-      ctx.fillStyle = "#4ea14e";
-      ctx.fillRect(0, 0, 256, 256);
 
-      // 草の色ムラを作る
+      // ベースの芝色
+      ctx.fillStyle = "#4f9444";
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 大きめの色ムラ（芝の濃淡）
+      for (let i = 0; i < 3200; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const r = 16 + Math.random() * 18;
+        const g = 85 + Math.random() * 60;
+        const b = 10 + Math.random() * 16;
+        const size = 10 + Math.random() * 24;
+
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.04 + Math.random() * 0.05})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 細かい粒感
+      for (let i = 0; i < 70000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const r = 16 + Math.random() * 22;
+        const g = 92 + Math.random() * 82;
+        const b = 8 + Math.random() * 18;
+
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, y, 1.5, 1.5);
+      }
+
+      // 短い芝の筋
+      for (let i = 0; i < 32000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const len = 2 + Math.random() * 5;
+        const tilt = (Math.random() - 0.5) * 0.9;
+
+        ctx.strokeStyle = `rgba(${20 + Math.random() * 25}, ${120 + Math.random() * 90}, ${12 + Math.random() * 20}, ${0.20 + Math.random() * 0.16})`;
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + tilt * 2.5, y - len);
+        ctx.stroke();
+      }
+
+      // 土っぽい色を少し混ぜる
       for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
 
-        const x = Math.random() * 256;
-        const y = Math.random() * 256;
-
-        const green = 120 + Math.random() * 80;
-
-        ctx.fillStyle = `rgb(${30 + Math.random()*30}, ${green}, ${30})`;
+        ctx.fillStyle = `rgba(${70 + Math.random() * 35}, ${60 + Math.random() * 25}, ${35 + Math.random() * 20}, ${0.04 + Math.random() * 0.05})`;
         ctx.fillRect(x, y, 2, 2);
       }
 
-      // CanvasをThree.jsテクスチャに変換
       const texture = new THREE.CanvasTexture(canvas);
-
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(60, 60);
+      texture.repeat.set(110, 110);
 
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000),
