@@ -430,6 +430,9 @@
       targetFace: null,
       targetRadius: 0.8,
 
+      // 1: いまの草原 / 2: 競技場 / 3: 山奥
+      fieldType: Math.floor(Math.random() * 3) + 1, // 1〜3 を起動時ランダム
+
       // 風のエフェクト
       windFX: {
         streaks: [],
@@ -622,20 +625,187 @@
     }
 
     // ============================================================
-    // Environment: 背景 / 地面 / 照明 / 背景デザイン
+    // Environment: 照明 / 背景デザイン / フィールドの種類
     // ============================================================
     function createEnvironment() {
       createLights();
-      createGround();
+      setGradientSky();
+
+      switch (game.fieldType) {
+        case 2:
+          createStadiumEnvironment();
+          break;
+        case 3:
+          createMountainForestEnvironment();
+          break;
+        case 1:
+        default:
+          createOpenFieldEnvironment();
+          break;
+      }
+    }
+
+    // 芝生の地面と、遠くに山が見えるオープンフィールド
+    function createOpenFieldEnvironment() {
+      createGrassGround();
       createGrassFX();
-      setGradientSky()
       createSkyDecoration();
-      createMountains()
+      createMountains();
+    }
+
+    // 競技場は芝生の地面と、段々席のスタンドが特徴
+    function createStadiumEnvironment() {
+      createGrassGround();
+      createSkyDecoration();
+      createStadiumStands();
+    }
+
+    // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
+    function createMountainForestEnvironment() {
+      createDirtGround();
+      createForestSides();
+      createDeepMountains();
     }
 
     function createWindFX() {
       createWindFXTextures();
       createWindStreakSprites();
+    }
+
+    // スタンドと段々席を作る
+    function createStadiumStands() {
+      const standMat = new THREE.MeshStandardMaterial({
+        color: 0xbfc7d6,
+        roughness: 0.95
+      });
+
+      const seatMat = new THREE.MeshStandardMaterial({
+        color: 0x3d5fa8,
+        roughness: 0.9
+      });
+
+      createSingleStand(-14, standMat, seatMat); // 左
+      createSingleStand(14, standMat, seatMat);  // 右
+    }
+
+    function createSingleStand(xCenter, standMat, seatMat) {
+      const group = new THREE.Group();
+      const dir = Math.sign(xCenter);
+
+      // 土台
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(8, 1.2, 40),
+        standMat
+      );
+      base.position.set(xCenter, 0.6, -18);
+      group.add(base);
+
+      // 段々席
+      const stepCount = 7;
+      for (let i = 0; i < stepCount; i++) {
+        const h = 0.8;
+        const d = 4.5;
+        const w = 7.5;
+
+        const step = new THREE.Mesh(
+          new THREE.BoxGeometry(w, h, d),
+          seatMat
+        );
+
+        step.position.set(
+          xCenter - dir * i * 0.45,
+          1.2 + i * 0.7,
+          -5 - i * 4.0
+        );
+        group.add(step);
+      }
+
+      // 背面壁
+      const backWall = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 6, 42),
+        standMat
+      );
+      backWall.position.set(
+        xCenter - dir * 3.6,
+        3.6,
+        -18
+      );
+      group.add(backWall);
+
+      game.scene.add(group);
+    }
+
+    // 両サイドに木々が生い茂る森を作る
+    function createForestSides() {
+      createForestBand(-14); // 左
+      createForestBand(14);  // 右
+    }
+
+    //  
+    function createForestBand(xCenter) {
+      const trunkMat = new THREE.MeshStandardMaterial({
+        color: 0x6b4a2d,
+        roughness: 1.0
+      });
+
+      const leafMat = new THREE.MeshStandardMaterial({
+        color: 0x2f6b2f,
+        roughness: 1.0
+      });
+
+      for (let i = 0; i < 36; i++) {
+        const tree = new THREE.Group();
+
+        const trunkH = 2.6 + Math.random() * 2.2;
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
+          trunkMat
+        );
+        trunk.position.y = trunkH / 2;
+        tree.add(trunk);
+
+        const crown1 = new THREE.Mesh(
+          new THREE.ConeGeometry(1.0 + Math.random() * 0.4, 2.4, 10),
+          leafMat
+        );
+        crown1.position.y = trunkH + 1.0;
+        tree.add(crown1);
+
+        const crown2 = new THREE.Mesh(
+          new THREE.ConeGeometry(0.8 + Math.random() * 0.35, 2.0, 10),
+          leafMat
+        );
+        crown2.position.y = trunkH + 2.1;
+        tree.add(crown2);
+
+        tree.position.set(
+          xCenter + (Math.random() - 0.5) * 4.5,
+          0,
+          -5 - Math.random() * 70
+        );
+
+        tree.rotation.y = Math.random() * Math.PI * 2;
+        game.scene.add(tree);
+      }
+    }
+
+    // 遠くの山々はシンプルな円錐で表現
+    function createDeepMountains() {
+      const geo = new THREE.ConeGeometry(14, 26, 4);
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0x3f5a4e,
+        roughness: 1
+      });
+
+      for (let i = 0; i < 24; i++) {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(
+          (Math.random() - 0.5) * 500,
+          13,
+          -180 - Math.random() * 180
+        );
+        game.scene.add(m);
+      }
     }
 
     function createWindFXTextures() {
@@ -785,7 +955,8 @@
       game.scene.add(dir);
     }
 
-    function createGround() {
+    //　芝のテクスチャをキャンバスで生成して、地面に貼る
+    function createGrassGround() {
       const canvas = document.createElement("canvas");
       canvas.width = 1024;
       canvas.height = 1024;
@@ -865,6 +1036,62 @@
       ground.rotation.x = -Math.PI / 2;
       ground.position.y = 0;
 
+      game.scene.add(ground);
+    }
+
+    function createDirtGround() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1024;
+
+      const ctx = canvas.getContext("2d");
+
+      // ベースの土色
+      ctx.fillStyle = "#7a5a3a";
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 色ムラ
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const size = 6 + Math.random() * 18;
+
+        const r = 90 + Math.random() * 35;
+        const g = 65 + Math.random() * 30;
+        const b = 35 + Math.random() * 20;
+        const a = 0.04 + Math.random() * 0.06;
+
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 小石っぽい粒
+      for (let i = 0; i < 18000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const c = 70 + Math.random() * 40;
+        ctx.fillStyle = `rgb(${c}, ${c * 0.82}, ${c * 0.55})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(90, 90);
+
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 1.0,
+          metalness: 0.0
+        })
+      );
+
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
       game.scene.add(ground);
     }
 
