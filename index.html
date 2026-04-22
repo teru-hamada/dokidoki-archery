@@ -629,15 +629,18 @@
     // ============================================================
     function createEnvironment() {
       createLights();
-      setGradientSky();
 
       switch (game.fieldType) {
         case 2:
+          setGradientSky();
           createStadiumEnvironment();
           break;
+
         case 3:
+          setGradientSky();
           createMountainForestEnvironment();
           break;
+
         case 1:
         default:
           createOpenFieldEnvironment();
@@ -649,8 +652,37 @@
     function createOpenFieldEnvironment() {
       createGrassGround();
       createGrassFX();
-      createSkyDecoration();
-      createMountains();
+      createOpenFieldPanorama("./images/openfield_panorama.jpg");
+    }
+
+    function createOpenFieldPanorama(imagePath) {
+      const loader = new THREE.TextureLoader();
+
+      // 読み込み前の仮背景色
+      // 「上部はイメージの色」に寄せるため、空の濃い青に近い色を入れておく
+      game.scene.background = new THREE.Color(0x0b4ea2);
+
+      loader.load(
+        imagePath,
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+
+          // 360°背景として設定
+          game.scene.background = texture;
+
+          // 必須ではないが、環境反射を使わないなら null でOK
+          game.scene.environment = null;
+
+          console.log("open field panorama loaded:", imagePath);
+        },
+        undefined,
+        (err) => {
+          console.error("open field panorama load error:", imagePath, err);
+        }
+      );
     }
 
     // 競技場は芝生の地面と、段々席のスタンドが特徴
