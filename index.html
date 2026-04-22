@@ -451,6 +451,7 @@
       // ゲーム状態
       isCharging: false,
       chargeTime: 0,
+      chargeDirection: 1, // 1: 増加中 / -1: 減少中
       maxChargeTime: 1.7,
       hasLoadedArrow: true,
 
@@ -2648,6 +2649,7 @@
 
       game.isCharging = true;
       game.chargeTime = 0;
+      game.chargeDirection = 1; // 長押し開始時は増加から始める
     }
 
     function getLaunchDirection() {
@@ -2738,7 +2740,6 @@
       startArrowFollow(arrowData);
 
       game.hasLoadedArrow = false;
-      game.chargeTime = 0;
       updateLoadedArrowVisual();
 
       game.shots++;
@@ -3167,9 +3168,14 @@
     // HUD
     // ============================================================
     function updateHUD() {
-      const ratio = THREE.MathUtils.clamp(game.chargeTime / game.maxChargeTime, 0, 1);
-      const percent = Math.round(ratio * 100);
-      const windDirection = getCurrentWindDirection();
+      const chargeRatio = THREE.MathUtils.clamp(
+        game.chargeTime / game.maxChargeTime,
+        0,
+        1
+      );
+      const percent = Math.round(chargeRatio * 100);
+
+      const windDirection = getCurrentWindDirection?.();
       const windText = game.hasStarted
         ? `${windDirection.symbol}  ${game.wind.speed.toFixed(1)} m/s`
         : "-";
@@ -3181,8 +3187,8 @@
         <div class="powerRow">
           <div class="powerLabel"><span class="hudLabel">パワー</span>:</div>
           <div id="chargeWrap">
-            <div id="chargeBar" style="width: ${game.isCharging ? percent : 0}%;"></div>
-            <div id="chargeText">${game.isCharging ? percent + "%" : "0%"}</div>
+            <div id="chargeBar" style="width: ${percent}%;"></div>
+            <div id="chargeText">${percent}%</div>
           </div>
         </div>
       `;
@@ -3219,7 +3225,18 @@
     function updateCharge(dt) {
       if (!game.isCharging) return;
 
-      game.chargeTime = Math.min(game.maxChargeTime, game.chargeTime + dt);
+      game.chargeTime += dt * game.chargeDirection;
+
+      // 100%まで行ったら減少へ反転
+      if (game.chargeTime >= game.maxChargeTime) {
+        game.chargeTime = game.maxChargeTime;
+        game.chargeDirection = -1;
+      }
+      // 0%まで行ったら増加へ反転
+      else if (game.chargeTime <= 0) {
+        game.chargeTime = 0;
+        game.chargeDirection = 1;
+      }
 
       const ratio = game.chargeTime / game.maxChargeTime;
       updateBowDraw(ratio);
