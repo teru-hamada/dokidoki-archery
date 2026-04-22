@@ -433,6 +433,9 @@
       // 1: いまの草原 / 2: 競技場 / 3: 山奥
       fieldType: Math.floor(Math.random() * 3) + 1, // 1〜3 を起動時ランダム
 
+      // 的の距離
+      targetDistance: THREE.MathUtils.randFloat(3, 50), // 起動時に 3〜50
+
       // 風のエフェクト
       windFX: {
         streaks: [],
@@ -1528,7 +1531,13 @@
       const targetGroup = new THREE.Group();
       game.targetRadius = 0.8;
       const targetThickness = 0.14;
-      const targetCenter = new THREE.Vector3(0, 1.6, -30);
+
+      // 開始視点から targetDistance だけ前方へ置く
+      const targetCenter = new THREE.Vector3(
+        0,
+        1.6,
+        game.camera.position.z - game.targetDistance
+      );
 
       // 的の正面
       const face = new THREE.Mesh(
@@ -1544,7 +1553,14 @@
 
       // 的の厚み
       const back = new THREE.Mesh(
-        new THREE.CylinderGeometry(game.targetRadius, game.targetRadius, targetThickness, 48, 1, true),
+        new THREE.CylinderGeometry(
+          game.targetRadius,
+          game.targetRadius,
+          targetThickness,
+          48,
+          1,
+          true
+        ),
         new THREE.MeshStandardMaterial({
           color: 0xd2b48c,
           roughness: 1.0
@@ -1560,7 +1576,6 @@
         roughness: 1.0
       });
 
-      // 2点を結ぶ支柱を作る
       function addSupportBetweenPoints(start, end, radius = 0.03) {
         const dir = new THREE.Vector3().subVectors(end, start);
         const length = dir.length();
@@ -1573,7 +1588,6 @@
         const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
         leg.position.copy(mid);
 
-        // Cylinder は Y 軸方向が長手なので、start→end に向ける
         leg.quaternion.setFromUnitVectors(
           new THREE.Vector3(0, 1, 0),
           dir.clone().normalize()
@@ -1582,20 +1596,25 @@
         targetGroup.add(leg);
       }
 
+      // --------------------------------------------------
+      // 以降は targetCenter からの相対座標で組む
+      // これで距離を変えても的全体が崩れない
+      // --------------------------------------------------
+
       // 支柱の合体点（的の上部中央）
-      const topJointPos = new THREE.Vector3(0.00, 2.28, -30.10);
+      const topJointPos = targetCenter.clone().add(new THREE.Vector3(0.00, 0.68, -0.10));
 
       // 前面左支柱：的の表側左
-      const frontLeftFoot  = new THREE.Vector3(-0.70, 0.00, -29.98);
+      const frontLeftFoot = targetCenter.clone().add(new THREE.Vector3(-0.70, -1.60, 0.02));
 
       // 前面右支柱：的の表側右
-      const frontRightFoot = new THREE.Vector3( 0.70, 0.00, -29.98);
+      const frontRightFoot = targetCenter.clone().add(new THREE.Vector3(0.70, -1.60, 0.02));
 
       // 後部中央支柱：後ろから支える
-      const rearCenterFoot = new THREE.Vector3(0.00, 0.00, -30.95);
+      const rearCenterFoot = targetCenter.clone().add(new THREE.Vector3(0.00, -1.60, -0.95));
 
       // 3本の支柱
-      addSupportBetweenPoints(frontLeftFoot,  topJointPos, 0.060);
+      addSupportBetweenPoints(frontLeftFoot, topJointPos, 0.060);
       addSupportBetweenPoints(frontRightFoot, topJointPos, 0.060);
       addSupportBetweenPoints(rearCenterFoot, topJointPos, 0.066);
 
@@ -1608,6 +1627,9 @@
       targetGroup.add(tripodJoint);
 
       game.targetFace = face;
+      game.targetGroup = targetGroup;
+      game.targetCenter = targetCenter.clone();
+
       game.scene.add(targetGroup);
     }
 
