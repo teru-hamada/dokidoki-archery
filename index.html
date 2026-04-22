@@ -652,35 +652,62 @@
     function createOpenFieldEnvironment() {
       createGrassGround();
       createGrassFX();
-      createOpenFieldPanorama("./images/openfield_panorama.jpg");
+      createOpenFieldSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/openfield_panorama.jpg");
     }
 
-    function createOpenFieldPanorama(imagePath) {
+    function createOpenFieldSkyDome(imagePath) {
       const loader = new THREE.TextureLoader();
 
       // 読み込み前の仮背景色
-      // 「上部はイメージの色」に寄せるため、空の濃い青に近い色を入れておく
+      // 上部の空色に近い色
       game.scene.background = new THREE.Color(0x0b4ea2);
 
       loader.load(
         imagePath,
         (texture) => {
           texture.colorSpace = THREE.SRGBColorSpace;
-          texture.mapping = THREE.EquirectangularReflectionMapping;
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.ClampToEdgeWrapping;
           texture.minFilter = THREE.LinearFilter;
           texture.magFilter = THREE.LinearFilter;
 
-          // 360°背景として設定
-          game.scene.background = texture;
+          // 上半球（天頂 → 地平線）だけ使う
+          const radius = 420;
+          const geometry = new THREE.SphereGeometry(
+            radius,
+            96,
+            48,
+            0,
+            Math.PI * 2,
+            0,
+            Math.PI / 2
+          );
 
-          // 必須ではないが、環境反射を使わないなら null でOK
-          game.scene.environment = null;
+          const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+            depthWrite: false,
+            fog: false,
+            toneMapped: false
+          });
 
-          console.log("open field panorama loaded:", imagePath);
+          const dome = new THREE.Mesh(geometry, material);
+
+          // カメラ中心に置く
+          // こうすると常に自分を取り囲む空になる
+          dome.position.copy(game.camera.position);
+
+          // 正面の見え方を調整したい場合はここで回す
+          // dome.rotation.y = Math.PI / 2;
+
+          game.openFieldSkyDome = dome;
+          game.scene.add(dome);
+
+          console.log("open field sky dome loaded:", imagePath);
         },
         undefined,
         (err) => {
-          console.error("open field panorama load error:", imagePath, err);
+          console.error("open field sky dome load error:", imagePath, err);
         }
       );
     }
@@ -3643,9 +3670,17 @@
 
       updateWindFX(dt, elapsed);
       updateGrassFX(dt, elapsed);
+      updateOpenFieldSkyDome();
       updateHUD();
 
       game.renderer.render(game.scene, game.camera);
+    }
+
+    function updateOpenFieldSkyDome() {
+      if (!game.openFieldSkyDome) return;
+
+      // 常にカメラを中心にする
+      game.openFieldSkyDome.position.copy(game.camera.position);
     }
 
     function updateCharge(dt) {
