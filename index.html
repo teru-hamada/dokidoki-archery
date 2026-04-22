@@ -662,9 +662,176 @@
 
     // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
     function createMountainForestEnvironment() {
-      createDirtGround();
-      createForestSides();
-      createDeepMountains();
+      createForestGround();
+      createForestSideTreesDense();
+      createForestBackdropImage("./images/forest_backdrop.jpg");
+    }
+
+    function createForestBackdropImage(imagePath) {
+      const loader = new THREE.TextureLoader();
+
+      loader.load(
+        imagePath,
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+
+          const mat = new THREE.MeshBasicMaterial({
+            map: texture,
+            depthWrite: false
+          });
+
+          const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(120, 34),
+            mat
+          );
+
+          plane.position.set(0, 17, -115);
+          game.scene.add(plane);
+
+          console.log("forest backdrop loaded:", imagePath);
+        },
+        undefined,
+        (err) => {
+          console.error("forest backdrop load error:", imagePath, err);
+        }
+      );
+    }
+
+    function createForestSideTreesDense() {
+      createForestTreeBand(-14);
+      createForestTreeBand(14);
+    }
+
+    function createForestTreeBand(xCenter) {
+      const trunkMat = new THREE.MeshStandardMaterial({
+        color: 0x5d4128,
+        roughness: 1.0
+      });
+
+      const leafMat = new THREE.MeshStandardMaterial({
+        color: 0x5fbf2a,
+        roughness: 1.0
+      });
+
+      for (let i = 0; i < 42; i++) {
+        const tree = new THREE.Group();
+
+        const trunkH = 4.5 + Math.random() * 5.5;
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
+          trunkMat
+        );
+        trunk.position.y = trunkH / 2;
+        tree.add(trunk);
+
+        // 葉の塊を複数
+        for (let j = 0; j < 4; j++) {
+          const crown = new THREE.Mesh(
+            new THREE.SphereGeometry(1.2 + Math.random() * 0.8, 8, 8),
+            leafMat
+          );
+
+          crown.position.set(
+            (Math.random() - 0.5) * 1.4,
+            trunkH - 0.4 + j * 0.9,
+            (Math.random() - 0.5) * 1.4
+          );
+
+          crown.scale.set(
+            1.0 + Math.random() * 0.5,
+            0.8 + Math.random() * 0.5,
+            1.0 + Math.random() * 0.5
+          );
+
+          tree.add(crown);
+        }
+
+        // 中央は空ける
+        tree.position.set(
+          xCenter + (Math.random() - 0.5) * 5.5,
+          0,
+          -5 - Math.random() * 75
+        );
+
+        tree.rotation.y = Math.random() * Math.PI * 2;
+        game.scene.add(tree);
+      }
+    }
+
+    function createForestGround() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext("2d");
+
+      // ベースの土
+      ctx.fillStyle = "#6f5638";
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 土のムラ
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const size = 8 + Math.random() * 22;
+
+        const r = 85 + Math.random() * 35;
+        const g = 60 + Math.random() * 25;
+        const b = 35 + Math.random() * 18;
+        const a = 0.04 + Math.random() * 0.05;
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 苔っぽい緑を少し混ぜる
+      for (let i = 0; i < 3500; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const size = 5 + Math.random() * 16;
+
+        const r = 35 + Math.random() * 20;
+        const g = 80 + Math.random() * 45;
+        const b = 28 + Math.random() * 18;
+        const a = 0.04 + Math.random() * 0.06;
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 細かい粒
+      for (let i = 0; i < 20000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const r = 55 + Math.random() * 35;
+        const g = 45 + Math.random() * 30;
+        const b = 28 + Math.random() * 18;
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(95, 95);
+
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 1.0,
+          metalness: 0.0
+        })
+      );
+
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      game.scene.add(ground);
     }
 
     function createWindFX() {
