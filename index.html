@@ -669,6 +669,7 @@
     // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
     function createMountainForestEnvironment() {
       createForestGround();
+      createForestRocks();        // 追加：岩を置く
       createForestTrees360Dense();
       createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/forestfield_panorama.jpg");
     }
@@ -746,14 +747,28 @@
       const targetZ = centerZ - game.targetDistance;
 
       // パラメータ
-      const treeCount = 260;
-      const innerRadius = 12;     // プレイヤー近くは少し空ける
-      const outerRadius = 115;    // 森の広がり
-      const laneHalfWidth = 5.0;  // 射線の半幅
-      const laneBackMargin = 3.5; // 的の少し後ろまでは空ける
-      const laneFrontMargin = 18; // プレイヤー後方にも少し余裕
-      const targetClearRadius = 3.2; // 的の周辺は見やすく空ける
-      const maxAttempts = treeCount * 30;
+      const treeCount = 520;
+
+      // ここを小さくすることで、初期位置の近くにも木を生やす
+      // ただし完全に足元へ生えると邪魔なので、最低限だけ空ける
+      const innerRadius = 3.5;
+
+      const outerRadius = 115;
+
+      // 射線だけ空ける
+      const laneHalfWidth = 5.0;
+
+      // 的の少し後ろまでは空ける
+      const laneBackMargin = 3.5;
+
+      // プレイヤーより後ろ側は大きく空けない
+      // ここを 18 などにすると、初期位置近くの木が減る
+      const laneFrontMargin = 0.8;
+
+      // 的の周辺は見やすく空ける
+      const targetClearRadius = 3.2;
+
+      const maxAttempts = treeCount * 40;
 
       let placed = 0;
       let attempts = 0;
@@ -761,21 +776,23 @@
       while (placed < treeCount && attempts < maxAttempts) {
         attempts++;
 
-        // 円環状にランダム配置
+        // 近くにも出やすくする
+        // Math.random() ** 1.35 にすると中心寄りが増える
         const angle = Math.random() * Math.PI * 2;
-        const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+        const radialBias = Math.random() ** 1.35;
+        const radius = innerRadius + radialBias * (outerRadius - innerRadius);
 
         const x = centerX + Math.cos(angle) * radius;
         const z = centerZ + Math.sin(angle) * radius;
 
-        // 射線（プレイヤー→的）部分は空ける
+        // 射線（プレイヤー→的）部分だけ空ける
         const inShootingLane =
           Math.abs(x - centerX) < laneHalfWidth &&
           z >= targetZ - laneBackMargin &&
           z <= centerZ + laneFrontMargin;
 
         // 的のすぐ近くも空ける
-        const dxTarget = x - 0;
+        const dxTarget = x - centerX;
         const dzTarget = z - targetZ;
         const nearTarget =
           dxTarget * dxTarget + dzTarget * dzTarget <
@@ -788,6 +805,85 @@
         createForestTreeAt(x, z, trunkMat, leafMat);
         placed++;
       }
+    }
+
+    function createForestRocks() {
+      const rockMat = new THREE.MeshStandardMaterial({
+        color: 0x4a4a43,
+        roughness: 1.0,
+        metalness: 0.0
+      });
+
+      const centerX = game.camera.position.x;
+      const centerZ = game.camera.position.z;
+      const targetZ = centerZ - game.targetDistance;
+
+      const rockCount = 42;
+
+      const innerRadius = 4.0;
+      const outerRadius = 85;
+
+      // 射線と的周辺には岩を置かない
+      const laneHalfWidth = 3.2;
+      const laneBackMargin = 2.5;
+      const laneFrontMargin = 1.0;
+      const targetClearRadius = 3.0;
+
+      let placed = 0;
+      let attempts = 0;
+      const maxAttempts = rockCount * 40;
+
+      while (placed < rockCount && attempts < maxAttempts) {
+        attempts++;
+
+        const angle = Math.random() * Math.PI * 2;
+        const radialBias = Math.random() ** 1.25;
+        const radius = innerRadius + radialBias * (outerRadius - innerRadius);
+
+        const x = centerX + Math.cos(angle) * radius;
+        const z = centerZ + Math.sin(angle) * radius;
+
+        const inShootingLane =
+          Math.abs(x - centerX) < laneHalfWidth &&
+          z >= targetZ - laneBackMargin &&
+          z <= centerZ + laneFrontMargin;
+
+        const dxTarget = x - centerX;
+        const dzTarget = z - targetZ;
+        const nearTarget =
+          dxTarget * dxTarget + dzTarget * dzTarget <
+          targetClearRadius * targetClearRadius;
+
+        if (inShootingLane || nearTarget) {
+          continue;
+        }
+
+        createForestRockAt(x, z, rockMat);
+        placed++;
+      }
+    } 
+
+    function createForestRockAt(x, z, rockMat) {
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.45 + Math.random() * 0.55, 0),
+        rockMat
+      );
+
+      rock.position.set(x, 0.18, z);
+
+      rock.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+
+      rock.scale.set(
+        1.2 + Math.random() * 1.2,
+        0.45 + Math.random() * 0.45,
+        0.8 + Math.random() * 1.1
+      );
+
+      game.scene.add(rock);
     }
 
     function createForestTreeAt(x, z, trunkMat, leafMat) {
@@ -834,20 +930,20 @@
       canvas.height = 1024;
       const ctx = canvas.getContext("2d");
 
-      // ベースの土
-      ctx.fillStyle = "#6f5638";
+      // ベースの土：今より濃い焦げ茶
+      ctx.fillStyle = "#3f3024";
       ctx.fillRect(0, 0, 1024, 1024);
 
-      // 土のムラ
-      for (let i = 0; i < 5000; i++) {
+      // 暗めの土のムラ
+      for (let i = 0; i < 6500; i++) {
         const x = Math.random() * 1024;
         const y = Math.random() * 1024;
-        const size = 8 + Math.random() * 22;
+        const size = 8 + Math.random() * 26;
 
-        const r = 85 + Math.random() * 35;
-        const g = 60 + Math.random() * 25;
-        const b = 35 + Math.random() * 18;
-        const a = 0.04 + Math.random() * 0.05;
+        const r = 45 + Math.random() * 35;
+        const g = 35 + Math.random() * 28;
+        const b = 24 + Math.random() * 20;
+        const a = 0.05 + Math.random() * 0.08;
 
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
@@ -855,16 +951,16 @@
         ctx.fill();
       }
 
-      // 苔っぽい緑を少し混ぜる
-      for (let i = 0; i < 3500; i++) {
+      // 苔っぽい暗緑を少し混ぜる
+      for (let i = 0; i < 4200; i++) {
         const x = Math.random() * 1024;
         const y = Math.random() * 1024;
-        const size = 5 + Math.random() * 16;
+        const size = 5 + Math.random() * 18;
 
-        const r = 35 + Math.random() * 20;
-        const g = 80 + Math.random() * 45;
-        const b = 28 + Math.random() * 18;
-        const a = 0.04 + Math.random() * 0.06;
+        const r = 22 + Math.random() * 18;
+        const g = 55 + Math.random() * 42;
+        const b = 22 + Math.random() * 20;
+        const a = 0.04 + Math.random() * 0.07;
 
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.beginPath();
@@ -872,15 +968,31 @@
         ctx.fill();
       }
 
-      // 細かい粒
-      for (let i = 0; i < 20000; i++) {
+      // 細かい粒：暗め
+      for (let i = 0; i < 24000; i++) {
         const x = Math.random() * 1024;
         const y = Math.random() * 1024;
-        const r = 55 + Math.random() * 35;
-        const g = 45 + Math.random() * 30;
-        const b = 28 + Math.random() * 18;
+
+        const r = 38 + Math.random() * 35;
+        const g = 32 + Math.random() * 28;
+        const b = 22 + Math.random() * 20;
+
         ctx.fillStyle = `rgb(${r},${g},${b})`;
         ctx.fillRect(x, y, 2, 2);
+      }
+
+      // 落ち葉っぽい茶色の点
+      for (let i = 0; i < 4500; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+
+        const r = 70 + Math.random() * 45;
+        const g = 40 + Math.random() * 28;
+        const b = 18 + Math.random() * 16;
+        const a = 0.07 + Math.random() * 0.09;
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(x, y, 3, 2);
       }
 
       const texture = new THREE.CanvasTexture(canvas);
