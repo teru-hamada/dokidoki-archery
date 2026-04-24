@@ -1015,7 +1015,7 @@
       createWindStreakSprites();
     }
 
-    // スタンドと段々席を作る
+    // スタジアム観客席：初期地点〜的の周りを囲む形
     function createStadiumStands() {
       const standMat = new THREE.MeshStandardMaterial({
         color: 0xbfc7d6,
@@ -1027,128 +1027,284 @@
         roughness: 0.9
       });
 
-      createSingleStand(-14, standMat, seatMat); // 左
-      createSingleStand(14, standMat, seatMat);  // 右
+      const aisleMat = new THREE.MeshStandardMaterial({
+        color: 0xd6dbe5,
+        roughness: 0.95
+      });
+
+      const centerX = game.camera.position.x;
+      const startZ = game.camera.position.z;
+
+      // createTargetSystem() より前に呼ばれるため、targetCenter ではなく targetDistance から計算する
+      const targetZ = startZ - game.targetDistance;
+
+      // 射線まわりは空ける
+      const laneHalfWidth = 4.2;
+
+      // 観客席の外側位置
+      const sideStandInnerX = laneHalfWidth + 1.8;
+      const sideStandOuterX = sideStandInnerX + 8.5;
+
+      // 初期地点の少し後ろから、的の少し手前まで左右スタンドを置く
+      const zFront = startZ + 5.0;
+      const zBack = targetZ + 2.0;
+
+      createSideStadiumStand({
+        side: -1,
+        centerX,
+        zFront,
+        zBack,
+        innerX: sideStandInnerX,
+        outerX: sideStandOuterX,
+        standMat,
+        seatMat,
+        aisleMat
+      });
+
+      createSideStadiumStand({
+        side: 1,
+        centerX,
+        zFront,
+        zBack,
+        innerX: sideStandInnerX,
+        outerX: sideStandOuterX,
+        standMat,
+        seatMat,
+        aisleMat
+      });
+
+      // 初期位置の後方は、的の後ろに置いていたような階段状スタンドで囲う
+      createBackStadiumStand({
+        centerX,
+        z: startZ + 7.0,
+        width: sideStandOuterX * 2 + 2.5,
+        direction: 1,
+        standMat,
+        seatMat,
+        aisleMat
+      });
+
+      // 的の後方は観客席ではなく、矢が飛ぶのでフラットな壁だけにする
+      createFlatTargetBackWall({
+        centerX,
+        z: targetZ - 7.5,
+        width: sideStandOuterX * 2 + 2.5,
+        standMat,
+        aisleMat
+      });
     }
 
-    function createSingleStand(xCenter, standMat, seatMat) {
+    function createSideStadiumStand({
+      side,
+      centerX,
+      zFront,
+      zBack,
+      innerX,
+      outerX,
+      standMat,
+      seatMat,
+      aisleMat
+    }) {
       const group = new THREE.Group();
-      const dir = Math.sign(xCenter);
+
+      const length = Math.abs(zFront - zBack);
+      const centerZ = (zFront + zBack) / 2;
+
+      const stepCount = 8;
+      const segmentCount = 10;
+
+      const stepWidth = (outerX - innerX) / stepCount;
+      const segmentDepth = length / segmentCount;
+
+      const sideSign = side; // -1: 左 / 1: 右
 
       // 土台
       const base = new THREE.Mesh(
-        new THREE.BoxGeometry(8, 1.2, 40),
+        new THREE.BoxGeometry(outerX - innerX + 0.8, 0.6, length),
         standMat
       );
-      base.position.set(xCenter, 0.6, -18);
+
+      base.position.set(
+        centerX + sideSign * ((innerX + outerX) / 2),
+        0.3,
+        centerZ
+      );
+
       group.add(base);
 
-      // 段々席
-      const stepCount = 7;
-      for (let i = 0; i < stepCount; i++) {
-        const h = 0.8;
-        const d = 4.5;
-        const w = 7.5;
+      // 階段席
+      for (let xStep = 0; xStep < stepCount; xStep++) {
+        const height = 0.45 + xStep * 0.42;
 
-        const step = new THREE.Mesh(
-          new THREE.BoxGeometry(w, h, d),
-          seatMat
-        );
+        // 射線側から外側へ行くほど高くする
+        const x = centerX + sideSign * (innerX + stepWidth * xStep + stepWidth / 2);
 
-        step.position.set(
-          xCenter - dir * i * 0.45,
-          1.2 + i * 0.7,
-          -5 - i * 4.0
-        );
-        group.add(step);
+        for (let zStep = 0; zStep < segmentCount; zStep++) {
+          const z = zFront - segmentDepth * zStep - segmentDepth / 2;
+
+          const seat = new THREE.Mesh(
+            new THREE.BoxGeometry(stepWidth * 0.96, 0.34, segmentDepth * 0.92),
+            seatMat
+          );
+
+          seat.position.set(
+            x,
+            height,
+            z
+          );
+
+          group.add(seat);
+        }
       }
 
-      // 背面壁
+      // 外側の背面壁
       const backWall = new THREE.Mesh(
-        new THREE.BoxGeometry(0.8, 6, 42),
+        new THREE.BoxGeometry(0.7, 4.8, length),
         standMat
       );
+
       backWall.position.set(
-        xCenter - dir * 3.6,
-        3.6,
-        -18
+        centerX + sideSign * (outerX + 0.45),
+        2.4,
+        centerZ
       );
+
       group.add(backWall);
+
+      // 射線側の低い縁
+      const innerWall = new THREE.Mesh(
+        new THREE.BoxGeometry(0.35, 0.75, length),
+        aisleMat
+      );
+
+      innerWall.position.set(
+        centerX + sideSign * (innerX - 0.25),
+        0.38,
+        centerZ
+      );
+
+      group.add(innerWall);
 
       game.scene.add(group);
     }
 
-    // 両サイドに木々が生い茂る森を作る
-    function createForestSides() {
-      createForestBand(-14); // 左
-      createForestBand(14);  // 右
+    function createBackStadiumStand({
+      centerX,
+      z,
+      width,
+      direction = -1,
+      standMat,
+      seatMat,
+      aisleMat
+    }) {
+      const group = new THREE.Group();
+
+      const stepCount = 7;
+      const depthStep = 1.3;
+
+      const baseDepth = stepCount * depthStep + 1.2;
+
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 0.6, baseDepth),
+        standMat
+      );
+
+      base.position.set(
+        centerX,
+        0.3,
+        z + direction * baseDepth / 2
+      );
+
+      group.add(base);
+
+      // フィールドに近い側が低く、奥へ行くほど高い
+      for (let i = 0; i < stepCount; i++) {
+        const h = 0.35;
+        const y = 0.65 + i * 0.45;
+
+        const seat = new THREE.Mesh(
+          new THREE.BoxGeometry(width * 0.94, h, depthStep * 0.9),
+          seatMat
+        );
+
+        seat.position.set(
+          centerX,
+          y,
+          z + direction * i * depthStep
+        );
+
+        group.add(seat);
+      }
+
+      // 一番奥の背面壁
+      const backWall = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 4.5, 0.7),
+        standMat
+      );
+
+      backWall.position.set(
+        centerX,
+        2.3,
+        z + direction * (stepCount * depthStep + 0.55)
+      );
+
+      group.add(backWall);
+
+      // フィールド側の低い境界
+      const frontRail = new THREE.Mesh(
+        new THREE.BoxGeometry(width * 0.92, 0.55, 0.35),
+        aisleMat
+      );
+
+      frontRail.position.set(
+        centerX,
+        0.35,
+        z - direction * 0.65
+      );
+
+      group.add(frontRail);
+
+      game.scene.add(group);
     }
 
-    //  
-    function createForestBand(xCenter) {
-      const trunkMat = new THREE.MeshStandardMaterial({
-        color: 0x6b4a2d,
-        roughness: 1.0
-      });
+    function createFlatTargetBackWall({
+      centerX,
+      z,
+      width,
+      standMat,
+      aisleMat
+    }) {
+      const group = new THREE.Group();
 
-      const leafMat = new THREE.MeshStandardMaterial({
-        color: 0x2f6b2f,
-        roughness: 1.0
-      });
+      // 矢が飛ぶ方向の奥に、観客席ではなく壁だけを置く
+      const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 5.2, 0.75),
+        standMat
+      );
 
-      for (let i = 0; i < 36; i++) {
-        const tree = new THREE.Group();
+      wall.position.set(
+        centerX,
+        2.6,
+        z
+      );
 
-        const trunkH = 2.6 + Math.random() * 2.2;
-        const trunk = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
-          trunkMat
-        );
-        trunk.position.y = trunkH / 2;
-        tree.add(trunk);
+      group.add(wall);
 
-        const crown1 = new THREE.Mesh(
-          new THREE.ConeGeometry(1.0 + Math.random() * 0.4, 2.4, 10),
-          leafMat
-        );
-        crown1.position.y = trunkH + 1.0;
-        tree.add(crown1);
+      // 壁の下に低い縁を置いて、スタジアム感を少し出す
+      const lowerRail = new THREE.Mesh(
+        new THREE.BoxGeometry(width * 0.95, 0.55, 0.45),
+        aisleMat
+      );
 
-        const crown2 = new THREE.Mesh(
-          new THREE.ConeGeometry(0.8 + Math.random() * 0.35, 2.0, 10),
-          leafMat
-        );
-        crown2.position.y = trunkH + 2.1;
-        tree.add(crown2);
+      lowerRail.position.set(
+        centerX,
+        0.35,
+        z + 0.65
+      );
 
-        tree.position.set(
-          xCenter + (Math.random() - 0.5) * 4.5,
-          0,
-          -5 - Math.random() * 70
-        );
+      group.add(lowerRail);
 
-        tree.rotation.y = Math.random() * Math.PI * 2;
-        game.scene.add(tree);
-      }
-    }
-
-    // 遠くの山々はシンプルな円錐で表現
-    function createDeepMountains() {
-      const geo = new THREE.ConeGeometry(14, 26, 4);
-      const mat = new THREE.MeshStandardMaterial({
-        color: 0x3f5a4e,
-        roughness: 1
-      });
-
-      for (let i = 0; i < 24; i++) {
-        const m = new THREE.Mesh(geo, mat);
-        m.position.set(
-          (Math.random() - 0.5) * 500,
-          13,
-          -180 - Math.random() * 180
-        );
-        game.scene.add(m);
-      }
+      game.scene.add(group);
     }
 
     function createWindFXTextures() {
