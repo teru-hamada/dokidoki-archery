@@ -635,19 +635,15 @@
       createLights();
 
       switch (game.fieldType) {
-        case 2:
-          setGradientSky();
-          createStadiumEnvironment();
-          break;
-
-        case 3:
-          setGradientSky();
-          createMountainForestEnvironment();
-          break;
-
         case 1:
         default:
           createOpenFieldEnvironment();
+          break;
+        case 2:
+          createStadiumEnvironment();
+          break;
+        case 3:
+          createMountainForestEnvironment();
           break;
       }
     }
@@ -662,7 +658,7 @@
     // 競技場は芝生の地面と、段々席のスタンドが特徴
     function createStadiumEnvironment() {
       createGrassGround();
-      createSkyDecoration();
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/cityfield_panorama.jpg");
       createStadiumStands();
     }
 
@@ -1555,90 +1551,6 @@
             flutter +
             dirSign * windStrength * sway * 1.8;
         }
-      }
-    }
-
-    function setGradientSky() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1;
-      canvas.height = 512;
-      const ctx = canvas.getContext("2d");
-
-      const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-
-      // 上空（深い青〜少し紫）
-      gradient.addColorStop(0, "#0b1d51");
-
-      // 中間（濃い青）
-      gradient.addColorStop(0.3, "#1e3fa3");
-
-      // 少し明るい青
-      gradient.addColorStop(0.55, "#3f77ff");
-
-      // 地平線付近（霞っぽい）
-      gradient.addColorStop(0.8, "#87bfff");
-
-      // 一番下（白に近い青）
-      gradient.addColorStop(1, "#d6ecff");
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 1, 512);
-
-      // ☀️ 太陽っぽいハイライト（ほんのり）
-      const sunGradient = ctx.createRadialGradient(0.5, 400, 10, 0.5, 400, 120);
-      sunGradient.addColorStop(0, "rgba(255,255,255,0.25)");
-      sunGradient.addColorStop(1, "rgba(255,255,255,0)");
-
-      ctx.fillStyle = sunGradient;
-      ctx.fillRect(0, 0, 1, 512);
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.magFilter = THREE.LinearFilter;
-
-      game.scene.background = texture;
-    }
-
-    function createSkyDecoration() {
-      // 雲っぽいオブジェクトを遠景に置いて、少しだけ見た目を良くする
-      const cloudMat = new THREE.MeshStandardMaterial({
-        color: 0xdff0ff,
-        transparent: true,
-        opacity: 0.28,
-        roughness: 1.0
-      });
-
-      for (let i = 0; i < 7; i++) {
-        const cloud = new THREE.Mesh(
-          new THREE.SphereGeometry(1.6 + Math.random() * 1.6, 16, 16),
-          cloudMat
-        );
-        cloud.position.set(
-          -24 + i * 8,
-          9 + Math.random() * 4,
-          -24 - Math.random() * 40
-        );
-        cloud.scale.set(1.9, 0.7, 0.9);
-        game.scene.add(cloud);
-      }
-    }
-
-    function createMountains() {
-      const geo = new THREE.ConeGeometry(10, 20, 4);
-      const mat = new THREE.MeshStandardMaterial({
-        color: 0x446688,
-        roughness: 1
-      });
-
-      for (let i = 0; i < 20; i++) {
-        const m = new THREE.Mesh(geo, mat);
-
-        m.position.set(
-          (Math.random() - 0.5) * 600,
-          10,
-          -200 - Math.random() * 200
-        );
-
-        game.scene.add(m);
       }
     }
 
