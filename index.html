@@ -656,14 +656,27 @@
     function createOpenFieldEnvironment() {
       createGrassGround();
       createGrassFX();
-      createOpenFieldSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/openfield_panorama.jpg");
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/openfield_panorama.jpg");
     }
 
-    function createOpenFieldSkyDome(imagePath) {
+    // 競技場は芝生の地面と、段々席のスタンドが特徴
+    function createStadiumEnvironment() {
+      createGrassGround();
+      createSkyDecoration();
+      createStadiumStands();
+    }
+
+    // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
+    function createMountainForestEnvironment() {
+      createForestGround();
+      createForestTrees360Dense();
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/forestfield_panorama.jpg");
+    }
+
+    function createPanoramaSkyDome(imagePath) {
       const loader = new THREE.TextureLoader();
 
       // 読み込み前の仮背景色
-      // 上部の空色に近い色
       game.scene.background = new THREE.Color(0x0b4ea2);
 
       loader.load(
@@ -675,7 +688,7 @@
           texture.minFilter = THREE.LinearFilter;
           texture.magFilter = THREE.LinearFilter;
 
-          // 上半球（天頂 → 地平線）だけ使う
+          // 上半球（天頂 → 地平線）に貼る
           const radius = 420;
           const geometry = new THREE.SphereGeometry(
             radius,
@@ -698,76 +711,22 @@
           const dome = new THREE.Mesh(geometry, material);
 
           // カメラ中心に置く
-          // こうすると常に自分を取り囲む空になる
           dome.position.copy(game.camera.position);
 
-          // 正面の見え方を調整したい場合はここで回す
-          // dome.rotation.y = Math.PI / 2;
-
-          game.openFieldSkyDome = dome;
+          // 必要なら後で別用途にも使えるよう保持
+          game.skyDome = dome;
           game.scene.add(dome);
 
-          console.log("open field sky dome loaded:", imagePath);
+          console.log("panorama sky dome loaded:", imagePath);
         },
         undefined,
         (err) => {
-          console.error("open field sky dome load error:", imagePath, err);
+          console.error("panorama sky dome load error:", imagePath, err);
         }
       );
     }
 
-    // 競技場は芝生の地面と、段々席のスタンドが特徴
-    function createStadiumEnvironment() {
-      createGrassGround();
-      createSkyDecoration();
-      createStadiumStands();
-    }
-
-    // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
-    function createMountainForestEnvironment() {
-      createForestGround();
-      createForestSideTreesDense();
-      createForestBackdropImage("./images/forest_backdrop.jpg");
-    }
-
-    function createForestBackdropImage(imagePath) {
-      const loader = new THREE.TextureLoader();
-
-      loader.load(
-        imagePath,
-        (texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          texture.minFilter = THREE.LinearFilter;
-          texture.magFilter = THREE.LinearFilter;
-
-          const mat = new THREE.MeshBasicMaterial({
-            map: texture,
-            depthWrite: false
-          });
-
-          const plane = new THREE.Mesh(
-            new THREE.PlaneGeometry(120, 34),
-            mat
-          );
-
-          plane.position.set(0, 17, -115);
-          game.scene.add(plane);
-
-          console.log("forest backdrop loaded:", imagePath);
-        },
-        undefined,
-        (err) => {
-          console.error("forest backdrop load error:", imagePath, err);
-        }
-      );
-    }
-
-    function createForestSideTreesDense() {
-      createForestTreeBand(-14);
-      createForestTreeBand(14);
-    }
-
-    function createForestTreeBand(xCenter) {
+    function createForestTrees360Dense() {
       const trunkMat = new THREE.MeshStandardMaterial({
         color: 0x5d4128,
         roughness: 1.0
@@ -778,49 +737,95 @@
         roughness: 1.0
       });
 
-      for (let i = 0; i < 42; i++) {
-        const tree = new THREE.Group();
+      // プレイヤー初期位置を中心に360度へ木を配置
+      const centerX = game.camera.position.x;
+      const centerZ = game.camera.position.z;
 
-        const trunkH = 4.5 + Math.random() * 5.5;
-        const trunk = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
-          trunkMat
-        );
-        trunk.position.y = trunkH / 2;
-        tree.add(trunk);
+      // 的は createTargetSystem() より前に森を作るので、
+      // targetCenter ではなく targetDistance から位置を計算する
+      const targetZ = centerZ - game.targetDistance;
 
-        // 葉の塊を複数
-        for (let j = 0; j < 4; j++) {
-          const crown = new THREE.Mesh(
-            new THREE.SphereGeometry(1.2 + Math.random() * 0.8, 8, 8),
-            leafMat
-          );
+      // パラメータ
+      const treeCount = 260;
+      const innerRadius = 12;     // プレイヤー近くは少し空ける
+      const outerRadius = 115;    // 森の広がり
+      const laneHalfWidth = 5.0;  // 射線の半幅
+      const laneBackMargin = 3.5; // 的の少し後ろまでは空ける
+      const laneFrontMargin = 18; // プレイヤー後方にも少し余裕
+      const targetClearRadius = 3.2; // 的の周辺は見やすく空ける
+      const maxAttempts = treeCount * 30;
 
-          crown.position.set(
-            (Math.random() - 0.5) * 1.4,
-            trunkH - 0.4 + j * 0.9,
-            (Math.random() - 0.5) * 1.4
-          );
+      let placed = 0;
+      let attempts = 0;
 
-          crown.scale.set(
-            1.0 + Math.random() * 0.5,
-            0.8 + Math.random() * 0.5,
-            1.0 + Math.random() * 0.5
-          );
+      while (placed < treeCount && attempts < maxAttempts) {
+        attempts++;
 
-          tree.add(crown);
+        // 円環状にランダム配置
+        const angle = Math.random() * Math.PI * 2;
+        const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+
+        const x = centerX + Math.cos(angle) * radius;
+        const z = centerZ + Math.sin(angle) * radius;
+
+        // 射線（プレイヤー→的）部分は空ける
+        const inShootingLane =
+          Math.abs(x - centerX) < laneHalfWidth &&
+          z >= targetZ - laneBackMargin &&
+          z <= centerZ + laneFrontMargin;
+
+        // 的のすぐ近くも空ける
+        const dxTarget = x - 0;
+        const dzTarget = z - targetZ;
+        const nearTarget =
+          dxTarget * dxTarget + dzTarget * dzTarget <
+          targetClearRadius * targetClearRadius;
+
+        if (inShootingLane || nearTarget) {
+          continue;
         }
 
-        // 中央は空ける
-        tree.position.set(
-          xCenter + (Math.random() - 0.5) * 5.5,
-          0,
-          -5 - Math.random() * 75
+        createForestTreeAt(x, z, trunkMat, leafMat);
+        placed++;
+      }
+    }
+
+    function createForestTreeAt(x, z, trunkMat, leafMat) {
+      const tree = new THREE.Group();
+
+      const trunkH = 4.5 + Math.random() * 5.5;
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
+        trunkMat
+      );
+      trunk.position.y = trunkH / 2;
+      tree.add(trunk);
+
+      // 葉の塊を複数
+      for (let j = 0; j < 4; j++) {
+        const crown = new THREE.Mesh(
+          new THREE.SphereGeometry(1.2 + Math.random() * 0.8, 8, 8),
+          leafMat
         );
 
-        tree.rotation.y = Math.random() * Math.PI * 2;
-        game.scene.add(tree);
+        crown.position.set(
+          (Math.random() - 0.5) * 1.4,
+          trunkH - 0.4 + j * 0.9,
+          (Math.random() - 0.5) * 1.4
+        );
+
+        crown.scale.set(
+          1.0 + Math.random() * 0.5,
+          0.8 + Math.random() * 0.5,
+          1.0 + Math.random() * 0.5
+        );
+
+        tree.add(crown);
       }
+
+      tree.position.set(x, 0, z);
+      tree.rotation.y = Math.random() * Math.PI * 2;
+      game.scene.add(tree);
     }
 
     function createForestGround() {
