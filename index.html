@@ -464,6 +464,7 @@
       shots: 0,
       hits: 0,
       score: 0,
+      shotScores: [], // 各射の点数履歴。外した射は 0
       hasStarted: false,
       isGameOver: false,
       timeLimit: 30,
@@ -3203,12 +3204,17 @@
       // 既存の上向き速度は維持
       velocity.y += 1.5 + 2.3 * chargeRatio;
 
+      const shotIndex = game.shotScores.length;
+      game.shotScores.push(0);
+
       const arrowData = {
         mesh: arrow,
         velocity,
         age: 0,
         horizontalDir: launchDir.clone(),
-        stuck: false
+        stuck: false,
+        shotIndex,
+        scored: false
       };
 
       game.flyingArrows.push(arrowData);
@@ -3639,6 +3645,11 @@
       return `${Math.max(0, Math.ceil(seconds))}s`;
     }
 
+    function formatShotScores() {
+      if (!game.shotScores.length) return "-";
+      return game.shotScores.join("＋");
+    }
+
     // ============================================================
     // HUD
     // ============================================================
@@ -3656,7 +3667,7 @@
         : "-";
 
       hudText.innerHTML = `
-        <div><span class="hudLabel">スコア</span>: <b>${game.score}点（${game.shots}ショット中${game.hits}本命中）</b></div>
+        <div><span class="hudLabel">スコア</span>: <b>${game.score}点（${formatShotScores()}）</b></div>
         <div><span class="hudLabel">残り時間</span>: <b>${formatTimeRemaining(game.timeRemaining)}</b></div>
         <div><span class="hudLabel">風速</span>: <b>${windText}</b></div>
         <div class="powerRow">
@@ -3774,9 +3785,19 @@
           arrowData.velocity.set(0, 0, 0);
           arrowData.stuck = true;
 
-          game.hits++;
-          game.score += scoreFromDistance(hit.dist);
-          triggerHitCelebration();
+          if (!arrowData.scored) {
+            const point = scoreFromDistance(hit.dist);
+
+            arrowData.scored = true;
+            game.hits++;
+            game.score += point;
+
+            if (typeof arrowData.shotIndex === "number") {
+              game.shotScores[arrowData.shotIndex] = point;
+            }
+
+            triggerHitCelebration();
+          }
         }
       }
     }
