@@ -1114,6 +1114,95 @@
       });
     }
 
+    function createSpectatorModel() {
+      const spectator = new THREE.Group();
+
+      const skinColors = [0xffd2a6, 0xe8b07e, 0xc98b5f, 0xf1c27d];
+      const shirtColors = [0xff5a5f, 0x4dabf7, 0x51cf66, 0xffd43b, 0xcc5de8, 0xffffff];
+
+      const skinMat = new THREE.MeshStandardMaterial({
+        color: skinColors[Math.floor(Math.random() * skinColors.length)],
+        roughness: 0.9
+      });
+
+      const shirtMat = new THREE.MeshStandardMaterial({
+        color: shirtColors[Math.floor(Math.random() * shirtColors.length)],
+        roughness: 0.9
+      });
+
+      const darkMat = new THREE.MeshStandardMaterial({
+        color: 0x222222,
+        roughness: 0.9
+      });
+
+      // 胴体
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.28, 0.12),
+        shirtMat
+      );
+      body.position.y = 0.20;
+      spectator.add(body);
+
+      // 頭
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.085, 8, 8),
+        skinMat
+      );
+      head.position.y = 0.42;
+      spectator.add(head);
+
+      // 足っぽい部分
+      const legL = new THREE.Mesh(
+        new THREE.BoxGeometry(0.055, 0.16, 0.055),
+        darkMat
+      );
+      legL.position.set(-0.045, 0.04, 0.04);
+      spectator.add(legL);
+
+      const legR = legL.clone();
+      legR.position.x = 0.045;
+      spectator.add(legR);
+
+      // 少し個体差
+      const s = 0.85 + Math.random() * 0.25;
+      spectator.scale.set(s, s, s);
+
+      return spectator;
+    }
+
+    function maybeAddSpectatorOnSeat(group, seatPosition, options = {}) {
+      // 1.0 に近いほど満席。0.45〜0.65くらいが自然
+      const occupancyRate = 0.58;
+
+      if (Math.random() > occupancyRate) return;
+
+      const spectator = createSpectatorModel();
+
+      spectator.position.set(
+        seatPosition.x + (Math.random() - 0.5) * 0.12,
+        seatPosition.y + 0.20,
+        seatPosition.z + (Math.random() - 0.5) * 0.16
+      );
+
+      // 基本はフィールド側を向かせる
+      if (options.side) {
+        // 左右スタンド用：中央方向を向く
+        spectator.rotation.y = options.side < 0
+          ? -Math.PI / 2
+          : Math.PI / 2;
+      } else if (typeof options.direction === "number") {
+        // 後方スタンド用：フィールド方向を向く
+        spectator.rotation.y = options.direction > 0
+          ? Math.PI
+          : 0;
+      }
+
+      // ちょっとだけ首振り感
+      spectator.rotation.y += (Math.random() - 0.5) * 0.35;
+
+      group.add(spectator);
+    }
+
     function createSideStadiumStand({
       side,
       centerX,
@@ -1174,6 +1263,12 @@
           );
 
           group.add(seat);
+
+          // その座席に観客を置く
+          maybeAddSpectatorOnSeat(group, seat.position, {
+            facing: "field",
+            side: sideSign
+          });
         }
       }
 
@@ -1257,6 +1352,10 @@
         );
 
         group.add(seat);
+
+        maybeAddSpectatorOnSeat(group, seat.position, {
+          direction
+        });
       }
 
       // 一番奥の背面壁
