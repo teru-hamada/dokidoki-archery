@@ -473,6 +473,9 @@
       // 発射済み矢
       flyingArrows: [],
 
+      // 木・岩・観客席など、矢が刺さる対象
+      arrowCollisionObjects: [],
+
       // 追従カメラ
       followArrow: null,
       isHoldingOnImpact: false,
@@ -668,6 +671,17 @@
       createForestRocks();        // 追加：岩を置く
       createForestTrees360Dense();
       createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/forestfield_panorama.jpg");
+    }
+
+    // 矢が衝突するオブジェクトを登録
+    function registerArrowCollisionObject(object3D) {
+      if (!object3D) return;
+
+      object3D.traverse((child) => {
+        if (child.isMesh) {
+          game.arrowCollisionObjects.push(child);
+        }
+      });
     }
 
     function createPanoramaSkyDome(imagePath) {
@@ -880,6 +894,9 @@
       );
 
       game.scene.add(rock);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(rock);
     }
 
     function createForestTreeAt(x, z, trunkMat, leafMat) {
@@ -918,6 +935,9 @@
       tree.position.set(x, 0, z);
       tree.rotation.y = Math.random() * Math.PI * 2;
       game.scene.add(tree);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(tree);
     }
 
     function createForestGround() {
@@ -1186,6 +1206,9 @@
       group.add(innerWall);
 
       game.scene.add(group);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(group);
     }
 
     function createBackStadiumStand({
@@ -1305,6 +1328,9 @@
       group.add(lowerRail);
 
       game.scene.add(group);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(group);
     }
 
     function createWindFXTextures() {
@@ -3675,6 +3701,33 @@
     }
 
     // ============================================================
+    // 矢と障害物の当たり判定メソッド
+    // ============================================================
+    function checkArrowObjectHit(prevPos, nextPos) {
+      if (!game.arrowCollisionObjects.length) return null;
+
+      const move = nextPos.clone().sub(prevPos);
+      const distance = move.length();
+
+      if (distance <= 1e-6) return null;
+
+      const direction = move.clone().normalize();
+
+      const raycaster = new THREE.Raycaster(
+        prevPos,
+        direction,
+        0,
+        distance
+      );
+
+      const hits = raycaster.intersectObjects(game.arrowCollisionObjects, false);
+
+      if (!hits.length) return null;
+
+      return hits[0];
+    }
+
+    // ============================================================
     // 当たり判定 / スコア
     // ============================================================
     function checkTargetHit(prevPos, nextPos) {
@@ -3953,6 +4006,25 @@
         // 進行方向そのものへ向ける
         if (arrowData.velocity.lengthSq() > 1e-6) {
           orientArrowToDirection(arrowData.mesh, arrowData.velocity);
+        }
+
+        // 木・岩・観客席などに当たったら刺さって停止
+        const objectHit = checkArrowObjectHit(prevPos, nextPos);
+        if (objectHit) {
+          arrowData.mesh.position.copy(objectHit.point);
+          arrowData.velocity.set(0, 0, 0);
+          arrowData.stuck = true;
+
+          // 外した扱いなので score は加算しない
+          if (!arrowData.scored) {
+            arrowData.scored = true;
+
+            if (typeof arrowData.shotIndex === "number") {
+              game.shotScores[arrowData.shotIndex] = 0;
+            }
+          }
+
+          continue;
         }
 
         // 地面に落ちたら停止
