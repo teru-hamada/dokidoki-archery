@@ -1119,6 +1119,8 @@
 
       const skinColors = [0xffd2a6, 0xe8b07e, 0xc98b5f, 0xf1c27d];
       const shirtColors = [0xff5a5f, 0x4dabf7, 0x51cf66, 0xffd43b, 0xcc5de8, 0xffffff];
+      const pantsColors = [0x1f2937, 0x334155, 0x111827, 0x475569];
+      const hairColors = [0x1f130f, 0x2b1b14, 0x3b2f2f, 0x111111, 0x6b4f3a];
 
       const skinMat = new THREE.MeshStandardMaterial({
         color: skinColors[Math.floor(Math.random() * skinColors.length)],
@@ -1130,42 +1132,126 @@
         roughness: 0.9
       });
 
-      const darkMat = new THREE.MeshStandardMaterial({
-        color: 0x222222,
-        roughness: 0.9
+      const pantsMat = new THREE.MeshStandardMaterial({
+        color: pantsColors[Math.floor(Math.random() * pantsColors.length)],
+        roughness: 0.95
       });
 
-      // 胴体
+      const hairMat = new THREE.MeshStandardMaterial({
+        color: hairColors[Math.floor(Math.random() * hairColors.length)],
+        roughness: 0.95
+      });
+
+      // ----------------------------
+      // 胴体：少し丸みのある上半身
+      // ----------------------------
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.18, 0.28, 0.12),
+        new THREE.CapsuleGeometry(0.095, 0.24, 3, 8),
         shirtMat
       );
-      body.position.y = 0.20;
+      body.position.y = 0.28;
+      body.scale.set(1.05, 1.0, 0.72);
+      body.rotation.x = THREE.MathUtils.degToRad(6); // 少し前傾
       spectator.add(body);
+
+      // 首
+      const neck = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.04, 0.06, 8),
+        skinMat
+      );
+      neck.position.y = 0.47;
+      spectator.add(neck);
 
       // 頭
       const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.085, 8, 8),
+        new THREE.SphereGeometry(0.09, 10, 8),
         skinMat
       );
-      head.position.y = 0.42;
+      head.position.y = 0.56;
+      head.scale.set(0.92, 1.05, 0.92);
       spectator.add(head);
 
-      // 足っぽい部分
-      const legL = new THREE.Mesh(
-        new THREE.BoxGeometry(0.055, 0.16, 0.055),
-        darkMat
+      // 髪：上半分を覆うパーツ
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(0.092, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.62),
+        hairMat
       );
-      legL.position.set(-0.045, 0.04, 0.04);
-      spectator.add(legL);
+      hair.position.y = 0.595;
+      hair.scale.set(1.0, 0.72, 1.0);
+      spectator.add(hair);
 
-      const legR = legL.clone();
-      legR.position.x = 0.045;
-      spectator.add(legR);
+      // ----------------------------
+      // 腕：左右
+      // ----------------------------
+      function addArm(side) {
+        const upperArm = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.028, 0.15, 2, 6),
+          shirtMat
+        );
+        upperArm.position.set(side * 0.115, 0.31, 0.005);
+        upperArm.rotation.z = side * THREE.MathUtils.degToRad(18);
+        upperArm.rotation.x = THREE.MathUtils.degToRad(8);
+        spectator.add(upperArm);
 
-      // 少し個体差
-      const s = 0.85 + Math.random() * 0.25;
-      spectator.scale.set(s, s, s);
+        const foreArm = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.024, 0.13, 2, 6),
+          skinMat
+        );
+        foreArm.position.set(side * 0.14, 0.19, 0.035);
+        foreArm.rotation.z = side * THREE.MathUtils.degToRad(8);
+        foreArm.rotation.x = THREE.MathUtils.degToRad(55);
+        spectator.add(foreArm);
+      }
+
+      addArm(-1);
+      addArm(1);
+
+      // ----------------------------
+      // 座っている足：太もも＋すね
+      // ----------------------------
+      function addLeg(side) {
+        const thigh = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.035, 0.18, 2, 6),
+          pantsMat
+        );
+        thigh.position.set(side * 0.05, 0.115, 0.08);
+        thigh.rotation.x = THREE.MathUtils.degToRad(78);
+        spectator.add(thigh);
+
+        const shin = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.03, 0.16, 2, 6),
+          pantsMat
+        );
+        shin.position.set(side * 0.05, 0.045, 0.16);
+        shin.rotation.x = THREE.MathUtils.degToRad(18);
+        spectator.add(shin);
+
+        const foot = new THREE.Mesh(
+          new THREE.BoxGeometry(0.06, 0.035, 0.09),
+          pantsMat
+        );
+        foot.position.set(side * 0.05, 0.015, 0.245);
+        spectator.add(foot);
+      }
+
+      addLeg(-1);
+      addLeg(1);
+
+      // ----------------------------
+      // 個体差
+      // ----------------------------
+      const spectatorBaseScale = 3.35;
+      const s = spectatorBaseScale * (0.92 + Math.random() * 0.16);
+
+      spectator.scale.set(
+        s * (0.94 + Math.random() * 0.12),
+        s * (0.95 + Math.random() * 0.10),
+        s * (0.94 + Math.random() * 0.12)
+      );
+
+      // 少し姿勢の個体差
+      spectator.rotation.x = THREE.MathUtils.degToRad((Math.random() - 0.5) * 3);
+      spectator.rotation.z = THREE.MathUtils.degToRad((Math.random() - 0.5) * 2);
 
       return spectator;
     }
@@ -1178,18 +1264,24 @@
 
       const spectator = createSpectatorModel();
 
+      const forwardOffset = options.side
+        ? 0
+        : -0.10 * (options.direction ?? 1);
+
       spectator.position.set(
-        seatPosition.x + (Math.random() - 0.5) * 0.12,
-        seatPosition.y + 0.20,
-        seatPosition.z + (Math.random() - 0.5) * 0.16
+        seatPosition.x + (Math.random() - 0.5) * 0.18,
+        seatPosition.y + 0.34,
+        seatPosition.z + forwardOffset + (Math.random() - 0.5) * 0.22
       );
 
       // 基本はフィールド側を向かせる
       if (options.side) {
         // 左右スタンド用：中央方向を向く
+        // createSpectatorModel() の正面は +Z 方向なので、
+        // 左スタンドは +X、右スタンドは -X を向かせる
         spectator.rotation.y = options.side < 0
-          ? -Math.PI / 2
-          : Math.PI / 2;
+          ? Math.PI / 2
+          : -Math.PI / 2;
       } else if (typeof options.direction === "number") {
         // 後方スタンド用：フィールド方向を向く
         spectator.rotation.y = options.direction > 0
@@ -1353,9 +1445,25 @@
 
         group.add(seat);
 
-        maybeAddSpectatorOnSeat(group, seat.position, {
-          direction
-        });
+        // 後ろの観客席にも、横方向へ複数人を並べる
+        const spectatorColumns = 12;
+        const usableWidth = width * 0.82;
+
+        for (let col = 0; col < spectatorColumns; col++) {
+          const t = spectatorColumns === 1
+            ? 0.5
+            : col / (spectatorColumns - 1);
+
+          const spectatorSeatPos = new THREE.Vector3(
+            centerX - usableWidth / 2 + usableWidth * t,
+            seat.position.y,
+            seat.position.z
+          );
+
+          maybeAddSpectatorOnSeat(group, spectatorSeatPos, {
+            direction
+          });
+        }
       }
 
       // 一番奥の背面壁
