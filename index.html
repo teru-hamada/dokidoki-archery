@@ -163,10 +163,21 @@
     }
 
     @media (max-width: 640px) {
-      #gameOverScreen {
-        padding: 20px 12px;
-        font-size: clamp(18px, 6.2vw, 40px);
-        letter-spacing: 0.02em;
+      .overlayTitle {
+        padding: 8px 12px 18px;
+        transform: skewX(-6deg) rotate(-1.5deg);
+      }
+
+      .overlayTitle h1 {
+        font-size: clamp(30px, 10vw, 46px);
+        letter-spacing: -0.13em;
+        transform: skewX(-4deg) scaleX(1.10);
+        filter: drop-shadow(4px 5px 0 rgba(0,0,0,0.45));
+      }
+
+      .overlayTitle::before {
+        bottom: 5px;
+        height: 32%;
       }
     }
 
@@ -262,29 +273,105 @@
     }
 
     .overlayTitle {
-      padding: 14px 28px 18px;
-      border-radius: 24px;
-      background: linear-gradient(180deg, rgba(71,142,230,.96) 0%, rgba(33,94,184,.96) 50%, rgba(17,65,143,.96) 100%);
-      border: 1px solid rgba(255,255,255,.28);
+      position: relative;
+      padding: 10px 24px 22px;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      transform: skewX(-8deg) rotate(-2deg);
+    }
+
+    .overlayTitle::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 0;
+      bottom: 4px;
+      height: 34%;
+      z-index: -2;
+      background: linear-gradient(
+        90deg,
+        rgba(40, 40, 40, 0.72),
+        rgba(70, 70, 70, 0.86),
+        rgba(30, 30, 30, 0.78)
+      );
+      transform: skewX(-18deg);
+      border-radius: 4px;
       box-shadow:
-        0 12px 24px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.45),
-        inset 0 -2px 0 rgba(10,41,96,.55);
+        0 8px 0 rgba(255,255,255,0.85),
+        0 12px 18px rgba(0,0,0,0.35);
+    }
+
+    .overlayTitle::after {
+      content: "";
+      position: absolute;
+      left: -12px;
+      right: -18px;
+      bottom: -2px;
+      height: 5px;
+      z-index: -3;
+      background: rgba(255,255,255,0.9);
+      transform: skewX(-18deg);
+      border-radius: 999px;
     }
 
     .overlayTitle h1 {
       margin: 0;
-      font-size: clamp(36px, 6vw, 56px);
-      line-height: 1.05;
-      letter-spacing: .08em;
-      color: #f7fbff;
-      text-shadow:
-        0 1px 0 #dcecff,
-        0 2px 0 #b8d8ff,
-        0 3px 0 #8bb6f2,
-        0 4px 0 #4d80d2,
-        0 10px 18px rgba(0,0,0,.34);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.01em;
+
+      font-family:
+        "Arial Black",
+        "Impact",
+        "Yu Gothic",
+        "Yu Gothic UI",
+        "Meiryo",
+        sans-serif;
+
+      font-size: clamp(34px, 8vw, 76px);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: -0.115em;
+      white-space: nowrap;
+
+      transform: skewX(-4deg) scaleX(1.12);
+      transform-origin: center;
+      filter: drop-shadow(6px 7px 0 rgba(0,0,0,0.48));
     }
+
+    .titleChar {
+      display: inline-block;
+      color: var(--title-color);
+      font-weight: 1000;
+      -webkit-text-stroke: clamp(3px, 0.58vw, 6px) #ffffff;
+      text-stroke: clamp(3px, 0.58vw, 6px) #ffffff;
+
+      text-shadow:
+        2px 2px 0 rgba(255,255,255,0.95),
+        5px 5px 0 rgba(0,0,0,0.32),
+        0 0 8px rgba(255,255,255,0.45);
+
+      transform:
+        translateY(var(--title-y, 0px))
+        rotate(var(--title-rot, 0deg))
+        scaleX(1.16)
+        scaleY(1.04)
+        scale(var(--title-scale, 1));
+    }
+
+    .c1  { --title-color: #e91eaa; --title-y: 3px;  --title-rot: -6deg; --title-scale: 1.02; }
+    .c2  { --title-color: #ff2d55; --title-y: -1px; --title-rot: -4deg; --title-scale: 1.00; }
+    .c3  { --title-color: #ff3b30; --title-y: 2px;  --title-rot: -3deg; --title-scale: 1.02; }
+    .c4  { --title-color: #ff9500; --title-y: -2px; --title-rot: -2deg; --title-scale: 1.00; }
+    .c5  { --title-color: #ffd60a; --title-y: 1px;  --title-rot: 1deg;  --title-scale: 1.02; }
+    .c6  { --title-color: #7bdc00; --title-y: -3px; --title-rot: 2deg;  --title-scale: 0.98; }
+    .c7  { --title-color: #18d86b; --title-y: 1px;  --title-rot: 3deg;  --title-scale: 1.00; }
+    .c8  { --title-color: #00c2ff; --title-y: -2px; --title-rot: 4deg;  --title-scale: 1.00; }
+    .c9  { --title-color: #3b82f6; --title-y: 2px;  --title-rot: 5deg;  --title-scale: 1.03; }
+    .c10 { --title-color: #8b5cf6; --title-y: -4px; --title-rot: 6deg;  --title-scale: 1.10; }
 
     .card p {
       margin: 8px 0;
@@ -332,8 +419,19 @@
 
   <div id="overlay">
     <div class="overlayStack">
-      <div class="overlayTitle">
-        <h1>ドキドキアーチェリー</h1>
+      <div class="overlayTitle titleLogo">
+        <h1 aria-label="ドキドキアーチェリー">
+          <span class="titleChar c1">ド</span>
+          <span class="titleChar c2">キ</span>
+          <span class="titleChar c3">ド</span>
+          <span class="titleChar c4">キ</span>
+          <span class="titleChar c5">ア</span>
+          <span class="titleChar c6">ー</span>
+          <span class="titleChar c7">チ</span>
+          <span class="titleChar c8">ェ</span>
+          <span class="titleChar c9">リ</span>
+          <span class="titleChar c10">ー</span>
+        </h1>
       </div>
       <div class="card">
         <p>画面クリックで開始（マウス固定）</p>
@@ -448,6 +546,9 @@
       grassFX: {
         patches: []
       },
+
+      // 観客のアニメーション管理
+      spectators: [],
 
       // 手元の弓まわり
       bowRoot: null,
@@ -1114,22 +1215,258 @@
       });
     }
 
+    // スタンドの基本形を作る関数。左右どちらのスタンドもこれで作る
+    function createSmoothUpperBodyGeometry() {
+      const radialSegments = 24;
+
+      // y: 高さ
+      // rx: 横幅方向の半径
+      // rz: 奥行き方向の半径
+      // z: 前後位置。少し前傾・胸の厚みを出す
+      const rings = [
+        { y: 0.150, rx: 0.075, rz: 0.052, z: 0.000 }, // 腰下
+        { y: 0.190, rx: 0.088, rz: 0.058, z: 0.003 }, // 腰
+        { y: 0.250, rx: 0.096, rz: 0.064, z: 0.006 }, // 腹
+        { y: 0.315, rx: 0.108, rz: 0.072, z: 0.010 }, // 胸
+        { y: 0.370, rx: 0.120, rz: 0.076, z: 0.010 }, // 上胸
+        { y: 0.410, rx: 0.145, rz: 0.070, z: 0.006 }, // 肩幅
+        { y: 0.445, rx: 0.100, rz: 0.055, z: 0.000 }  // 首元へ絞る
+      ];
+
+      const positions = [];
+      const indices = [];
+
+      // リング頂点を作る
+      for (let i = 0; i < rings.length; i++) {
+        const ring = rings[i];
+
+        for (let j = 0; j < radialSegments; j++) {
+          const a = (j / radialSegments) * Math.PI * 2;
+
+          // 少しだけ人体っぽく、正面側を厚め・背中側を控えめにする
+          const sin = Math.sin(a);
+          const cos = Math.cos(a);
+
+          const frontBackBias = sin > 0 ? 1.10 : 0.88;
+
+          const x = Math.cos(a) * ring.rx;
+          const y = ring.y;
+          const z = ring.z + Math.sin(a) * ring.rz * frontBackBias;
+
+          positions.push(x, y, z);
+        }
+      }
+
+      // 側面の面を作る
+      for (let i = 0; i < rings.length - 1; i++) {
+        for (let j = 0; j < radialSegments; j++) {
+          const a = i * radialSegments + j;
+          const b = i * radialSegments + ((j + 1) % radialSegments);
+          const c = (i + 1) * radialSegments + j;
+          const d = (i + 1) * radialSegments + ((j + 1) % radialSegments);
+
+          indices.push(a, c, b);
+          indices.push(b, c, d);
+        }
+      }
+
+      // 下側を閉じる
+      const bottomCenterIndex = positions.length / 3;
+      positions.push(0, rings[0].y, rings[0].z);
+
+      for (let j = 0; j < radialSegments; j++) {
+        const a = j;
+        const b = (j + 1) % radialSegments;
+        indices.push(bottomCenterIndex, b, a);
+      }
+
+      // 上側を閉じる
+      const topCenterIndex = positions.length / 3;
+      const topRingStart = (rings.length - 1) * radialSegments;
+      const topRing = rings[rings.length - 1];
+      positions.push(0, topRing.y, topRing.z);
+
+      for (let j = 0; j < radialSegments; j++) {
+        const a = topRingStart + j;
+        const b = topRingStart + ((j + 1) % radialSegments);
+        indices.push(topCenterIndex, a, b);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3)
+      );
+
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+
+      return geometry;
+    }
+
+    //窓口から腕が出ているような、前腕〜手のメッシュを作る関数
+    function createSmoothForearmHandGeometry(side, poseType = "normal") {
+      const radialSegments = 14;
+
+      // 前腕〜手を、複数リングで1つの連続した肌メッシュにする
+      // rx/rz を途中で変えることで、肘 → 前腕 → 手首 → 手の太さを自然につなぐ
+      const rings = poseType === "camera"
+        ? [
+            // カメラを構える腕：手を顔の前に上げる
+            { x: side * 0.135, y: 0.305, z: 0.035, rx: 0.024, rz: 0.022 }, // 肘付近
+            { x: side * 0.120, y: 0.365, z: 0.075, rx: 0.023, rz: 0.021 }, // 前腕
+            { x: side * 0.095, y: 0.420, z: 0.120, rx: 0.021, rz: 0.020 }, // 手首
+            { x: side * 0.060, y: 0.455, z: 0.165, rx: 0.032, rz: 0.022 }, // 手のひら
+            { x: side * 0.038, y: 0.465, z: 0.180, rx: 0.026, rz: 0.018 }  // 指先側
+          ]
+        : [
+            // 通常の座っている腕
+            { x: side * 0.155, y: 0.245, z: 0.030, rx: 0.024, rz: 0.022 }, // 肘付近
+            { x: side * 0.158, y: 0.205, z: 0.050, rx: 0.023, rz: 0.021 }, // 前腕
+            { x: side * 0.152, y: 0.160, z: 0.080, rx: 0.020, rz: 0.019 }, // 手首
+            { x: side * 0.145, y: 0.125, z: 0.112, rx: 0.031, rz: 0.022 }, // 手のひら
+            { x: side * 0.142, y: 0.108, z: 0.135, rx: 0.025, rz: 0.017 }  // 指先側
+          ];
+
+      const positions = [];
+      const indices = [];
+
+      for (let i = 0; i < rings.length; i++) {
+        const ring = rings[i];
+
+        for (let j = 0; j < radialSegments; j++) {
+          const a = (j / radialSegments) * Math.PI * 2;
+
+          // 横方向は少し楕円にして、手のひら感を出す
+          const x = ring.x + Math.cos(a) * ring.rx;
+          const y = ring.y;
+          const z = ring.z + Math.sin(a) * ring.rz;
+
+          positions.push(x, y, z);
+        }
+      }
+
+      // 側面
+      for (let i = 0; i < rings.length - 1; i++) {
+        for (let j = 0; j < radialSegments; j++) {
+          const a = i * radialSegments + j;
+          const b = i * radialSegments + ((j + 1) % radialSegments);
+          const c = (i + 1) * radialSegments + j;
+          const d = (i + 1) * radialSegments + ((j + 1) % radialSegments);
+
+          indices.push(a, c, b);
+          indices.push(b, c, d);
+        }
+      }
+
+      // 始端を閉じる
+      const startCenter = positions.length / 3;
+      positions.push(rings[0].x, rings[0].y, rings[0].z);
+
+      for (let j = 0; j < radialSegments; j++) {
+        const a = j;
+        const b = (j + 1) % radialSegments;
+        indices.push(startCenter, b, a);
+      }
+
+      // 終端を閉じる
+      const endCenter = positions.length / 3;
+      const lastRingStart = (rings.length - 1) * radialSegments;
+      const last = rings[rings.length - 1];
+      positions.push(last.x, last.y, last.z);
+
+      for (let j = 0; j < radialSegments; j++) {
+        const a = lastRingStart + j;
+        const b = lastRingStart + ((j + 1) % radialSegments);
+        indices.push(endCenter, a, b);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3)
+      );
+
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+
+      return geometry;
+    }
+
+    // 観客が持っているカメラの小道具を作る関数
+    function createSpectatorCameraProp() {
+      const group = new THREE.Group();
+
+      const cameraMat = new THREE.MeshStandardMaterial({
+        color: 0x111827,
+        roughness: 0.75,
+        metalness: 0.05
+      });
+
+      const lensMat = new THREE.MeshStandardMaterial({
+        color: 0x020617,
+        roughness: 0.45,
+        metalness: 0.25
+      });
+
+      // カメラ本体
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.095, 0.052, 0.035),
+        cameraMat
+      );
+      group.add(body);
+
+      // レンズ
+      const lens = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.018, 0.022, 0.028, 14),
+        lensMat
+      );
+      lens.rotation.x = Math.PI / 2;
+      lens.position.z = 0.030;
+      group.add(lens);
+
+      // 上部のでっぱり
+      const top = new THREE.Mesh(
+        new THREE.BoxGeometry(0.040, 0.018, 0.026),
+        cameraMat
+      );
+      top.position.set(0, 0.034, 0);
+      group.add(top);
+
+      return group;
+    }
+
     function createSpectatorModel() {
       const spectator = new THREE.Group();
 
-      const skinColors = [0xffd2a6, 0xe8b07e, 0xc98b5f, 0xf1c27d];
-      const shirtColors = [0xff5a5f, 0x4dabf7, 0x51cf66, 0xffd43b, 0xcc5de8, 0xffffff];
-      const pantsColors = [0x1f2937, 0x334155, 0x111827, 0x475569];
-      const hairColors = [0x1f130f, 0x2b1b14, 0x3b2f2f, 0x111111, 0x6b4f3a];
+      const skinColors = [
+        0xffd2a6, 0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524
+      ];
+
+      const shirtColors = [
+        0xd94848, 0x2563eb, 0x16a34a, 0xfacc15,
+        0x7c3aed, 0xf8fafc, 0xf97316, 0x0f766e,
+        0x1e293b, 0xbe123c
+      ];
+
+      const pantsColors = [
+        0x111827, 0x1f2937, 0x334155, 0x475569, 0x293241
+      ];
+
+      const hairColors = [
+        0x111111, 0x1f130f, 0x2b1b14, 0x3b2f2f, 0x6b4f3a, 0x8b6f47
+      ];
 
       const skinMat = new THREE.MeshStandardMaterial({
         color: skinColors[Math.floor(Math.random() * skinColors.length)],
-        roughness: 0.9
+        roughness: 0.92
       });
 
       const shirtMat = new THREE.MeshStandardMaterial({
         color: shirtColors[Math.floor(Math.random() * shirtColors.length)],
-        roughness: 0.9
+        roughness: 0.88
       });
 
       const pantsMat = new THREE.MeshStandardMaterial({
@@ -1139,108 +1476,250 @@
 
       const hairMat = new THREE.MeshStandardMaterial({
         color: hairColors[Math.floor(Math.random() * hairColors.length)],
+        roughness: 0.96
+      });
+
+      const shoeMat = new THREE.MeshStandardMaterial({
+        color: 0x0f172a,
         roughness: 0.95
       });
 
+      const eyeMat = new THREE.MeshStandardMaterial({
+        color: 0x050505,
+        roughness: 0.7
+      });
+
+      const mouthMat = new THREE.MeshStandardMaterial({
+        color: 0x7f1d1d,
+        roughness: 0.9
+      });
+
+      // アニメーションさせる部位を保持
+      const parts = {
+        head: null,
+        body: null,
+        leftUpperArm: null,
+        rightUpperArm: null,
+        leftForeArm: null,
+        rightForeArm: null,
+        leftHand: null,
+        rightHand: null,
+        camera: null
+      };
+
       // ----------------------------
-      // 胴体：少し丸みのある上半身
+      // 上半身：腰〜胸〜肩までを1つの滑らかなメッシュで作る
       // ----------------------------
       const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.095, 0.24, 3, 8),
+        createSmoothUpperBodyGeometry(),
         shirtMat
       );
-      body.position.y = 0.28;
-      body.scale.set(1.05, 1.0, 0.72);
-      body.rotation.x = THREE.MathUtils.degToRad(6); // 少し前傾
+
+      // 少し前傾させて、座っている姿勢にする
+      body.rotation.x = THREE.MathUtils.degToRad(5);
+
       spectator.add(body);
+      parts.body = body;
 
       // 首
       const neck = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.035, 0.04, 0.06, 8),
+        new THREE.CylinderGeometry(0.032, 0.038, 0.058, 12),
         skinMat
       );
-      neck.position.y = 0.47;
+      neck.position.y = 0.475;
       spectator.add(neck);
 
-      // 頭
+      // ----------------------------
+      // 頭部グループ
+      // ----------------------------
+      const headGroup = new THREE.Group();
+      headGroup.position.y = 0.56;
+      spectator.add(headGroup);
+      parts.head = headGroup;
+
       const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.09, 10, 8),
+        new THREE.SphereGeometry(0.086, 18, 12),
         skinMat
       );
-      head.position.y = 0.56;
-      head.scale.set(0.92, 1.05, 0.92);
-      spectator.add(head);
+      head.scale.set(0.92, 1.06, 0.9);
+      headGroup.add(head);
 
-      // 髪：上半分を覆うパーツ
+      // 髪
       const hair = new THREE.Mesh(
-        new THREE.SphereGeometry(0.092, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.62),
+        new THREE.SphereGeometry(
+          0.09,
+          18,
+          10,
+          0,
+          Math.PI * 2,
+          0,
+          Math.PI * 0.62
+        ),
         hairMat
       );
-      hair.position.y = 0.595;
-      hair.scale.set(1.0, 0.72, 1.0);
-      spectator.add(hair);
+      hair.position.y = 0.038;
+      hair.scale.set(1.03, 0.74, 1.02);
+      headGroup.add(hair);
 
-      // ----------------------------
-      // 腕：左右
-      // ----------------------------
-      function addArm(side) {
-        const upperArm = new THREE.Mesh(
-          new THREE.CapsuleGeometry(0.028, 0.15, 2, 6),
-          shirtMat
-        );
-        upperArm.position.set(side * 0.115, 0.31, 0.005);
-        upperArm.rotation.z = side * THREE.MathUtils.degToRad(18);
-        upperArm.rotation.x = THREE.MathUtils.degToRad(8);
-        spectator.add(upperArm);
+      // 前髪
+      const bang = new THREE.Mesh(
+        new THREE.BoxGeometry(0.10, 0.026, 0.022),
+        hairMat
+      );
+      bang.position.set(0, 0.035, 0.073);
+      bang.rotation.x = THREE.MathUtils.degToRad(-10);
+      headGroup.add(bang);
 
-        const foreArm = new THREE.Mesh(
-          new THREE.CapsuleGeometry(0.024, 0.13, 2, 6),
+      // 耳
+      function addEar(side) {
+        const ear = new THREE.Mesh(
+          new THREE.SphereGeometry(0.018, 8, 6),
           skinMat
         );
-        foreArm.position.set(side * 0.14, 0.19, 0.035);
-        foreArm.rotation.z = side * THREE.MathUtils.degToRad(8);
-        foreArm.rotation.x = THREE.MathUtils.degToRad(55);
-        spectator.add(foreArm);
+        ear.position.set(side * 0.082, -0.005, 0.005);
+        ear.scale.set(0.55, 0.85, 0.35);
+        headGroup.add(ear);
+      }
+
+      addEar(-1);
+      addEar(1);
+
+      // 目
+      function addEye(side) {
+        const eye = new THREE.Mesh(
+          new THREE.SphereGeometry(0.0085, 8, 6),
+          eyeMat
+        );
+        eye.position.set(side * 0.027, 0.005, 0.078);
+        eye.scale.set(1.0, 0.72, 0.45);
+        headGroup.add(eye);
+      }
+
+      addEye(-1);
+      addEye(1);
+
+      // 鼻
+      const nose = new THREE.Mesh(
+        new THREE.ConeGeometry(0.009, 0.03, 7),
+        skinMat
+      );
+      nose.position.set(0, -0.01, 0.087);
+      nose.rotation.x = Math.PI / 2;
+      headGroup.add(nose);
+
+      // 口
+      const mouth = new THREE.Mesh(
+        new THREE.BoxGeometry(0.034, 0.0045, 0.004),
+        mouthMat
+      );
+      mouth.position.set(0, -0.035, 0.079); 
+      headGroup.add(mouth);
+
+      // カメラを持つ手の観客は少なめにして、個体差をつける
+      const spectatorPose = Math.random() < 0.18
+        ? "camera"
+        : "normal";
+
+      function addArm(side) {
+        const isCameraPose = spectatorPose === "camera";
+
+        // 服の袖・上腕
+        const upperArm = new THREE.Mesh(
+          new THREE.CapsuleGeometry(
+            0.028,
+            isCameraPose ? 0.145 : 0.16,
+            6,
+            14
+          ),
+          shirtMat
+        );
+
+        if (isCameraPose) {
+          // カメラを構えるので、上腕をやや前・上方向へ
+          upperArm.position.set(side * 0.125, 0.335, 0.020);
+          upperArm.rotation.z = side * THREE.MathUtils.degToRad(42);
+          upperArm.rotation.x = THREE.MathUtils.degToRad(34);
+        } else {
+          upperArm.position.set(side * 0.142, 0.305, 0.010);
+          upperArm.rotation.z = side * THREE.MathUtils.degToRad(23);
+          upperArm.rotation.x = THREE.MathUtils.degToRad(10);
+        }
+
+        spectator.add(upperArm);
+
+        // 肌部分：肘〜前腕〜手を1つの連続メッシュにする
+        const forearmHand = new THREE.Mesh(
+          createSmoothForearmHandGeometry(side, spectatorPose),
+          skinMat
+        );
+
+        spectator.add(forearmHand);
+
+        if (side < 0) {
+          parts.leftUpperArm = upperArm;
+          parts.leftForeArm = forearmHand;
+          parts.leftHand = forearmHand;
+        } else {
+          parts.rightUpperArm = upperArm;
+          parts.rightForeArm = forearmHand;
+          parts.rightHand = forearmHand;
+        }
       }
 
       addArm(-1);
       addArm(1);
 
+      if (spectatorPose === "camera") {
+        const cameraProp = createSpectatorCameraProp();
+
+        // 顔の前、両手の間に置く
+        cameraProp.position.set(0, 0.465, 0.178);
+        cameraProp.rotation.x = THREE.MathUtils.degToRad(-4);
+        cameraProp.rotation.y = THREE.MathUtils.degToRad((Math.random() - 0.5) * 8);
+        cameraProp.rotation.z = THREE.MathUtils.degToRad((Math.random() - 0.5) * 5);
+
+        spectator.add(cameraProp);
+        parts.camera = cameraProp;
+
+        // カメラを構えている人は少し前のめり
+        body.rotation.x = THREE.MathUtils.degToRad(8);
+
+        if (parts.head) {
+          parts.head.rotation.x = THREE.MathUtils.degToRad(-3);
+        }
+      }
+
       // ----------------------------
-      // 座っている足：太もも＋すね
+      // 座っている脚
       // ----------------------------
       function addLeg(side) {
         const thigh = new THREE.Mesh(
-          new THREE.CapsuleGeometry(0.035, 0.18, 2, 6),
+          new THREE.CapsuleGeometry(0.033, 0.19, 4, 9),
           pantsMat
         );
-        thigh.position.set(side * 0.05, 0.115, 0.08);
+        thigh.position.set(side * 0.052, 0.12, 0.078);
         thigh.rotation.x = THREE.MathUtils.degToRad(78);
         spectator.add(thigh);
 
         const shin = new THREE.Mesh(
-          new THREE.CapsuleGeometry(0.03, 0.16, 2, 6),
+          new THREE.CapsuleGeometry(0.028, 0.158, 4, 9),
           pantsMat
         );
-        shin.position.set(side * 0.05, 0.045, 0.16);
-        shin.rotation.x = THREE.MathUtils.degToRad(18);
-        spectator.add(shin);
 
-        const foot = new THREE.Mesh(
-          new THREE.BoxGeometry(0.06, 0.035, 0.09),
-          pantsMat
-        );
-        foot.position.set(side * 0.05, 0.015, 0.245);
-        spectator.add(foot);
+        // 靴をなくすので、すねだけで足元が自然に見える位置へ調整
+        shin.position.set(side * 0.052, 0.052, 0.172);
+        shin.rotation.x = THREE.MathUtils.degToRad(22);
+        spectator.add(shin);
       }
 
       addLeg(-1);
       addLeg(1);
 
       // ----------------------------
-      // 個体差
+      // サイズ
+      // 前回の一回り小さい値を維持しつつ、少し個体差をつける
       // ----------------------------
-      const spectatorBaseScale = 3.35;
+      const spectatorBaseScale = 2.85;
       const s = spectatorBaseScale * (0.92 + Math.random() * 0.16);
 
       spectator.scale.set(
@@ -1249,9 +1728,26 @@
         s * (0.94 + Math.random() * 0.12)
       );
 
-      // 少し姿勢の個体差
-      spectator.rotation.x = THREE.MathUtils.degToRad((Math.random() - 0.5) * 3);
-      spectator.rotation.z = THREE.MathUtils.degToRad((Math.random() - 0.5) * 2);
+      // 姿勢の個体差
+      spectator.rotation.x = THREE.MathUtils.degToRad((Math.random() - 0.5) * 2.5);
+      spectator.rotation.z = THREE.MathUtils.degToRad((Math.random() - 0.5) * 1.6);
+
+      // アニメーション用データ
+      spectator.userData.spectatorAnim = {
+        parts,
+        pose: spectatorPose,
+        baseRotationX: spectator.rotation.x,
+        baseRotationZ: spectator.rotation.z,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.75 + Math.random() * 0.55,
+        bodySway: 0.010 + Math.random() * 0.010,
+        headYaw: THREE.MathUtils.degToRad(2.0 + Math.random() * 3.0),
+        headPitch: THREE.MathUtils.degToRad(1.0 + Math.random() * 2.0),
+        armSwing: THREE.MathUtils.degToRad(2.0 + Math.random() * 3.0),
+
+        // たまに拍手っぽく動く人
+        clapLike: Math.random() < 0.18
+      };
 
       return spectator;
     }
@@ -1269,9 +1765,9 @@
         : -0.10 * (options.direction ?? 1);
 
       spectator.position.set(
-        seatPosition.x + (Math.random() - 0.5) * 0.18,
-        seatPosition.y + 0.34,
-        seatPosition.z + forwardOffset + (Math.random() - 0.5) * 0.22
+        seatPosition.x + (Math.random() - 0.5) * 0.16,
+        seatPosition.y + 0.28,
+        seatPosition.z + forwardOffset + (Math.random() - 0.5) * 0.20
       );
 
       // 基本はフィールド側を向かせる
@@ -1292,7 +1788,13 @@
       // ちょっとだけ首振り感
       spectator.rotation.y += (Math.random() - 0.5) * 0.35;
 
+      // 毎フレーム更新で使う基準向きを保存
+      spectator.userData.baseRotationY = spectator.rotation.y;
+
       group.add(spectator);
+
+      // 毎フレーム動かす対象として登録
+      game.spectators.push(spectator);
     }
 
     function createSideStadiumStand({
@@ -4148,10 +4650,137 @@
 
       updateWindFX(dt, elapsed);
       updateGrassFX(dt, elapsed);
+      updateSpectators(dt, elapsed);
       updateOpenFieldSkyDome();
       updateHUD();
 
       game.renderer.render(game.scene, game.camera);
+    }
+
+    function updateSpectators(dt, elapsed) {
+      if (!game.spectators?.length) return;
+
+      for (const spectator of game.spectators) {
+        const anim = spectator.userData.spectatorAnim;
+        if (!anim) continue;
+
+        const t = elapsed * anim.speed + anim.phase;
+        const parts = anim.parts;
+
+        // 体全体の微妙な揺れ
+        spectator.rotation.x =
+          anim.baseRotationX +
+          Math.sin(t * 1.1) * anim.bodySway;
+
+        spectator.rotation.z =
+          anim.baseRotationZ +
+          Math.sin(t * 0.9 + 1.7) * anim.bodySway * 0.7;
+
+        // 観客全体がほんの少し左右を見る
+        spectator.rotation.y =
+          spectator.userData.baseRotationY +
+          Math.sin(t * 0.35) * THREE.MathUtils.degToRad(1.5);
+
+        // 頭の動き
+        if (parts.head) {
+          parts.head.rotation.y =
+            Math.sin(t * 0.55) * anim.headYaw;
+
+          parts.head.rotation.x =
+            Math.sin(t * 0.8 + 0.6) * anim.headPitch;
+        }
+
+        // 腕の動き
+        if (anim.pose === "camera") {
+          // カメラを構えている人は、手を大きく振らずに少しだけ揺らす
+          const cameraMove = Math.sin(t * 0.8) * 0.006;
+
+          if (parts.leftForeArm) {
+            parts.leftForeArm.position.y = cameraMove;
+          }
+
+          if (parts.rightForeArm) {
+            parts.rightForeArm.position.y = cameraMove;
+          }
+
+          if (parts.camera) {
+            parts.camera.position.y = 0.465 + cameraMove;
+            parts.camera.rotation.y =
+              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2);
+          }
+        } else if (anim.clapLike) {
+          // 拍手っぽい処理：上腕も一緒に寄せる
+          const clap = Math.max(0, Math.sin(t * 3.2));
+
+          if (parts.leftUpperArm) {
+            parts.leftUpperArm.rotation.x =
+              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
+            parts.leftUpperArm.rotation.z =
+              THREE.MathUtils.degToRad(-23) + clap * THREE.MathUtils.degToRad(8);
+          }
+
+          if (parts.rightUpperArm) {
+            parts.rightUpperArm.rotation.x =
+              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
+            parts.rightUpperArm.rotation.z =
+              THREE.MathUtils.degToRad(23) - clap * THREE.MathUtils.degToRad(8);
+          }
+
+          if (parts.leftForeArm) {
+            parts.leftForeArm.rotation.x =
+              clap * THREE.MathUtils.degToRad(4);
+            parts.leftForeArm.rotation.z =
+              THREE.MathUtils.degToRad(-8) + clap * THREE.MathUtils.degToRad(10);
+            parts.leftForeArm.position.x = clap * 0.006;
+          }
+
+          if (parts.rightForeArm) {
+            parts.rightForeArm.rotation.x =
+              clap * THREE.MathUtils.degToRad(4);
+            parts.rightForeArm.rotation.z =
+              THREE.MathUtils.degToRad(8) - clap * THREE.MathUtils.degToRad(10);
+            parts.rightForeArm.position.x = -clap * 0.006;
+          }
+        } else {
+          // 普通の観客：上腕と前腕〜手を同じ流れで連動させる
+          const armMove = Math.sin(t * 0.9) * anim.armSwing;
+          const armMove2 = Math.sin(t * 0.9 + 0.35) * anim.armSwing * 0.45;
+
+          const leftUpperBaseX = THREE.MathUtils.degToRad(10);
+          const rightUpperBaseX = THREE.MathUtils.degToRad(10);
+
+          const leftUpperBaseZ = THREE.MathUtils.degToRad(-23);
+          const rightUpperBaseZ = THREE.MathUtils.degToRad(23);
+
+          // 上腕が前後に揺れる
+          if (parts.leftUpperArm) {
+            parts.leftUpperArm.rotation.x = leftUpperBaseX + armMove;
+            parts.leftUpperArm.rotation.z = leftUpperBaseZ + armMove2;
+          }
+
+          if (parts.rightUpperArm) {
+            parts.rightUpperArm.rotation.x = rightUpperBaseX - armMove;
+            parts.rightUpperArm.rotation.z = rightUpperBaseZ - armMove2;
+          }
+
+          // 前腕〜手は、上腕より少し遅れて同方向に揺らす
+          // createSmoothForearmHandGeometry() は絶対座標の一体メッシュなので、
+          // 回転を大きく入れすぎず、少しだけ位置も追従させる
+          if (parts.leftForeArm) {
+            parts.leftForeArm.rotation.x = armMove * 0.55;
+            parts.leftForeArm.rotation.z = armMove2 * 0.55;
+            parts.leftForeArm.position.y = Math.sin(t * 0.9 + 0.2) * 0.004;
+            parts.leftForeArm.position.z = Math.sin(t * 0.9 + 0.2) * 0.003;
+          }
+
+          if (parts.rightForeArm) {
+            parts.rightForeArm.rotation.x = -armMove * 0.55;
+            parts.rightForeArm.rotation.z = -armMove2 * 0.55;
+            parts.rightForeArm.position.y = Math.sin(t * 0.9 + 0.2) * 0.004;
+            parts.rightForeArm.position.z = Math.sin(t * 0.9 + 0.2) * 0.003;
+          }
+        }
+      }
     }
 
     function updateOpenFieldSkyDome() {
