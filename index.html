@@ -6,6 +6,7 @@
   <title>ドキドキアーチェリー</title>
 
   <style>
+    /* ベーススタイル */
     html, body {
       margin: 0;
       height: 100%;
@@ -14,6 +15,7 @@
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
     }
 
+    /* HUD（ヘッドアップディスプレイ：左上に固定表示する黒半透明のパネル）スタイル */
     #hud {
       position: fixed;
       left: 12px;
@@ -29,12 +31,14 @@
       box-shadow: 0 8px 24px rgba(0,0,0,.18);
     }
 
+    /* HUD内のラベルスタイル */
     .hudLabel {
       display: inline-block;
       width: 80px;
       text-align: left;
     }
 
+    /* パワー表示の行スタイル */
     .powerRow {
       display: flex;
       align-items: center;
@@ -42,11 +46,13 @@
       margin-top: 4px;
     }
 
+    /* パワー表示のラベルスタイル */
     .powerLabel {
       white-space: nowrap;
       flex-shrink: 0;
     }
 
+    /* チャージバーの外枠スタイル */
     #chargeWrap {
       flex: 1;
       height: 24px;
@@ -57,6 +63,7 @@
       position: relative;
     }
 
+    /* チャージバーの内側スタイル */
     #chargeBar {
       width: 0%;
       height: 100%;
@@ -65,6 +72,7 @@
       border-radius: 999px;
     }
 
+    /* チャージテキストのスタイル */
     #chargeText {
       position: absolute;
       top: 50%;
@@ -77,6 +85,7 @@
       color: #fff;
     }
 
+    /* 照準マークのスタイル */
     #crosshair {
       position: fixed;
       left: 50%;
@@ -89,6 +98,7 @@
       filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
     }
 
+    /* 照準マークの線のスタイル */
     #crosshair::before,
     #crosshair::after {
       content: "";
@@ -99,10 +109,10 @@
       background: rgba(255,255,255,.96);
       border-radius: 2px;
     }
-
     #crosshair::before { width: 18px; height: 2px; }
     #crosshair::after  { width: 2px;  height: 18px; }
 
+    /* オーバーレイのスタイル */
     #overlay {
       position: fixed;
       inset: 0;
@@ -114,11 +124,11 @@
       text-align: center;
       padding: 20px;
     }
-
     #overlay.hidden {
       display: none;
     }
 
+    /* ゲームオーバースクリーンのスタイル */
     #gameOverScreen {
       position: fixed;
       inset: 0;
@@ -146,11 +156,9 @@
       letter-spacing: 0.04em;
       text-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
     }
-
     #gameOverScreen.visible {
       display: grid;
     }
-
     #gameOverScreen.isCelebration {
       color: #f7fbff;
       text-shadow:
@@ -162,6 +170,7 @@
       animation: congratulations-neon 2.2s ease-in-out infinite alternate;
     }
 
+    /* タイトルのスタイル */
     @media (max-width: 640px) {
       .overlayTitle {
         padding: 8px 12px 18px;
@@ -181,6 +190,7 @@
       }
     }
 
+    /* お祝いエフェクトのスタイル */
     #celebrationLayer {
       position: fixed;
       inset: 0;
@@ -189,12 +199,14 @@
       pointer-events: none;
     }
 
+    /* お祝いエフェクトの紙吹雪一片のスタイル */
     .confetti-burst {
       position: absolute;
       inset: 0;
       overflow: hidden;
     }
 
+    /* お祝いエフェクトの紙吹雪一片のスタイル */
     .confetti-piece {
       position: absolute;
       top: -18vh;
@@ -218,6 +230,7 @@
       will-change: transform, opacity;
     }
 
+    /* お祝いエフェクトの紙吹雪が落ちるアニメーションのスタイル */
     @keyframes confetti-fall {
       0% {
         opacity: 0;
@@ -237,6 +250,7 @@
       }
     }
 
+    /* お祝いエフェクトのタイトルのネオンアニメーションのスタイル */
     @keyframes congratulations-neon {
       0% {
         text-shadow:
@@ -257,6 +271,7 @@
       }
     }
 
+    /* オーバーレイのカードスタイル */
     .card {
       max-width: 780px;
       padding: 20px;
@@ -266,12 +281,14 @@
       backdrop-filter: blur(8px);
     }
 
+    /* オーバーレイのタイトルスタイル */
     .overlayStack {
       display: grid;
       justify-items: center;
       gap: 16px;
     }
 
+    /* オーバーレイのタイトルスタイル */
     .overlayTitle {
       position: relative;
       padding: 10px 24px 22px;
@@ -282,6 +299,7 @@
       transform: skewX(-8deg) rotate(-2deg);
     }
 
+    /* オーバーレイのタイトルの背景装飾スタイル */
     .overlayTitle::before {
       content: "";
       position: absolute;
@@ -303,6 +321,7 @@
         0 12px 18px rgba(0,0,0,0.35);
     }
 
+    /* オーバーレイのタイトルの背景装飾スタイル */
     .overlayTitle::after {
       content: "";
       position: absolute;
@@ -316,6 +335,7 @@
       border-radius: 999px;
     }
 
+    /* オーバーレイのタイトルのテキストスタイル */
     .overlayTitle h1 {
       margin: 0;
       display: flex;
@@ -342,6 +362,7 @@
       filter: drop-shadow(6px 7px 0 rgba(0,0,0,0.48));
     }
 
+    /* オーバーレイのタイトルの各文字スタイル */
     .titleChar {
       display: inline-block;
       color: var(--title-color);
@@ -361,7 +382,6 @@
         scaleY(1.04)
         scale(var(--title-scale, 1));
     }
-
     .c1  { --title-color: #e91eaa; --title-y: 3px;  --title-rot: -6deg; --title-scale: 1.02; }
     .c2  { --title-color: #ff2d55; --title-y: -1px; --title-rot: -4deg; --title-scale: 1.00; }
     .c3  { --title-color: #ff3b30; --title-y: 2px;  --title-rot: -3deg; --title-scale: 1.02; }
@@ -373,11 +393,13 @@
     .c9  { --title-color: #3b82f6; --title-y: 2px;  --title-rot: 5deg;  --title-scale: 1.03; }
     .c10 { --title-color: #8b5cf6; --title-y: -4px; --title-rot: 6deg;  --title-scale: 1.10; }
 
+    /* オーバーレイの説明文スタイル */
     .card p {
       margin: 8px 0;
       opacity: .96;
     }
 
+    /* キーボード操作説明のスタイル */
     .kbd {
       display: inline-block;
       padding: 2px 8px;
@@ -386,6 +408,7 @@
       border: 1px solid rgba(255,255,255,.2);
     }
 
+    /* エラー表示のスタイル */
     #errorBox {
       margin-top: 12px;
       text-align: left;
@@ -476,6 +499,8 @@
     const errorBox = document.getElementById("errorBox");
     const hudText = document.getElementById("hudText");
     const celebrationLayer = document.getElementById("celebrationLayer");
+
+    // 風の方向候補（左・右）。ベクトルはX軸方向のみで、速度はランダムに変化させる。
     const WIND_DIRECTIONS = [
       {
         label: "左",
@@ -487,6 +512,8 @@
         vector: new THREE.Vector3(1, 0, 0)
       }
     ];
+
+    // 紙吹雪の色候補、1ヒットあたりの紙吹雪の数、同時に存在する紙吹雪の最大数、タッチデバイス判定
     const CONFETTI_COLORS = [
       "#ffe066",
       "#ff8fab",
@@ -495,13 +522,29 @@
       "#cdb4ff",
       "#ffffff"
     ];
+    // 紙吹雪の色候補、1ヒットあたりの紙吹雪の数、同時に存在する紙吹雪の最大数、タッチデバイス判定
     const CONFETTI_PIECES_PER_HIT = 40;
+    // 紙吹雪の色候補、1ヒットあたりの紙吹雪の数、同時に存在する紙吹雪の最大数、タッチデバイス判定
     const MAX_ACTIVE_CONFETTI_BURSTS = 3;
+    // 紙吹雪の色候補、1ヒットあたりの紙吹雪の数、同時に存在する紙吹雪の最大数、タッチデバイス判定
     const isTouchDevice =
       ("ontouchstart" in window) ||
       (navigator.maxTouchPoints > 0) ||
       (navigator.msMaxTouchPoints > 0);
 
+    // ============================================================
+    // 0. 共通設定・グローバル状態
+    // ------------------------------------------------------------
+    // DOM参照、定数、ゲーム全体の状態を上部に集約する。
+    // 各処理はここで定義した game オブジェクトを読み書きする。
+    // ============================================================
+
+    /**
+     * 役割: 初期化中や実行中に発生したエラーを画面上のエラー枠へ表示する。
+     * 処理単位:
+     * - エラー枠を表示状態へ変更する。
+     * - 受け取ったエラーメッセージをそのまま画面へ出す。
+     */
     function showError(message) {
       errorBox.style.display = "block";
       errorBox.textContent = message;
@@ -561,7 +604,6 @@
       chargeDirection: 1, // 1: 増加中 / -1: 減少中
       maxChargeTime: 1.7,
       hasLoadedArrow: true,
-
       shots: 0,
       hits: 0,
       score: 0,
@@ -620,19 +662,19 @@
     const SCORE_POST_URL = "http://localhost:5000/score"; // PowerShell側
     const ENABLE_SCORE_POST = true; // ON/OFF切り替え
 
+    // ============================================================
+    // 1. 初期化・ブラウザ基盤
     // ------------------------------------------------------------
-    // 起動
-    // ------------------------------------------------------------
-    try {
-      init();
-      animate();
-    } catch (err) {
-      showError("初期化エラー:\n" + (err?.stack || err?.message || String(err)));
-    }
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
+    // ============================================================
 
-    // ============================================================
-    // 初期化
-    // ============================================================
+    /**
+     * 役割: ゲーム全体の初期化入口。シーン、環境、的、弓、入力、リサイズ監視、HUDを順番に準備する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function init() {
       createCore();
       createEnvironment();
@@ -644,13 +686,19 @@
       updateHUD();
     }
 
-    // ============================================================
-    // Core: Scene / Camera / Renderer / Controls
-    // ============================================================
+    /**
+     * 役割: Three.jsのScene/Camera/Renderer/Controlsと、開始オーバーレイの入力を初期化する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createCore() {
       // シーン
       game.scene = new THREE.Scene();
-      game.scene.background = new THREE.Color(0x87ceeb); // 青空
+
+      // 青空
+      game.scene.background = new THREE.Color(0x87ceeb); 
 
       // カメラ
       game.camera = new THREE.PerspectiveCamera(
@@ -661,13 +709,16 @@
       );
       game.camera.position.set(0, 1.6, 8);
       game.camera.rotation.order = "YXZ";
+
+      // タッチデバイス用の視点操作初期値
       game.touchLook.yaw = game.camera.rotation.y;
       game.touchLook.pitch = game.camera.rotation.x;
 
+      // カメラの初期位置と向きを保存（追従カメラ用）
       game.savedCameraPosition.copy(game.camera.position);
       game.savedCameraQuaternion.copy(game.camera.quaternion);
 
-      // レンダラ
+      // 3Dレンダラ
       game.renderer = new THREE.WebGLRenderer({ antialias: true });
       game.renderer.setSize(window.innerWidth, window.innerHeight);
       game.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -696,9 +747,11 @@
         }
       }
 
+      // オーバーレイとマウス操作の連携
       function handleOverlayStart(e) {
         if (game.isGameOver) return;
 
+        // タッチデバイスの場合はオーバーレイを消すだけでゲーム開始。マウス固定は行わない。
         if (isTouchDevice) {
           e.preventDefault();
           e.stopPropagation();
@@ -714,9 +767,11 @@
         game.controls.lock();
       }
 
+      // オーバーレイ全体でクリックとタッチ開始をキャッチしてゲーム開始へ。タッチはパッシブオプションを外して、スクロール抑制も行う。
       overlay.addEventListener("click", handleOverlayStart);
       overlay.addEventListener("touchstart", handleOverlayStart, { passive: false });
 
+      // マウスがロックされたらオーバーレイを消す。ゲーム開始前ならゲームも開始する。
       game.controls.addEventListener("lock", () => {
         overlay.classList.add("hidden");
 
@@ -725,6 +780,7 @@
         }
       });
 
+      // マウスがアンロックされたら、ゲームオーバーでなければオーバーレイを再表示する。ゲームオーバー後はマウス操作でオーバーレイを消したくないため、何もしない。
       game.controls.addEventListener("unlock", () => {
         if (!game.isGameOver && !isTouchDevice) {
           overlay.classList.remove("hidden");
@@ -732,52 +788,87 @@
       });
     }
 
+    /**
+     * 役割: ブラウザサイズ変更時にカメラ比率とレンダラサイズを更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function setupResize() {
+      window.addEventListener("resize", () => {
+        game.camera.aspect = window.innerWidth / window.innerHeight;
+        game.camera.updateProjectionMatrix();
+        applyResponsiveBowLayout();
+      });
+    }
+
+
     // ============================================================
-    // Environment: 照明 / 背景デザイン / フィールドの種類
+    // 2. フィールド・環境生成
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
     // ============================================================
+
+    /**
+     * 役割: 起動時に選ばれたフィールド種別に応じて、草原・競技場・山奥の環境を分岐生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createEnvironment() {
+      // どのフィールドでも共通の環境要素を先に配置する
       createLights();
 
+      // フィールド種別ごとに環境を分けて生成する
       switch (game.fieldType) {
         case 1:
         default:
+          // 草原フィールド
           createOpenFieldEnvironment();
           break;
         case 2:
+          // 競技場フィールド
           createStadiumEnvironment();
           break;
         case 3:
+          // 山奥フィールド
           createMountainForestEnvironment();
           break;
       }
     }
 
-    // 芝生の地面と、遠くに山が見えるオープンフィールド
-    function createOpenFieldEnvironment() {
-      createGrassGround();
-      createGrassFX();
-      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/openfield_panorama.jpg");
+    /**
+     * 役割: シーン全体を照らす環境光と太陽光を配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createLights() {
+      // 半球ライトで空と地面からの柔らかい光を表現
+      const hemi = new THREE.HemisphereLight(0xffffff, 0x335566, 0.95);
+      game.scene.add(hemi);
+
+      // 方向ライトで立体感を足す
+      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(8, 14, 4);
+      game.scene.add(dir);
     }
 
-    // 競技場は芝生の地面と、段々席のスタンドが特徴
-    function createStadiumEnvironment() {
-      createGrassGround();
-      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/cityfield_panorama.jpg");
-      createStadiumStands();
-    }
-
-    // 山奥は土の地面と、両脇の森、遠くの深い山々が特徴
-    function createMountainForestEnvironment() {
-      createForestGround();
-      createForestRocks();        // 追加：岩を置く
-      createForestTrees360Dense();
-      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/forestfield_panorama.jpg");
-    }
-
-    // 矢が衝突するオブジェクトを登録
+    /**
+     * 役割: 木・岩・観客席など、矢が刺さる対象メッシュを衝突判定リストへ登録する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function registerArrowCollisionObject(object3D) {
+      // もしオブジェクトが存在しない場合は何もしない
       if (!object3D) return;
 
+      // オブジェクトとその子孫をすべてチェックして、Meshがあれば衝突判定リストへ追加する
       object3D.traverse((child) => {
         if (child.isMesh) {
           game.arrowCollisionObjects.push(child);
@@ -785,19 +876,82 @@
       });
     }
 
+    /**
+     * 役割: 草原フィールドの地面、草、パノラマ空を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createOpenFieldEnvironment() {
+      // 草原フィールドの地面、草、パノラマ空を生成する。
+      createGrassGround();
+      // 風エフェクトは草原フィールドだけに配置する
+      createGrassFX();
+      // 草原フィールドのパノラマ空を生成する。URLは適宜差し替える。
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/openfield_panorama.jpg");
+    }
+
+    /**
+     * 役割: 競技場フィールドの地面、街背景、観客席を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createStadiumEnvironment() {
+      // 競技場フィールドの地面、街背景、観客席を生成する。
+      createGrassGround();
+      // 観客席は競技場フィールドだけに配置する
+      createStadiumStands();
+      // 競技場フィールドのパノラマ空を生成する。URLは適宜差し替える。
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/cityfield_panorama.jpg");
+    }
+
+    /**
+     * 役割: 山奥フィールドの土、岩、木、森背景を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createMountainForestEnvironment() {
+      // 山奥フィールドの土、岩、木、森背景を生成する。
+      createForestGround();
+      // 岩と木は山奥フィールドだけに配置する
+      createForestRocks();
+      // 岩と木は山奥フィールドだけに配置する
+      createForestTrees360Dense();
+      // 山奥フィールドのパノラマ空を生成する。URLは適宜差し替える。
+      createPanoramaSkyDome("https://teru-hamada.github.io/dokidoki-archery/images/forestfield_panorama.jpg");
+    }
+
+    /**
+     * 役割: パノラマ画像を半球ドームへ貼り、遠景背景として表示する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createPanoramaSkyDome(imagePath) {
       const loader = new THREE.TextureLoader();
 
       // 読み込み前の仮背景色
       game.scene.background = new THREE.Color(0x0b4ea2);
 
+      // 画像を読み込んでテクスチャを作成し、半球ドームのマテリアルに貼る。読み込み失敗もキャッチする。
       loader.load(
         imagePath,
         (texture) => {
+          // テクスチャの設定。sRGBカラースペースで、繰り返しは水平のみ、フィルタは線形にする。
           texture.colorSpace = THREE.SRGBColorSpace;
+          // 水平方向は繰り返してつなげる。垂直方向は端で止める。
           texture.wrapS = THREE.RepeatWrapping;
+          // 垂直方向は端で止める。これで天頂と地平線のつなぎ目が自然になる。
           texture.wrapT = THREE.ClampToEdgeWrapping;
+          // フィルタは線形にして、近距離でも遠距離でも自然に見えるようにする。
           texture.minFilter = THREE.LinearFilter;
+          // フィルタは線形にして、近距離でも遠距離でも自然に見えるようにする。
           texture.magFilter = THREE.LinearFilter;
 
           // 上半球（天頂 → 地平線）に貼る
@@ -812,6 +966,7 @@
             Math.PI / 2
           );
 
+          // テクスチャを貼るマテリアル。裏面を向けて描画し、深度書き込みとフォグをオフにして、常に背景として表示されるようにする。
           const material = new THREE.MeshBasicMaterial({
             map: texture,
             side: THREE.BackSide,
@@ -820,6 +975,7 @@
             toneMapped: false
           });
 
+          // 半球ドームを作成して、カメラ中心に配置する。gameオブジェクトに保持して、後で更新処理からもアクセスできるようにする。
           const dome = new THREE.Mesh(geometry, material);
 
           // カメラ中心に置く
@@ -838,12 +994,394 @@
       );
     }
 
+    /**
+     * 役割: 背景ドームをカメラ位置へ追従させ、遠景が動いて見えないようにする。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function updateOpenFieldSkyDome() {
+      if (!game.openFieldSkyDome) return;
+
+      // 常にカメラを中心にする
+      game.openFieldSkyDome.position.copy(game.camera.position);
+    }
+
+
+    // ============================================================
+    // 3. 地面・森・草・風エフェクト
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
+    // ============================================================
+
+    /**
+     * 役割: 草原用の地面テクスチャをCanvasで生成し、平面メッシュへ貼り付ける。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createGrassGround() {
+      // 草原用の地面テクスチャをCanvasで生成し、平面メッシュへ貼り付ける。
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1024;
+
+      // 2Dコンテキストを取得して、地面テクスチャを描いていく。描き方は、ベースの芝色を塗った上に、色ムラ・粒感・芝の筋・土っぽい点をランダムに散らす感じで、それっぽく見えるようにしている。
+      const ctx = canvas.getContext("2d");
+
+      // ベースの芝色
+      ctx.fillStyle = "#4f9444";
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 大きめの色ムラ（芝の濃淡）
+      for (let i = 0; i < 3200; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const r = 16 + Math.random() * 18;
+        const g = 85 + Math.random() * 60;
+        const b = 10 + Math.random() * 16;
+        const size = 10 + Math.random() * 24;
+
+        // rgbaで、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.04 + Math.random() * 0.05})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 細かい粒感
+      for (let i = 0; i < 70000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const r = 16 + Math.random() * 22;
+        const g = 92 + Math.random() * 82;
+        const b = 8 + Math.random() * 18;
+
+        // rgbで、サイズは1.5pxの小さな四角にして、全体に細かい粒感があるようにする
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+        ctx.fillRect(x, y, 1.5, 1.5);
+      }
+
+      // 短い芝の筋
+      for (let i = 0; i < 32000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const len = 2 + Math.random() * 5;
+        const tilt = (Math.random() - 0.5) * 0.9;
+
+        // rgbaで、芝っぽい緑色をランダムにして、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする。線幅は1px程度にして、細い筋がたくさんあるようにする
+        ctx.strokeStyle = `rgba(${20 + Math.random() * 25}, ${120 + Math.random() * 90}, ${12 + Math.random() * 20}, ${0.20 + Math.random() * 0.16})`;
+        ctx.lineWidth = 1;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + tilt * 2.5, y - len);
+        ctx.stroke();
+      }
+
+      // 土っぽい色を少し混ぜる
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+
+        // rgbaで、茶色っぽい色をランダムにして、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする。サイズは2pxの小さな四角にして、全体に土っぽい点が散らばっているようにする
+        ctx.fillStyle = `rgba(${70 + Math.random() * 35}, ${60 + Math.random() * 25}, ${35 + Math.random() * 20}, ${0.04 + Math.random() * 0.05})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      // Canvasからテクスチャを作成して、繰り返し設定をして、平面ジオメトリのマテリアルに貼る。地面は広いので、テクスチャは繰り返して表示する。
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(110, 110);
+
+      // 平面ジオメトリを作成して、テクスチャを貼るマテリアルを作って、メッシュを生成する。地面は水平に広がるように、回転と位置を調整する。
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 1.0,
+          metalness: 0.0
+        })
+      );
+
+      // 地面は水平に広がるように、回転と位置を調整する。回転はX軸に対して-90度（-Math.PI/2）回す。位置はY=0にする。
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+
+      game.scene.add(ground);
+    }
+
+    /**
+     * 役割: 草の葉の単体ジオメトリを作る。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createGrassBladeGeometry(height = 0.18, width = 0.035) {
+      const shape = new THREE.Shape();
+
+      // 根元は少し幅があり、先端は尖らせる
+      shape.moveTo(-width * 0.5, 0);
+      shape.quadraticCurveTo(-width * 0.42, height * 0.45, -width * 0.18, height * 0.82);
+      shape.lineTo(0, height);
+      shape.lineTo(width * 0.18, height * 0.82);
+      shape.quadraticCurveTo(width * 0.42, height * 0.45, width * 0.5, 0);
+      shape.closePath();
+
+      // 2Dのシェイプからジオメトリを作成する。これで葉っぱの形ができる。必要に応じて、ジオメトリを回転やスケールで調整して、草の葉らしい見た目にする。
+      const geo = new THREE.ShapeGeometry(shape);
+      geo.translate(0, 0, 0);
+
+      return geo;
+    }
+
+    /**
+     * 役割: 射線周辺に揺れる草の群れを生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createGrassFX() {
+      const bladeGeo = createGrassBladeGeometry(0.16, 0.030);
+
+      // 草のパッチ数（1パッチに複数枚の葉が生える）
+      const patchCount = 3000;
+
+      // カメラ初期位置を中心に、近いほど高密度・遠いほど疎にする
+      const cameraStartX = 0;
+      const cameraStartZ = 8;
+
+      // 草を生やす最大半径
+      const grassRadius = 90;
+
+      for (let i = 0; i < patchCount; i++) {
+        // 中心寄りほど出やすくする
+        const radialBias = Math.random() ** 1.5;
+
+        // カメラ初期位置を中心に、近いほど高密度・遠いほど疎にする。ランダムな角度と、中心からの距離を半径方向のバイアスで決めて、草のパッチの位置を決める。
+        const radius = radialBias * grassRadius;
+        const angle = Math.random() * Math.PI * 2;
+
+        // カメラ初期位置を中心に、近いほど高密度・遠いほど疎にする。ランダムな角度と、中心からの距離を半径方向のバイアスで決めて、草のパッチの位置を決める。これでカメラ周辺は草が密集し、遠くはまばらになる自然な配置になる。
+        const x = cameraStartX + Math.cos(angle) * radius;
+        const z = cameraStartZ + Math.sin(angle) * radius;
+
+        // 草のパッチを作成して、位置を設定する。パッチは複数の葉をまとめるグループで、後で風エフェクトでまとめて揺らすために使う。
+        const patch = new THREE.Group();
+        patch.position.set(x, 0.002, z);
+
+        // 1パッチに複数枚の葉をランダム生成
+        const bladeCount = 3 + Math.floor(Math.random() * 4);
+
+        // 1パッチに複数枚の葉をランダム生成。葉の色はベースの芝色から少し明るさをランダムに変えて、自然なバラつきを出す。葉の位置はパッチ中心から少しランダムにオフセットして、重なりすぎないようにする。葉の回転もランダムにして、同じ方向ばかりにならないようにする。葉のスケールも少しランダムにして、同じ大きさばかりにならないようにする。
+        for (let j = 0; j < bladeCount; j++) {
+          const bladeColor = new THREE.Color(GRASS_BASE_COLOR);
+          const lightnessOffset = (Math.random() - 0.5) * GRASS_LIGHTNESS_JITTER;
+          bladeColor.offsetHSL(0, 0, lightnessOffset);
+
+          const bladeMat = new THREE.MeshStandardMaterial({
+            color: bladeColor,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+          });
+
+          const blade = new THREE.Mesh(bladeGeo, bladeMat);
+
+          blade.position.set(
+            (Math.random() - 0.5) * 0.10,
+            0,
+            (Math.random() - 0.5) * 0.10
+          );
+
+          blade.rotation.y = Math.random() * Math.PI;
+          blade.rotation.z = (Math.random() - 0.5) * 0.18;
+          blade.scale.set(
+            0.85 + Math.random() * 0.45,
+            0.85 + Math.random() * 0.55,
+            1
+          );
+
+          blade.userData.baseRotZ = blade.rotation.z;
+          blade.userData.phase = Math.random() * Math.PI * 2;
+          blade.userData.sway = 0.03 + Math.random() * 0.035;
+
+          patch.add(blade);
+        }
+
+        patch.userData.phase = Math.random() * Math.PI * 2;
+        game.scene.add(patch);
+        game.grassFX.patches.push(patch);
+      }
+    }
+
+    /**
+     * 役割: 時間経過と風に合わせて草の揺れを更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function updateGrassFX(dt, elapsed) {
+      // もし草のパッチがない場合は何もしない
+      if (!game.grassFX?.patches?.length) return;
+
+      // 風の向きと強さを取得する。風の向きは、ゲーム状態から現在の風向きを取得する関数があればそれを呼び出して得る。なければnullとする。
+      const windDir = typeof getCurrentWindDirection === "function"
+        ? getCurrentWindDirection()
+        : null;
+
+      // 風の向きがある場合は、風の強さを計算して、草の揺れに反映する。風の強さは、ゲーム状態から現在の風速を取得する関数があればそれを呼び出して得る。なければ0とする。風の強さは、適当な値でスケーリングして、0から1の範囲にクランプする。風の向きは、x成分が正なら右向き、負なら左向きとする。
+      const dirSign = windDir?.vector?.x >= 0 ? 1 : -1;
+      // 風の強さは、ゲーム状態から現在の風速を取得する関数があればそれを呼び出して得る。なければ0とする。風の強さは、適当な値でスケーリングして、0から1の範囲にクランプする。これで風が強いほど草が大きく揺れるようになる。
+      const windSpeed = game.hasStarted ? game.wind.speed : 0;
+      const windStrength = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
+
+      // 草のパッチをループして、各葉の回転を時間経過と風の強さに合わせて更新する。葉の揺れは、時間経過に対してサイン波で変化させる。風の強さも揺れに加算して、風が強いほど大きく揺れるようにする。風の向きも揺れに加算して、風が右向きなら右に、左向きなら左に揺れるようにする。
+      for (const patch of game.grassFX.patches) {
+        for (const blade of patch.children) {
+          const baseRotZ = blade.userData.baseRotZ ?? 0;
+          const phase = blade.userData.phase ?? 0;
+          const sway = blade.userData.sway ?? 0.03;
+
+          const flutter =
+            Math.sin(elapsed * 2.2 + phase) * sway * 0.75 +
+            Math.sin(elapsed * 4.4 + phase * 1.6) * sway * 0.25;
+
+          blade.rotation.z =
+            baseRotZ +
+            flutter +
+            dirSign * windStrength * sway * 1.8;
+        }
+      }
+    }
+
+    /**
+     * 役割: 山奥用の濃い土・苔・落ち葉の地面テクスチャを生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createForestGround() {
+      // 山奥用の濃い土・苔・落ち葉の地面テクスチャを生成する。描き方は、ベースの土を塗った上に、暗めの土のムラ、苔っぽい暗緑、細かい粒、落ち葉っぽい茶色の点をランダムに散らす感じで、それっぽく見えるようにしている。
+      const canvas = document.createElement("canvas");
+      canvas.width = 1024;
+      canvas.height = 1024;
+      // 2Dコンテキストを取得して、地面テクスチャを描いていく。描き方は、ベースの土を塗った上に、暗めの土のムラ、苔っぽい暗緑、細かい粒、落ち葉っぽい茶色の点をランダムに散らす感じで、それっぽく見えるようにしている。
+      const ctx = canvas.getContext("2d");
+
+      // ベースの土：今より濃い焦げ茶
+      ctx.fillStyle = "#3f3024";
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // 暗めの土のムラ
+      for (let i = 0; i < 6500; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const size = 8 + Math.random() * 26;
+
+        const r = 45 + Math.random() * 35;
+        const g = 35 + Math.random() * 28;
+        const b = 24 + Math.random() * 20;
+        const a = 0.05 + Math.random() * 0.08;
+
+        // rgbaで、茶色っぽい色をランダムにして、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする。サイズは8pxから34px程度の円にして、全体に土のムラがあるようにする
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 苔っぽい暗緑を少し混ぜる
+      for (let i = 0; i < 4200; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+        const size = 5 + Math.random() * 18;
+
+        const r = 22 + Math.random() * 18;
+        const g = 55 + Math.random() * 42;
+        const b = 22 + Math.random() * 20;
+        const a = 0.04 + Math.random() * 0.07;
+
+        // rgbaで、茶色っぽい色をランダムにして、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする。サイズは5pxから23px程度の円にして、全体に苔のムラがあるようにする
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 細かい粒：暗め
+      for (let i = 0; i < 24000; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+
+        const r = 38 + Math.random() * 35;
+        const g = 32 + Math.random() * 28;
+        const b = 22 + Math.random() * 20;
+
+        // rgbで、茶色っぽい色をランダムにして、サイズは2pxの小さな四角にして、全体に細かい粒が散らばっているようにする
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+
+      // 落ち葉っぽい茶色の点
+      for (let i = 0; i < 4500; i++) {
+        const x = Math.random() * 1024;
+        const y = Math.random() * 1024;
+
+        const r = 70 + Math.random() * 45;
+        const g = 40 + Math.random() * 28;
+        const b = 18 + Math.random() * 16;
+        const a = 0.07 + Math.random() * 0.09;
+
+        // rgbaで、茶色っぽい色をランダムにして、アルファは薄めのランダム値にして、重なった部分が濃く見えるようにする。サイズは3pxの小さな四角にして、全体に落ち葉の点が散らばっているようにする
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fillRect(x, y, 3, 2);
+      }
+
+      // Canvasからテクスチャを作成して、繰り返し設定をして、平面ジオメトリのマテリアルに貼る。地面は広いので、テクスチャは繰り返して表示する。
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(95, 95);
+
+      // 平面ジオメトリを作成して、テクスチャを貼るマテリアルを作って、メッシュを生成する。地面は水平に広がるように、回転と位置を調整する。
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 1.0,
+          metalness: 0.0
+        })
+      );
+
+      // 地面は水平に広がるように、回転と位置を調整する。回転はX軸に対して-90度（-Math.PI/2）回す。位置はY=0にする。
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      game.scene.add(ground);
+    }
+
+    /**
+     * 役割: プレイヤー周囲360度に森の木を配置し、射線と的周辺だけ空ける。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createForestTrees360Dense() {
+      // 木の幹と葉のマテリアルを作成する。幹は濃い茶色で、葉は明るい緑色にして、どちらも粗さを高くしてマットな質感にする。
       const trunkMat = new THREE.MeshStandardMaterial({
         color: 0x5d4128,
         roughness: 1.0
       });
 
+      // 葉は明るい緑色にして、粗さを高くしてマットな質感にする。これで木全体が自然な感じの色と質感になる。
       const leafMat = new THREE.MeshStandardMaterial({
         color: 0x5fbf2a,
         roughness: 1.0
@@ -864,6 +1402,7 @@
       // ただし完全に足元へ生えると邪魔なので、最低限だけ空ける
       const innerRadius = 3.5;
 
+      // ここを大きくすることで、遠い位置まで木を生やす
       const outerRadius = 115;
 
       // 射線だけ空ける
@@ -879,11 +1418,13 @@
       // 的の周辺は見やすく空ける
       const targetClearRadius = 3.2;
 
+      // 木を配置する際の最大試行回数。これを超えると、木の配置を諦める。木の数が多いほど、または射線や的周辺を広く空けるほど、配置できない可能性が高くなるので、試行回数を増やす必要がある。
       const maxAttempts = treeCount * 40;
 
       let placed = 0;
       let attempts = 0;
 
+      // 木を配置する際の最大試行回数。これを超えると、木の配置を諦める。木の数が多いほど、または射線や的周辺を広く空けるほど、配置できない可能性が高くなるので、試行回数を増やす必要がある。これで無限ループになるのを防止する。
       while (placed < treeCount && attempts < maxAttempts) {
         attempts++;
 
@@ -893,6 +1434,7 @@
         const radialBias = Math.random() ** 1.35;
         const radius = innerRadius + radialBias * (outerRadius - innerRadius);
 
+        // プレイヤー初期位置を中心に360度へ木を配置。ランダムな角度と、中心からの距離を半径方向のバイアスで決めて、木の位置を決める。これでカメラ周辺は木が密集し、遠くはまばらになる自然な配置になる。
         const x = centerX + Math.cos(angle) * radius;
         const z = centerZ + Math.sin(angle) * radius;
 
@@ -909,100 +1451,29 @@
           dxTarget * dxTarget + dzTarget * dzTarget <
           targetClearRadius * targetClearRadius;
 
+        // 射線と的周辺は木を置かない。これで、プレイヤーが最初に見る方向に木がなくなり、見通しが良くなって、ゲーム開始時の視認性が向上する。
         if (inShootingLane || nearTarget) {
           continue;
         }
 
+        // 指定位置に幹と葉の塊からなる木を生成する。これで、ランダムな位置に木が生えるようになる。
         createForestTreeAt(x, z, trunkMat, leafMat);
         placed++;
       }
     }
 
-    function createForestRocks() {
-      const rockMat = new THREE.MeshStandardMaterial({
-        color: 0x4a4a43,
-        roughness: 1.0,
-        metalness: 0.0
-      });
-
-      const centerX = game.camera.position.x;
-      const centerZ = game.camera.position.z;
-      const targetZ = centerZ - game.targetDistance;
-
-      const rockCount = 42;
-
-      const innerRadius = 4.0;
-      const outerRadius = 85;
-
-      // 射線と的周辺には岩を置かない
-      const laneHalfWidth = 3.2;
-      const laneBackMargin = 2.5;
-      const laneFrontMargin = 1.0;
-      const targetClearRadius = 3.0;
-
-      let placed = 0;
-      let attempts = 0;
-      const maxAttempts = rockCount * 40;
-
-      while (placed < rockCount && attempts < maxAttempts) {
-        attempts++;
-
-        const angle = Math.random() * Math.PI * 2;
-        const radialBias = Math.random() ** 1.25;
-        const radius = innerRadius + radialBias * (outerRadius - innerRadius);
-
-        const x = centerX + Math.cos(angle) * radius;
-        const z = centerZ + Math.sin(angle) * radius;
-
-        const inShootingLane =
-          Math.abs(x - centerX) < laneHalfWidth &&
-          z >= targetZ - laneBackMargin &&
-          z <= centerZ + laneFrontMargin;
-
-        const dxTarget = x - centerX;
-        const dzTarget = z - targetZ;
-        const nearTarget =
-          dxTarget * dxTarget + dzTarget * dzTarget <
-          targetClearRadius * targetClearRadius;
-
-        if (inShootingLane || nearTarget) {
-          continue;
-        }
-
-        createForestRockAt(x, z, rockMat);
-        placed++;
-      }
-    } 
-
-    function createForestRockAt(x, z, rockMat) {
-      const rock = new THREE.Mesh(
-        new THREE.DodecahedronGeometry(0.45 + Math.random() * 0.55, 0),
-        rockMat
-      );
-
-      rock.position.set(x, 0.18, z);
-
-      rock.rotation.set(
-        Math.random() * Math.PI,
-        Math.random() * Math.PI,
-        Math.random() * Math.PI
-      );
-
-      rock.scale.set(
-        1.2 + Math.random() * 1.2,
-        0.45 + Math.random() * 0.45,
-        0.8 + Math.random() * 1.1
-      );
-
-      game.scene.add(rock);
-
-      // 矢の当たり判定対象にする
-      registerArrowCollisionObject(rock);
-    }
-
+    /**
+     * 役割: 指定位置に幹と葉の塊からなる木を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createForestTreeAt(x, z, trunkMat, leafMat) {
+      // 木全体をまとめるグループを作成する。これで、幹と葉の塊をまとめて管理できるようになる。
       const tree = new THREE.Group();
 
+      // 幹を作成して、グループに追加する。幹の高さはランダムにして、木ごとにバラつきを出す。これで、木の見た目に自然なバラつきが生まれる。
       const trunkH = 4.5 + Math.random() * 5.5;
       const trunk = new THREE.Mesh(
         new THREE.CylinderGeometry(0.16, 0.22, trunkH, 10),
@@ -1018,12 +1489,14 @@
           leafMat
         );
 
+        // 葉の塊の位置は、幹の上の方を中心に、少しランダムにオフセットする。これで、葉の塊が幹の上の方にまとまって生えるようになり、自然な見た目になる。
         crown.position.set(
           (Math.random() - 0.5) * 1.4,
           trunkH - 0.4 + j * 0.9,
           (Math.random() - 0.5) * 1.4
         );
 
+        // 葉の塊のスケールも少しランダムにして、同じ大きさばかりにならないようにする。これで、葉の塊ごとに大きさがバラバラになり、自然な見た目になる。
         crown.scale.set(
           1.0 + Math.random() * 0.5,
           0.8 + Math.random() * 0.5,
@@ -1033,6 +1506,7 @@
         tree.add(crown);
       }
 
+      // 木全体の位置を設定する。これで、木が指定した位置に生えるようになる。
       tree.position.set(x, 0, z);
       tree.rotation.y = Math.random() * Math.PI * 2;
       game.scene.add(tree);
@@ -1041,102 +1515,341 @@
       registerArrowCollisionObject(tree);
     }
 
-    function createForestGround() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1024;
-      const ctx = canvas.getContext("2d");
+    /**
+     * 役割: 山奥フィールドに岩をランダム配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createForestRocks() {
+      // 岩のマテリアルを作成する。色は灰色で、粗さを高くしてマットな質感にする。これで、岩が自然な感じの色と質感になる。
+      const rockMat = new THREE.MeshStandardMaterial({
+        color: 0x4a4a43,
+        roughness: 1.0,
+        metalness: 0.0
+      });
 
-      // ベースの土：今より濃い焦げ茶
-      ctx.fillStyle = "#3f3024";
-      ctx.fillRect(0, 0, 1024, 1024);
+      // プレイヤー初期位置を中心に360度へ岩を配置
+      const centerX = game.camera.position.x;
+      const centerZ = game.camera.position.z;
+      const targetZ = centerZ - game.targetDistance;
 
-      // 暗めの土のムラ
-      for (let i = 0; i < 6500; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const size = 8 + Math.random() * 26;
+      // 岩の数を設定する。多すぎると配置できない可能性が高くなるので、適切な数にする必要がある。岩は木よりも少なめにして、木の隙間に点在する感じにすると、自然な見た目になる。
+      const rockCount = 42;
 
-        const r = 45 + Math.random() * 35;
-        const g = 35 + Math.random() * 28;
-        const b = 24 + Math.random() * 20;
-        const a = 0.05 + Math.random() * 0.08;
+      // ここを小さくすることで、初期位置の近くにも岩を置く
+      const innerRadius = 4.0;
+      const outerRadius = 85;
 
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
+      // 射線と的周辺には岩を置かない
+      const laneHalfWidth = 3.2;
+      const laneBackMargin = 2.5;
+      const laneFrontMargin = 1.0;
+      const targetClearRadius = 3.0;
+
+      let placed = 0;
+      let attempts = 0;
+      const maxAttempts = rockCount * 40;
+
+      // 岩を配置する際の最大試行回数。これを超えると、岩の配置を諦める。岩の数が多いほど、または射線や的周辺を広く空けるほど、配置できない可能性が高くなるので、試行回数を増やす必要がある。これで無限ループになるのを防止する。
+      while (placed < rockCount && attempts < maxAttempts) {
+        attempts++;
+
+        // 近くにも出やすくする
+        const angle = Math.random() * Math.PI * 2;
+        const radialBias = Math.random() ** 1.25;
+        const radius = innerRadius + radialBias * (outerRadius - innerRadius);
+
+        // プレイヤー初期位置を中心に360度へ岩を配置。ランダムな角度と、中心からの距離を半径方向のバイアスで決めて、岩の位置を決める。これでカメラ周辺は岩が密集し、遠くはまばらになる自然な配置になる。
+        const x = centerX + Math.cos(angle) * radius;
+        const z = centerZ + Math.sin(angle) * radius;
+
+        // 射線と的周辺には岩を置かない。これで、プレイヤーが最初に見る方向に岩がなくなり、見通しが良くなって、ゲーム開始時の視認性が向上する。また、的の周辺も空けることで、的が見やすくなる。
+        const inShootingLane =
+          Math.abs(x - centerX) < laneHalfWidth &&
+          z >= targetZ - laneBackMargin &&
+          z <= centerZ + laneFrontMargin;
+
+        // 的のすぐ近くも空ける
+        const dxTarget = x - centerX;
+        const dzTarget = z - targetZ;
+        const nearTarget =
+          dxTarget * dxTarget + dzTarget * dzTarget <
+          targetClearRadius * targetClearRadius;
+
+        if (inShootingLane || nearTarget) {
+          continue;
+        }
+
+        // 指定位置に岩メッシュを作成して、矢の衝突対象に登録する。これで、ランダムな位置に岩が生えるようになる。
+        createForestRockAt(x, z, rockMat);
+        placed++;
       }
-
-      // 苔っぽい暗緑を少し混ぜる
-      for (let i = 0; i < 4200; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const size = 5 + Math.random() * 18;
-
-        const r = 22 + Math.random() * 18;
-        const g = 55 + Math.random() * 42;
-        const b = 22 + Math.random() * 20;
-        const a = 0.04 + Math.random() * 0.07;
-
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 細かい粒：暗め
-      for (let i = 0; i < 24000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-
-        const r = 38 + Math.random() * 35;
-        const g = 32 + Math.random() * 28;
-        const b = 22 + Math.random() * 20;
-
-        ctx.fillStyle = `rgb(${r},${g},${b})`;
-        ctx.fillRect(x, y, 2, 2);
-      }
-
-      // 落ち葉っぽい茶色の点
-      for (let i = 0; i < 4500; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-
-        const r = 70 + Math.random() * 45;
-        const g = 40 + Math.random() * 28;
-        const b = 18 + Math.random() * 16;
-        const a = 0.07 + Math.random() * 0.09;
-
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.fillRect(x, y, 3, 2);
-      }
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(95, 95);
-
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000),
-        new THREE.MeshStandardMaterial({
-          map: texture,
-          roughness: 1.0,
-          metalness: 0.0
-        })
-      );
-
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = 0;
-      game.scene.add(ground);
     }
 
+    /**
+     * 役割: 指定位置に岩メッシュを作成し、矢の衝突対象に登録する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createForestRockAt(x, z, rockMat) {
+      // 岩メッシュを作成する。ジオメトリは、ランダムなサイズの十二面体にして、回転もランダムにして、スケールもランダムにして、同じ形や大きさの岩が並ばないようにする。これで、岩が自然な感じの形と大きさになる。
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.45 + Math.random() * 0.55, 0),
+        rockMat
+      );
+
+      // 岩の位置を設定する。これで、岩が指定した位置に生えるようになる。Y座標は地面から少し浮かせて、岩が地面に埋まらないようにする。
+      rock.position.set(x, 0.18, z);
+
+      // 岩の回転をランダムにして、同じ形の岩が並ばないようにする。これで、岩の見た目に自然なバラつきが生まれる。
+      rock.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+
+      // 岩のスケールもランダムにして、同じ大きさの岩が並ばないようにする。これで、岩の見た目に自然なバラつきが生まれる。
+      rock.scale.set(
+        1.2 + Math.random() * 1.2,
+        0.45 + Math.random() * 0.45,
+        0.8 + Math.random() * 1.1
+      );
+
+      // 岩メッシュをシーンに追加する。これで、岩がゲームの世界に表示されるようになる。
+      game.scene.add(rock);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(rock);
+    }
+
+    /**
+     * 役割: 風エフェクト用のテクスチャと粒子をまとめて初期化する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createWindFX() {
+      // 風エフェクト用のテクスチャと粒子をまとめて初期化する。これで、風エフェクトに必要なリソースが揃い、ゲーム開始前に準備が完了する。
       createWindFXTextures();
+      // 風の流れを表すスプライト群を生成する。これで、風の流れを表すスプライトがシーンに追加され、風エフェクトが表示できるようになる。
       createWindStreakSprites();
     }
 
-    // スタジアム観客席：初期地点〜的の周りを囲む形
+    /**
+     * 役割: 風の流線表示に使うCanvasテクスチャを生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createWindFXTextures() {
+      // 風の流線表示に使うCanvasテクスチャを生成する。これで、風の流線表示に必要なテクスチャが用意され、風エフェクトが表示できるようになる。
+      const streakCanvas = document.createElement("canvas");
+      streakCanvas.width = 128;
+      streakCanvas.height = 32;
+      // 2Dコンテキストを取得して、流線のグラデーションを描いていく。グラデーションは、横方向に透明から半透明の白、さらに濃い白、また半透明の白、最後に透明へと変化するようにして、流線が自然な感じでフェードイン・フェードアウトするようにする。
+      const sctx = streakCanvas.getContext("2d");
+
+      // 横方向に透明から半透明の白、さらに濃い白、また半透明の白、最後に透明へと変化するようなグラデーションを作る。これで、流線が自然な感じでフェードイン・フェードアウトするようになる。
+      const streakGrad = sctx.createLinearGradient(0, 16, 128, 16);
+      streakGrad.addColorStop(0, "rgba(255,255,255,0)");
+      streakGrad.addColorStop(0.18, "rgba(255,255,255,0.18)");
+      streakGrad.addColorStop(0.50, "rgba(255,255,255,0.55)");
+      streakGrad.addColorStop(0.82, "rgba(255,255,255,0.18)");
+      streakGrad.addColorStop(1, "rgba(255,255,255,0)");
+
+      // グラデーションで流線を描く。これで、流線のテクスチャが完成する。
+      sctx.fillStyle = streakGrad;
+      sctx.beginPath();
+      sctx.roundRect(0, 10, 128, 12, 6);
+      sctx.fill();
+
+      // Canvasからテクスチャを作成して、ゲームのwindFX.textures.streakに保存する。これで、流線のテクスチャがゲームの状態に保存され、風エフェクトのスプライトで使用できるようになる。
+      game.windFX.textures.streak = new THREE.CanvasTexture(streakCanvas);
+    }
+
+    /**
+     * 役割: 風の流れを表すスプライト群を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createWindStreakSprites() {
+      // 風の流れを表すスプライト群を生成する。これで、風の流れを表すスプライトがシーンに追加され、風エフェクトが表示できるようになる。
+      const count = 40;
+
+      // 風の流れを表すスプライトを指定数だけ生成する。各スプライトは、ランダムな位置、サイズ、速度スケール、揺れの位相などのパラメータを持つ。これで、風の流れを表すスプライトがランダムに配置され、自然な感じの風エフェクトになる。
+      for (let i = 0; i < count; i++) {
+        // スプライトマテリアルを作成する。テクスチャは先ほど作成した流線のテクスチャを使用し、透明で、初期状態では見えないようにして、深度書き込みをオフにする。これで、風の流れを表すスプライトが適切な見た目と描画設定になる。
+        const material = new THREE.SpriteMaterial({
+          map: game.windFX.textures.streak,
+          transparent: true,
+          opacity: 0,
+          depthWrite: false
+        });
+
+        // スプライトを作成してシーンに追加する。これで、風の流れを表すスプライトがゲームの世界に表示されるようになる。
+        const sprite = new THREE.Sprite(material);
+        game.scene.add(sprite);
+
+        // x を広げて横方向の流れるエリアを拡大
+        // y を広げて上の空間まで風を出す
+        // z を広げて奥まで風を出す
+        // width を伸ばして筋を長くする
+        // height を上げて少し太くする
+        const p = {
+          sprite,
+          x: (Math.random() - 0.5) * 160,
+          y: 0.2 + Math.random() * 5.2,
+          z: -3 - Math.random() * 65,
+          width: 2.8 + Math.random() * 5.0,
+          height: 0.12 + Math.random() * 0.22,
+          speedScale: 0.8 + Math.random() * 1.0,
+          swayPhase: Math.random() * Math.PI * 2,
+
+          // ゆらぎ追加
+          driftPhase: Math.random() * Math.PI * 2,
+          stretchPhase: Math.random() * Math.PI * 2,
+          swayAmpY: 0.03 + Math.random() * 0.05,
+          swayAmpZ: 0.04 + Math.random() * 0.10,
+          speedJitter: 0.85 + Math.random() * 0.35
+        };
+
+        sprite.position.set(p.x, p.y, p.z);
+        sprite.scale.set(p.width, p.height, 1);
+
+        game.windFX.streaks.push(p);
+      }
+    }
+
+    /**
+     * 役割: 風スプライトの横位置を再配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function resetWindFXParticleX(p, dirSign, rangeX = 90) {
+      p.x = dirSign > 0
+        ? -rangeX - Math.random() * 8
+        :  rangeX + Math.random() * 8;
+    }
+
+    /**
+     * 役割: 風エフェクト全体を毎フレーム更新する入口。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function updateWindFX(dt, elapsed) {
+      // 風エフェクト全体を毎フレーム更新する入口。これで、風エフェクトの更新処理が毎フレーム呼び出され、風の流れがアニメーションするようになる。
+      if (!game.windFX) return;
+      if (typeof getCurrentWindDirection !== "function") return;
+
+      // 風向きと風速を取得する。これで、現在の風の状態を知ることができ、風エフェクトの動きに反映できる。
+      const windDir = getCurrentWindDirection();
+      if (!windDir?.vector) return;
+
+      // 風向きのx成分が正なら右向き、負なら左向きとする。これで、風の流れの方向を決めることができる。
+      const dirSign = windDir.vector.x >= 0 ? 1 : -1;
+      const windSpeed = game.hasStarted ? game.wind.speed : 0;
+      const visibility = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
+
+      // 風向き・風速に応じて流線スプライトを移動させる。これで、風の流れを表すスプライトが風の状態に応じて動くようになり、風エフェクトがリアルに見えるようになる。
+      updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility);
+    }
+
+    /**
+     * 役割: 風向き・風速に応じて流線スプライトを移動させる。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility) {
+      // 風向き・風速に応じて流線スプライトを移動させる。これで、風の流れを表すスプライトが風の状態に応じて動くようになり、風エフェクトがリアルに見えるようになる。
+      const activeCount = Math.floor(3 + visibility * game.windFX.streaks.length);
+
+      // すべてのスプライトについて、風の強さに応じて表示・非表示を切り替え、表示するものは位置やサイズを更新する。これで、風の状態に応じてスプライトが動き、風エフェクトがリアルに見えるようになる。
+      for (let i = 0; i < game.windFX.streaks.length; i++) {
+        // スプライトのパラメータを取得する。これで、スプライトの現在の状態を知ることができ、更新処理に反映できる。
+        const p = game.windFX.streaks[i];
+        const active = i < activeCount;
+
+        // スプライトの表示・非表示を切り替える。これで、風の強さに応じてスプライトが現れたり消えたりするようになり、風エフェクトがリアルに見えるようになる。
+        p.sprite.visible = active;
+        if (!active) continue;
+
+        // 速度にゆるい揺らぎを入れる
+        const speedWave =
+          1 +
+          Math.sin(elapsed * (1.6 + p.speedScale * 0.7) + p.driftPhase) * 0.16 +
+          Math.sin(elapsed * (3.4 + p.speedScale * 0.4) + p.driftPhase * 1.7) * 0.06;
+
+        // 風速、スプライトごとの速度スケール、ゆらぎを組み合わせて移動量を計算する。これで、風の状態とスプライトの個体差に応じて、スプライトが自然な感じで動くようになる。
+        const moveSpeed =
+          (1.2 + windSpeed * 2.6) *
+          p.speedScale *
+          p.speedJitter *
+          speedWave;
+
+        // スプライトのx位置を更新する。これで、スプライトが風の流れに沿って動くようになる。
+        p.x += dirSign * moveSpeed * dt;
+
+        // スプライトが一定の範囲を超えたら反対側に回す。これで、スプライトが風の流れに沿って循環するようになり、風エフェクトが途切れずに続くようになる。
+        if (dirSign > 0 && p.x > 90) resetWindFXParticleX(p, dirSign, 90);
+        // 右向きのとき、xが90を超えたら左側の-90あたりに回す。左向きのとき、xが-90を下回ったら右側の90あたりに回す。これで、スプライトが風の流れに沿って循環するようになり、風エフェクトが途切れずに続くようになる。
+        if (dirSign < 0 && p.x < -90) resetWindFXParticleX(p, dirSign, 90);
+
+        // 上下だけでなく奥行きにも微妙な揺れ
+        const bobY =
+          Math.sin(elapsed * (1.2 + p.speedScale) + p.swayPhase) * p.swayAmpY +
+          Math.sin(elapsed * (2.7 + p.speedScale * 0.6) + p.swayPhase * 1.9) * p.swayAmpY * 0.45;
+
+        // Z軸方向の揺れを追加。これで、スプライトが風の流れに沿って自然な感じで揺れるようになる。
+        const bobZ =
+          Math.sin(elapsed * (1.8 + p.speedScale * 0.5) + p.driftPhase) * p.swayAmpZ;
+
+        // 長さをわずかに伸び縮み
+        const stretch =
+          1 +
+          Math.sin(elapsed * (2.2 + p.speedScale * 0.5) + p.stretchPhase) * 0.10;
+
+        // スプライトの位置を更新する。これで、スプライトが風の流れに沿って自然な感じで動くようになる。
+        p.sprite.position.set(p.x, p.y + bobY, p.z + bobZ);
+        p.sprite.material.opacity = 0.16 + visibility * 0.28;
+
+        // スプライトのサイズを更新する。これで、スプライトが風の状態に応じて自然な感じで伸び縮みするようになる。
+        p.sprite.scale.set(
+          p.width * (1.9 + visibility * 0.8) * stretch,
+          p.height * (2.8 + visibility * 1.1) * (0.96 + (2 - stretch) * 0.04),
+          1
+        );
+      }
+    }
+
+    //　★★ここまでコメント調整★★
+
+    // ============================================================
+    // 4. 競技場・観客モデル
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
+    // ============================================================
+
+    /**
+     * 役割: 左右スタンド、後方スタンド、的後方壁をまとめて配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createStadiumStands() {
       const standMat = new THREE.MeshStandardMaterial({
         color: 0xbfc7d6,
@@ -1215,7 +1928,276 @@
       });
     }
 
-    // スタンドの基本形を作る関数。左右どちらのスタンドもこれで作る
+    /**
+     * 役割: 左右どちらか一方の階段状観客席を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createSideStadiumStand({
+      side,
+      centerX,
+      zFront,
+      zBack,
+      innerX,
+      outerX,
+      standMat,
+      seatMat,
+      aisleMat
+    }) {
+      const group = new THREE.Group();
+
+      const length = Math.abs(zFront - zBack);
+      const centerZ = (zFront + zBack) / 2;
+
+      const stepCount = 8;
+      const segmentCount = 10;
+
+      const stepWidth = (outerX - innerX) / stepCount;
+      const segmentDepth = length / segmentCount;
+
+      const sideSign = side; // -1: 左 / 1: 右
+
+      // 土台
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(outerX - innerX + 0.8, 0.6, length),
+        standMat
+      );
+
+      base.position.set(
+        centerX + sideSign * ((innerX + outerX) / 2),
+        0.3,
+        centerZ
+      );
+
+      group.add(base);
+
+      // 階段席
+      for (let xStep = 0; xStep < stepCount; xStep++) {
+        const height = 0.45 + xStep * 0.42;
+
+        // 射線側から外側へ行くほど高くする
+        const x = centerX + sideSign * (innerX + stepWidth * xStep + stepWidth / 2);
+
+        for (let zStep = 0; zStep < segmentCount; zStep++) {
+          const z = zFront - segmentDepth * zStep - segmentDepth / 2;
+
+          const seat = new THREE.Mesh(
+            new THREE.BoxGeometry(stepWidth * 0.96, 0.34, segmentDepth * 0.92),
+            seatMat
+          );
+
+          seat.position.set(
+            x,
+            height,
+            z
+          );
+
+          group.add(seat);
+
+          // その座席に観客を置く
+          maybeAddSpectatorOnSeat(group, seat.position, {
+            facing: "field",
+            side: sideSign
+          });
+        }
+      }
+
+      // 外側の背面壁
+      const backWall = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, 4.8, length),
+        standMat
+      );
+
+      backWall.position.set(
+        centerX + sideSign * (outerX + 0.45),
+        2.4,
+        centerZ
+      );
+
+      group.add(backWall);
+
+      // 射線側の低い縁
+      const innerWall = new THREE.Mesh(
+        new THREE.BoxGeometry(0.35, 0.75, length),
+        aisleMat
+      );
+
+      innerWall.position.set(
+        centerX + sideSign * (innerX - 0.25),
+        0.38,
+        centerZ
+      );
+
+      group.add(innerWall);
+
+      game.scene.add(group);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(group);
+    }
+    /**
+     * 役割: プレイヤー後方の階段状観客席を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createBackStadiumStand({
+      centerX,
+      z,
+      width,
+      direction = -1,
+      standMat,
+      seatMat,
+      aisleMat
+    }) {
+      const group = new THREE.Group();
+
+      const stepCount = 7;
+      const depthStep = 1.3;
+
+      const baseDepth = stepCount * depthStep + 1.2;
+
+      const base = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 0.6, baseDepth),
+        standMat
+      );
+
+      base.position.set(
+        centerX,
+        0.3,
+        z + direction * baseDepth / 2
+      );
+
+      group.add(base);
+
+      // フィールドに近い側が低く、奥へ行くほど高い
+      for (let i = 0; i < stepCount; i++) {
+        const h = 0.35;
+        const y = 0.65 + i * 0.45;
+
+        const seat = new THREE.Mesh(
+          new THREE.BoxGeometry(width * 0.94, h, depthStep * 0.9),
+          seatMat
+        );
+
+        seat.position.set(
+          centerX,
+          y,
+          z + direction * i * depthStep
+        );
+
+        group.add(seat);
+
+        // 後ろの観客席にも、横方向へ複数人を並べる
+        const spectatorColumns = 12;
+        const usableWidth = width * 0.82;
+
+        for (let col = 0; col < spectatorColumns; col++) {
+          const t = spectatorColumns === 1
+            ? 0.5
+            : col / (spectatorColumns - 1);
+
+          const spectatorSeatPos = new THREE.Vector3(
+            centerX - usableWidth / 2 + usableWidth * t,
+            seat.position.y,
+            seat.position.z
+          );
+
+          maybeAddSpectatorOnSeat(group, spectatorSeatPos, {
+            direction
+          });
+        }
+      }
+
+      // 一番奥の背面壁
+      const backWall = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 4.5, 0.7),
+        standMat
+      );
+
+      backWall.position.set(
+        centerX,
+        2.3,
+        z + direction * (stepCount * depthStep + 0.55)
+      );
+
+      group.add(backWall);
+
+      // フィールド側の低い境界
+      const frontRail = new THREE.Mesh(
+        new THREE.BoxGeometry(width * 0.92, 0.55, 0.35),
+        aisleMat
+      );
+
+      frontRail.position.set(
+        centerX,
+        0.35,
+        z - direction * 0.65
+      );
+
+      group.add(frontRail);
+
+      game.scene.add(group);
+    }
+    /**
+     * 役割: 的後方に、矢が抜けないためのフラット壁を配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function createFlatTargetBackWall({
+      centerX,
+      z,
+      width,
+      standMat,
+      aisleMat
+    }) {
+      const group = new THREE.Group();
+
+      // 矢が飛ぶ方向の奥に、観客席ではなく壁だけを置く
+      const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(width, 5.2, 0.75),
+        standMat
+      );
+
+      wall.position.set(
+        centerX,
+        2.6,
+        z
+      );
+
+      group.add(wall);
+
+      // 壁の下に低い縁を置いて、スタジアム感を少し出す
+      const lowerRail = new THREE.Mesh(
+        new THREE.BoxGeometry(width * 0.95, 0.55, 0.45),
+        aisleMat
+      );
+
+      lowerRail.position.set(
+        centerX,
+        0.35,
+        z + 0.65
+      );
+
+      group.add(lowerRail);
+
+      game.scene.add(group);
+
+      // 矢の当たり判定対象にする
+      registerArrowCollisionObject(group);
+    }
+    /**
+     * 役割: 観客の上半身をリング形状から滑らかなメッシュとして生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createSmoothUpperBodyGeometry() {
       const radialSegments = 24;
 
@@ -1305,7 +2287,13 @@
       return geometry;
     }
 
-    //窓口から腕が出ているような、前腕〜手のメッシュを作る関数
+    /**
+     * 役割: 観客の肘から手先までの肌メッシュを生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createSmoothForearmHandGeometry(side, poseType = "normal") {
       const radialSegments = 14;
 
@@ -1402,7 +2390,13 @@
       return geometry;
     }
 
-    // 観客が持っているカメラの小道具を作る関数
+    /**
+     * 役割: 観客が持つ小型カメラの本体、レンズ、上部パーツを作る。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createSpectatorCameraProp() {
       const group = new THREE.Group();
 
@@ -1445,6 +2439,13 @@
       return group;
     }
 
+    /**
+     * 役割: カメラ持ち観客用に、肘からカメラまで伸びる接続腕メッシュを作る。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createCameraArmConnector(radius, material) {
       const group = new THREE.Group();
 
@@ -1457,6 +2458,13 @@
       return group;
     }
 
+    /**
+     * 役割: 接続腕を、肘とカメラ側面の2点を結ぶ位置・角度・長さへ更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateCameraArmConnector(connector, parent, startWorld, endWorld) {
       if (!connector || !parent) return;
 
@@ -1494,6 +2502,13 @@
       );
     }
 
+    /**
+     * 役割: カメラ持ち観客のカメラを、現在の顔前位置へ配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function syncSpectatorCameraToHands(spectator, parts) {
       if (!parts.camera || !parts.head) return;
 
@@ -1517,6 +2532,13 @@
       parts.camera.position.z += 0.006;
     }
 
+    /**
+     * 役割: 左右の肘からカメラ側面までの接続腕を毎フレーム張り直す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateSpectatorCameraArmConnections(spectator, parts) {
       if (
         !parts.camera ||
@@ -1562,6 +2584,13 @@
       );
     }
 
+    /**
+     * 役割: 観客1人分の頭、胴体、腕、脚、カメラ持ちポーズ、アニメーション情報を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createSpectatorModel() {
       const spectator = new THREE.Group();
 
@@ -1603,11 +2632,6 @@
         roughness: 0.96
       });
 
-      const shoeMat = new THREE.MeshStandardMaterial({
-        color: 0x0f172a,
-        roughness: 0.95
-      });
-
       const eyeMat = new THREE.MeshStandardMaterial({
         color: 0x050505,
         roughness: 0.7
@@ -1628,8 +2652,6 @@
         rightForeArm: null,
         leftHand: null,
         rightHand: null,
-        leftGrip: null,
-        rightGrip: null,
         leftCameraArm: null,
         rightCameraArm: null,
         camera: null
@@ -1936,6 +2958,13 @@
       return spectator;
     }
 
+    /**
+     * 役割: 座席ごとの確率に応じて観客を生成し、向きと位置を調整して配置する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function maybeAddSpectatorOnSeat(group, seatPosition, options = {}) {
       // 1.0 に近いほど満席。0.45〜0.65くらいが自然
       const occupancyRate = 0.58;
@@ -1980,658 +3009,175 @@
       // 毎フレーム動かす対象として登録
       game.spectators.push(spectator);
     }
-
-    function createSideStadiumStand({
-      side,
-      centerX,
-      zFront,
-      zBack,
-      innerX,
-      outerX,
-      standMat,
-      seatMat,
-      aisleMat
-    }) {
-      const group = new THREE.Group();
-
-      const length = Math.abs(zFront - zBack);
-      const centerZ = (zFront + zBack) / 2;
-
-      const stepCount = 8;
-      const segmentCount = 10;
-
-      const stepWidth = (outerX - innerX) / stepCount;
-      const segmentDepth = length / segmentCount;
-
-      const sideSign = side; // -1: 左 / 1: 右
-
-      // 土台
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(outerX - innerX + 0.8, 0.6, length),
-        standMat
-      );
-
-      base.position.set(
-        centerX + sideSign * ((innerX + outerX) / 2),
-        0.3,
-        centerZ
-      );
-
-      group.add(base);
-
-      // 階段席
-      for (let xStep = 0; xStep < stepCount; xStep++) {
-        const height = 0.45 + xStep * 0.42;
-
-        // 射線側から外側へ行くほど高くする
-        const x = centerX + sideSign * (innerX + stepWidth * xStep + stepWidth / 2);
-
-        for (let zStep = 0; zStep < segmentCount; zStep++) {
-          const z = zFront - segmentDepth * zStep - segmentDepth / 2;
-
-          const seat = new THREE.Mesh(
-            new THREE.BoxGeometry(stepWidth * 0.96, 0.34, segmentDepth * 0.92),
-            seatMat
-          );
-
-          seat.position.set(
-            x,
-            height,
-            z
-          );
-
-          group.add(seat);
-
-          // その座席に観客を置く
-          maybeAddSpectatorOnSeat(group, seat.position, {
-            facing: "field",
-            side: sideSign
-          });
-        }
-      }
-
-      // 外側の背面壁
-      const backWall = new THREE.Mesh(
-        new THREE.BoxGeometry(0.7, 4.8, length),
-        standMat
-      );
-
-      backWall.position.set(
-        centerX + sideSign * (outerX + 0.45),
-        2.4,
-        centerZ
-      );
-
-      group.add(backWall);
-
-      // 射線側の低い縁
-      const innerWall = new THREE.Mesh(
-        new THREE.BoxGeometry(0.35, 0.75, length),
-        aisleMat
-      );
-
-      innerWall.position.set(
-        centerX + sideSign * (innerX - 0.25),
-        0.38,
-        centerZ
-      );
-
-      group.add(innerWall);
-
-      game.scene.add(group);
-
-      // 矢の当たり判定対象にする
-      registerArrowCollisionObject(group);
-    }
-
-    function createBackStadiumStand({
-      centerX,
-      z,
-      width,
-      direction = -1,
-      standMat,
-      seatMat,
-      aisleMat
-    }) {
-      const group = new THREE.Group();
-
-      const stepCount = 7;
-      const depthStep = 1.3;
-
-      const baseDepth = stepCount * depthStep + 1.2;
-
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(width, 0.6, baseDepth),
-        standMat
-      );
-
-      base.position.set(
-        centerX,
-        0.3,
-        z + direction * baseDepth / 2
-      );
-
-      group.add(base);
-
-      // フィールドに近い側が低く、奥へ行くほど高い
-      for (let i = 0; i < stepCount; i++) {
-        const h = 0.35;
-        const y = 0.65 + i * 0.45;
-
-        const seat = new THREE.Mesh(
-          new THREE.BoxGeometry(width * 0.94, h, depthStep * 0.9),
-          seatMat
-        );
-
-        seat.position.set(
-          centerX,
-          y,
-          z + direction * i * depthStep
-        );
-
-        group.add(seat);
-
-        // 後ろの観客席にも、横方向へ複数人を並べる
-        const spectatorColumns = 12;
-        const usableWidth = width * 0.82;
-
-        for (let col = 0; col < spectatorColumns; col++) {
-          const t = spectatorColumns === 1
-            ? 0.5
-            : col / (spectatorColumns - 1);
-
-          const spectatorSeatPos = new THREE.Vector3(
-            centerX - usableWidth / 2 + usableWidth * t,
-            seat.position.y,
-            seat.position.z
-          );
-
-          maybeAddSpectatorOnSeat(group, spectatorSeatPos, {
-            direction
-          });
-        }
-      }
-
-      // 一番奥の背面壁
-      const backWall = new THREE.Mesh(
-        new THREE.BoxGeometry(width, 4.5, 0.7),
-        standMat
-      );
-
-      backWall.position.set(
-        centerX,
-        2.3,
-        z + direction * (stepCount * depthStep + 0.55)
-      );
-
-      group.add(backWall);
-
-      // フィールド側の低い境界
-      const frontRail = new THREE.Mesh(
-        new THREE.BoxGeometry(width * 0.92, 0.55, 0.35),
-        aisleMat
-      );
-
-      frontRail.position.set(
-        centerX,
-        0.35,
-        z - direction * 0.65
-      );
-
-      group.add(frontRail);
-
-      game.scene.add(group);
-    }
-
-    function createFlatTargetBackWall({
-      centerX,
-      z,
-      width,
-      standMat,
-      aisleMat
-    }) {
-      const group = new THREE.Group();
-
-      // 矢が飛ぶ方向の奥に、観客席ではなく壁だけを置く
-      const wall = new THREE.Mesh(
-        new THREE.BoxGeometry(width, 5.2, 0.75),
-        standMat
-      );
-
-      wall.position.set(
-        centerX,
-        2.6,
-        z
-      );
-
-      group.add(wall);
-
-      // 壁の下に低い縁を置いて、スタジアム感を少し出す
-      const lowerRail = new THREE.Mesh(
-        new THREE.BoxGeometry(width * 0.95, 0.55, 0.45),
-        aisleMat
-      );
-
-      lowerRail.position.set(
-        centerX,
-        0.35,
-        z + 0.65
-      );
-
-      group.add(lowerRail);
-
-      game.scene.add(group);
-
-      // 矢の当たり判定対象にする
-      registerArrowCollisionObject(group);
-    }
-
-    function createWindFXTextures() {
-      const streakCanvas = document.createElement("canvas");
-      streakCanvas.width = 128;
-      streakCanvas.height = 32;
-      const sctx = streakCanvas.getContext("2d");
-
-      const streakGrad = sctx.createLinearGradient(0, 16, 128, 16);
-      streakGrad.addColorStop(0, "rgba(255,255,255,0)");
-      streakGrad.addColorStop(0.18, "rgba(255,255,255,0.18)");
-      streakGrad.addColorStop(0.50, "rgba(255,255,255,0.55)");
-      streakGrad.addColorStop(0.82, "rgba(255,255,255,0.18)");
-      streakGrad.addColorStop(1, "rgba(255,255,255,0)");
-
-      sctx.fillStyle = streakGrad;
-      sctx.beginPath();
-      sctx.roundRect(0, 10, 128, 12, 6);
-      sctx.fill();
-
-      game.windFX.textures.streak = new THREE.CanvasTexture(streakCanvas);
-    }
-
-    function createWindStreakSprites() {
-      const count = 40;
-
-      for (let i = 0; i < count; i++) {
-        const material = new THREE.SpriteMaterial({
-          map: game.windFX.textures.streak,
-          transparent: true,
-          opacity: 0,
-          depthWrite: false
-        });
-
-        const sprite = new THREE.Sprite(material);
-        game.scene.add(sprite);
-
-        // x を広げて横方向の流れるエリアを拡大
-        // y を広げて上の空間まで風を出す
-        // z を広げて奥まで風を出す
-        // width を伸ばして筋を長くする
-        // height を上げて少し太くする
-        const p = {
-          sprite,
-          x: (Math.random() - 0.5) * 160,
-          y: 0.2 + Math.random() * 5.2,
-          z: -3 - Math.random() * 65,
-          width: 2.8 + Math.random() * 5.0,
-          height: 0.12 + Math.random() * 0.22,
-          speedScale: 0.8 + Math.random() * 1.0,
-          swayPhase: Math.random() * Math.PI * 2,
-
-          // ゆらぎ追加
-          driftPhase: Math.random() * Math.PI * 2,
-          stretchPhase: Math.random() * Math.PI * 2,
-          swayAmpY: 0.03 + Math.random() * 0.05,
-          swayAmpZ: 0.04 + Math.random() * 0.10,
-          speedJitter: 0.85 + Math.random() * 0.35
-        };
-
-        sprite.position.set(p.x, p.y, p.z);
-        sprite.scale.set(p.width, p.height, 1);
-
-        game.windFX.streaks.push(p);
-      }
-    }
-
-    function resetWindFXParticleX(p, dirSign, rangeX = 90) {
-      p.x = dirSign > 0
-        ? -rangeX - Math.random() * 8
-        :  rangeX + Math.random() * 8;
-    }
-
-    function updateWindFX(dt, elapsed) {
-      if (!game.windFX) return;
-      if (typeof getCurrentWindDirection !== "function") return;
-
-      const windDir = getCurrentWindDirection();
-      if (!windDir?.vector) return;
-
-      const dirSign = windDir.vector.x >= 0 ? 1 : -1;
-      const windSpeed = game.hasStarted ? game.wind.speed : 0;
-      const visibility = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
-
-      updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility);
-    }
-
-    function updateWindStreaks(dt, elapsed, dirSign, windSpeed, visibility) {
-      const activeCount = Math.floor(3 + visibility * game.windFX.streaks.length);
-
-      for (let i = 0; i < game.windFX.streaks.length; i++) {
-        const p = game.windFX.streaks[i];
-        const active = i < activeCount;
-
-        p.sprite.visible = active;
-        if (!active) continue;
-
-        // 速度にゆるい揺らぎを入れる
-        const speedWave =
-          1 +
-          Math.sin(elapsed * (1.6 + p.speedScale * 0.7) + p.driftPhase) * 0.16 +
-          Math.sin(elapsed * (3.4 + p.speedScale * 0.4) + p.driftPhase * 1.7) * 0.06;
-
-        const moveSpeed =
-          (1.2 + windSpeed * 2.6) *
-          p.speedScale *
-          p.speedJitter *
-          speedWave;
-
-        p.x += dirSign * moveSpeed * dt;
-
-        if (dirSign > 0 && p.x > 90) resetWindFXParticleX(p, dirSign, 90);
-        if (dirSign < 0 && p.x < -90) resetWindFXParticleX(p, dirSign, 90);
-
-        // 上下だけでなく奥行きにも微妙な揺れ
-        const bobY =
-          Math.sin(elapsed * (1.2 + p.speedScale) + p.swayPhase) * p.swayAmpY +
-          Math.sin(elapsed * (2.7 + p.speedScale * 0.6) + p.swayPhase * 1.9) * p.swayAmpY * 0.45;
-
-        const bobZ =
-          Math.sin(elapsed * (1.8 + p.speedScale * 0.5) + p.driftPhase) * p.swayAmpZ;
-
-        // 長さをわずかに伸び縮み
-        const stretch =
-          1 +
-          Math.sin(elapsed * (2.2 + p.speedScale * 0.5) + p.stretchPhase) * 0.10;
-
-        p.sprite.position.set(p.x, p.y + bobY, p.z + bobZ);
-        p.sprite.material.opacity = 0.16 + visibility * 0.28;
-
-        p.sprite.scale.set(
-          p.width * (1.9 + visibility * 0.8) * stretch,
-          p.height * (2.8 + visibility * 1.1) * (0.96 + (2 - stretch) * 0.04),
-          1
-        );
-      }
-    }
-
-    function createLights() {
-      // 半球ライトで空と地面からの柔らかい光を表現
-      const hemi = new THREE.HemisphereLight(0xffffff, 0x335566, 0.95);
-      game.scene.add(hemi);
-
-      // 方向ライトで立体感を足す
-      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-      dir.position.set(8, 14, 4);
-      game.scene.add(dir);
-    }
-
-    //　芝のテクスチャをキャンバスで生成して、地面に貼る
-    function createGrassGround() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1024;
-
-      const ctx = canvas.getContext("2d");
-
-      // ベースの芝色
-      ctx.fillStyle = "#4f9444";
-      ctx.fillRect(0, 0, 1024, 1024);
-
-      // 大きめの色ムラ（芝の濃淡）
-      for (let i = 0; i < 3200; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const r = 16 + Math.random() * 18;
-        const g = 85 + Math.random() * 60;
-        const b = 10 + Math.random() * 16;
-        const size = 10 + Math.random() * 24;
-
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${0.04 + Math.random() * 0.05})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 細かい粒感
-      for (let i = 0; i < 70000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const r = 16 + Math.random() * 22;
-        const g = 92 + Math.random() * 82;
-        const b = 8 + Math.random() * 18;
-
-        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-        ctx.fillRect(x, y, 1.5, 1.5);
-      }
-
-      // 短い芝の筋
-      for (let i = 0; i < 32000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const len = 2 + Math.random() * 5;
-        const tilt = (Math.random() - 0.5) * 0.9;
-
-        ctx.strokeStyle = `rgba(${20 + Math.random() * 25}, ${120 + Math.random() * 90}, ${12 + Math.random() * 20}, ${0.20 + Math.random() * 0.16})`;
-        ctx.lineWidth = 1;
-
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + tilt * 2.5, y - len);
-        ctx.stroke();
-      }
-
-      // 土っぽい色を少し混ぜる
-      for (let i = 0; i < 5000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-
-        ctx.fillStyle = `rgba(${70 + Math.random() * 35}, ${60 + Math.random() * 25}, ${35 + Math.random() * 20}, ${0.04 + Math.random() * 0.05})`;
-        ctx.fillRect(x, y, 2, 2);
-      }
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(110, 110);
-
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000),
-        new THREE.MeshStandardMaterial({
-          map: texture,
-          roughness: 1.0,
-          metalness: 0.0
-        })
-      );
-
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = 0;
-
-      game.scene.add(ground);
-    }
-
-    function createDirtGround() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1024;
-
-      const ctx = canvas.getContext("2d");
-
-      // ベースの土色
-      ctx.fillStyle = "#7a5a3a";
-      ctx.fillRect(0, 0, 1024, 1024);
-
-      // 色ムラ
-      for (let i = 0; i < 5000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const size = 6 + Math.random() * 18;
-
-        const r = 90 + Math.random() * 35;
-        const g = 65 + Math.random() * 30;
-        const b = 35 + Math.random() * 20;
-        const a = 0.04 + Math.random() * 0.06;
-
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // 小石っぽい粒
-      for (let i = 0; i < 18000; i++) {
-        const x = Math.random() * 1024;
-        const y = Math.random() * 1024;
-        const c = 70 + Math.random() * 40;
-        ctx.fillStyle = `rgb(${c}, ${c * 0.82}, ${c * 0.55})`;
-        ctx.fillRect(x, y, 2, 2);
-      }
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(90, 90);
-
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000),
-        new THREE.MeshStandardMaterial({
-          map: texture,
-          roughness: 1.0,
-          metalness: 0.0
-        })
-      );
-
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = 0;
-      game.scene.add(ground);
-    }
-
-    function createGrassBladeGeometry(height = 0.18, width = 0.035) {
-      const shape = new THREE.Shape();
-
-      // 根元は少し幅があり、先端は尖らせる
-      shape.moveTo(-width * 0.5, 0);
-      shape.quadraticCurveTo(-width * 0.42, height * 0.45, -width * 0.18, height * 0.82);
-      shape.lineTo(0, height);
-      shape.lineTo(width * 0.18, height * 0.82);
-      shape.quadraticCurveTo(width * 0.42, height * 0.45, width * 0.5, 0);
-      shape.closePath();
-
-      const geo = new THREE.ShapeGeometry(shape);
-      geo.translate(0, 0, 0);
-
-      return geo;
-    }
-
-    function createGrassFX() {
-      const bladeGeo = createGrassBladeGeometry(0.16, 0.030);
-
-      // 草のパッチ数（1パッチに複数枚の葉が生える）
-      const patchCount = 3000;
-
-      // カメラ初期位置を中心に、近いほど高密度・遠いほど疎にする
-      const cameraStartX = 0;
-      const cameraStartZ = 8;
-
-      // 草を生やす最大半径
-      const grassRadius = 90;
-
-      for (let i = 0; i < patchCount; i++) {
-        // 中心寄りほど出やすくする
-        const radialBias = Math.random() ** 1.5;
-
-        const radius = radialBias * grassRadius;
-        const angle = Math.random() * Math.PI * 2;
-
-        const x = cameraStartX + Math.cos(angle) * radius;
-        const z = cameraStartZ + Math.sin(angle) * radius;
-
-        const patch = new THREE.Group();
-        patch.position.set(x, 0.002, z);
-
-        // 1パッチに複数枚の葉をランダム生成
-        const bladeCount = 3 + Math.floor(Math.random() * 4);
-
-        for (let j = 0; j < bladeCount; j++) {
-          const bladeColor = new THREE.Color(GRASS_BASE_COLOR);
-          const lightnessOffset = (Math.random() - 0.5) * GRASS_LIGHTNESS_JITTER;
-          bladeColor.offsetHSL(0, 0, lightnessOffset);
-
-          const bladeMat = new THREE.MeshStandardMaterial({
-            color: bladeColor,
-            roughness: 1.0,
-            metalness: 0.0,
-            side: THREE.DoubleSide
-          });
-
-          const blade = new THREE.Mesh(bladeGeo, bladeMat);
-
-          blade.position.set(
-            (Math.random() - 0.5) * 0.10,
-            0,
-            (Math.random() - 0.5) * 0.10
-          );
-
-          blade.rotation.y = Math.random() * Math.PI;
-          blade.rotation.z = (Math.random() - 0.5) * 0.18;
-          blade.scale.set(
-            0.85 + Math.random() * 0.45,
-            0.85 + Math.random() * 0.55,
-            1
-          );
-
-          blade.userData.baseRotZ = blade.rotation.z;
-          blade.userData.phase = Math.random() * Math.PI * 2;
-          blade.userData.sway = 0.03 + Math.random() * 0.035;
-
-          patch.add(blade);
+    /**
+     * 役割: 観客の揺れ、首振り、腕、カメラ、接続腕のアニメーションを更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function updateSpectators(dt, elapsed) {
+      if (!game.spectators?.length) return;
+
+      for (const spectator of game.spectators) {
+        const anim = spectator.userData.spectatorAnim;
+        if (!anim) continue;
+
+        const t = elapsed * anim.speed + anim.phase;
+        const parts = anim.parts;
+
+        // 体全体の微妙な揺れ
+        spectator.rotation.x =
+          anim.baseRotationX +
+          Math.sin(t * 1.1) * anim.bodySway;
+
+        spectator.rotation.z =
+          anim.baseRotationZ +
+          Math.sin(t * 0.9 + 1.7) * anim.bodySway * 0.7;
+
+        // 観客全体がほんの少し左右を見る
+        spectator.rotation.y =
+          spectator.userData.baseRotationY +
+          Math.sin(t * 0.35) * THREE.MathUtils.degToRad(1.5);
+
+        // 頭の動き
+        if (parts.head) {
+          parts.head.rotation.y =
+            Math.sin(t * 0.55) * anim.headYaw;
+
+          parts.head.rotation.x =
+            Math.sin(t * 0.8 + 0.6) * anim.headPitch;
         }
 
-        patch.userData.phase = Math.random() * Math.PI * 2;
-        game.scene.add(patch);
-        game.grassFX.patches.push(patch);
-      }
-    }
+        // 腕の動き
+        if (anim.pose === "camera") {
+          const cameraMove = Math.sin(t * 0.8) * 0.006;
 
-    function updateGrassFX(dt, elapsed) {
-      if (!game.grassFX?.patches?.length) return;
+          if (parts.leftForeArm) {
+            const base = parts.leftForeArm.userData.basePosition;
+            parts.leftForeArm.position.set(base.x, base.y + cameraMove, base.z);
+          }
 
-      const windDir = typeof getCurrentWindDirection === "function"
-        ? getCurrentWindDirection()
-        : null;
+          if (parts.rightForeArm) {
+            const base = parts.rightForeArm.userData.basePosition;
+            parts.rightForeArm.position.set(base.x, base.y + cameraMove, base.z);
+          }
 
-      const dirSign = windDir?.vector?.x >= 0 ? 1 : -1;
-      const windSpeed = game.hasStarted ? game.wind.speed : 0;
-      const windStrength = THREE.MathUtils.clamp(windSpeed / 7.0, 0, 1);
+          if (parts.camera) {
+            syncSpectatorCameraToHands(spectator, parts);
+            updateSpectatorCameraArmConnections(spectator, parts);
 
-      for (const patch of game.grassFX.patches) {
-        for (const blade of patch.children) {
-          const baseRotZ = blade.userData.baseRotZ ?? 0;
-          const phase = blade.userData.phase ?? 0;
-          const sway = blade.userData.sway ?? 0.03;
+            parts.camera.rotation.x =
+              THREE.MathUtils.degToRad(-4) +
+              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(1.0);
 
-          const flutter =
-            Math.sin(elapsed * 2.2 + phase) * sway * 0.75 +
-            Math.sin(elapsed * 4.4 + phase * 1.6) * sway * 0.25;
+            parts.camera.rotation.y =
+              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2.0);
 
-          blade.rotation.z =
-            baseRotZ +
-            flutter +
-            dirSign * windStrength * sway * 1.8;
+            parts.camera.rotation.z =
+              Math.sin(t * 0.55 + 0.8) * THREE.MathUtils.degToRad(1.2);
+          }
+        } else if (anim.clapLike) {
+          const clap = Math.max(0, Math.sin(t * 3.2));
+
+          if (parts.leftUpperArm) {
+            parts.leftUpperArm.rotation.x =
+              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
+            parts.leftUpperArm.rotation.z =
+              THREE.MathUtils.degToRad(-23) + clap * THREE.MathUtils.degToRad(8);
+          }
+
+          if (parts.rightUpperArm) {
+            parts.rightUpperArm.rotation.x =
+              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
+            parts.rightUpperArm.rotation.z =
+              THREE.MathUtils.degToRad(23) - clap * THREE.MathUtils.degToRad(8);
+          }
+
+          if (parts.leftForeArm) {
+            const base = parts.leftForeArm.userData.basePosition;
+            parts.leftForeArm.rotation.x =
+              clap * THREE.MathUtils.degToRad(4);
+            parts.leftForeArm.rotation.z =
+              THREE.MathUtils.degToRad(-8) + clap * THREE.MathUtils.degToRad(10);
+            parts.leftForeArm.position.set(
+              base.x + clap * 0.006,
+              base.y,
+              base.z
+            );
+          }
+
+          if (parts.rightForeArm) {
+            const base = parts.rightForeArm.userData.basePosition;
+            parts.rightForeArm.rotation.x =
+              clap * THREE.MathUtils.degToRad(4);
+            parts.rightForeArm.rotation.z =
+              THREE.MathUtils.degToRad(8) - clap * THREE.MathUtils.degToRad(10);
+            parts.rightForeArm.position.set(
+              base.x - clap * 0.006,
+              base.y,
+              base.z
+            );
+          }
+        } else {
+          const armMove = Math.sin(t * 0.9) * anim.armSwing;
+          const armMove2 = Math.sin(t * 0.9 + 0.35) * anim.armSwing * 0.45;
+
+          const leftUpperBaseX = THREE.MathUtils.degToRad(10);
+          const rightUpperBaseX = THREE.MathUtils.degToRad(10);
+
+          const leftUpperBaseZ = THREE.MathUtils.degToRad(-23);
+          const rightUpperBaseZ = THREE.MathUtils.degToRad(23);
+
+          if (parts.leftUpperArm) {
+            parts.leftUpperArm.rotation.x = leftUpperBaseX + armMove;
+            parts.leftUpperArm.rotation.z = leftUpperBaseZ + armMove2;
+          }
+
+          if (parts.rightUpperArm) {
+            parts.rightUpperArm.rotation.x = rightUpperBaseX - armMove;
+            parts.rightUpperArm.rotation.z = rightUpperBaseZ - armMove2;
+          }
+
+          if (parts.leftForeArm) {
+            const base = parts.leftForeArm.userData.basePosition;
+            parts.leftForeArm.rotation.x = armMove * 0.55;
+            parts.leftForeArm.rotation.z = armMove2 * 0.55;
+            parts.leftForeArm.position.set(
+              base.x,
+              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
+              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
+            );
+          }
+
+          if (parts.rightForeArm) {
+            const base = parts.rightForeArm.userData.basePosition;
+            parts.rightForeArm.rotation.x = -armMove * 0.55;
+            parts.rightForeArm.rotation.z = -armMove2 * 0.55;
+            parts.rightForeArm.position.set(
+              base.x,
+              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
+              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
+            );
+          }
         }
       }
     }
+
 
     // ============================================================
-    // Target: 的の生成
+    // 5. 的・スコア判定
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
     // ============================================================
+
+    /**
+     * 役割: 的、支柱、三脚を目標距離に合わせてまとめて生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createTargetSystem() {
       const targetGroup = new THREE.Group();
       game.targetRadius = 0.8;
@@ -2738,6 +3284,13 @@
       game.scene.add(targetGroup);
     }
 
+    /**
+     * 役割: 同心円の的テクスチャをCanvasで描画する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createTargetTexture(size = 1024) {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = size;
@@ -2801,9 +3354,20 @@
       return texture;
     }
 
+
     // ============================================================
-    // Bow: 弓と装填中の矢
+    // 6. 弓モデル・矢モデル
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
     // ============================================================
+
+    /**
+     * 役割: 手元に表示する弓全体のルート、弦、装填矢を作る。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createBowSystem() {
       // bowRoot はカメラに追従する“手元”全体
       const bowRoot = new THREE.Group();
@@ -2833,6 +3397,13 @@
       applyResponsiveBowLayout();
     }
 
+    /**
+     * 役割: 画面サイズに応じて弓の表示位置・拡大率を調整する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function applyResponsiveBowLayout() {
       if (!game.bowRoot) return;
 
@@ -2857,6 +3428,13 @@
       game.camera.updateProjectionMatrix();
     }
 
+    /**
+     * 役割: 弓のライザー、上下リム、チップ、弦などを組み立てる。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createBowModel() {
       const bowGroup = new THREE.Group();
 
@@ -3984,13 +4562,14 @@
 
       return bowGroup;
     }
-  
-    // ============================================================
-    // Arrow: 矢モデル生成
-    // ------------------------------------------------------------
-    // この矢モデルは「+X方向に矢じりが向く」基準で作る。
-    // そうすると、後で進行方向へ回すのが簡単になる。
-    // ============================================================
+
+    /**
+     * 役割: 飛翔矢・装填矢に共通するシャフト、先端、羽根を生成する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function createArrowModel() {
       const group = new THREE.Group();
 
@@ -4111,9 +4690,85 @@
       return group;
     }
 
+    /**
+     * 役割: 矢のローカル軸を進行方向へ向ける。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function orientArrowToDirection(arrow, dir) {
+      // この矢モデルは +X が先端方向
+      const from = new THREE.Vector3(1, 0, 0);
+      const to = dir.clone().normalize();
+
+      if (to.lengthSq() < 1e-8) return;
+
+      const q = new THREE.Quaternion().setFromUnitVectors(from, to);
+      arrow.quaternion.copy(q);
+    }
+
+    /**
+     * 役割: カメラの水平前方ベクトルを取得する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function getHorizontalForward() {
+      const dir = new THREE.Vector3(0, 0, -1);
+      dir.applyQuaternion(game.camera.quaternion);
+
+      // 水平成分だけ使う
+      dir.y = 0;
+
+      // 真上/真下近くを向いた時の保険
+      if (dir.lengthSq() < 1e-6) {
+        dir.set(0, 0, -1);
+      }
+
+      dir.normalize();
+      return dir;
+    }
+
+    /**
+     * 役割: 矢の発射開始位置をカメラ前方から計算する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function getMuzzlePosition() {
+      const pos = new THREE.Vector3();
+      game.camera.getWorldPosition(pos);
+
+      // 画面中央から少し前へ
+      const forward = new THREE.Vector3(0, 0, -1)
+        .applyQuaternion(game.camera.quaternion)
+        .normalize();
+
+      pos.addScaledVector(forward, 0.85);
+  
+      // ほんの少し下げて視認性を上げる
+      pos.y -= 0.05;
+
+      return pos;
+    }
+
+
     // ============================================================
-    // Input
+    // 7. 入力・発射・風計算
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
     // ============================================================
+
+    /**
+     * 役割: マウス、タッチ、キーボード入力を登録し、チャージ・発射・復帰を制御する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function setupInput() {
       // --------------------------------------------------
       // PC: 左クリック
@@ -4209,17 +4864,13 @@
       }, { passive: false });
     }
 
-    function setupResize() {
-      window.addEventListener("resize", () => {
-        game.camera.aspect = window.innerWidth / window.innerHeight;
-        game.camera.updateProjectionMatrix();
-        applyResponsiveBowLayout();
-      });
-    }
-
-    // ============================================================
-    // チャージ / 発射 / リロード
-    // ============================================================
+    /**
+     * 役割: 発射可能な状態でチャージを開始する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function beginCharge() {
       if (game.isGameOver) return;
       if (!isTouchDevice && !game.controls.isLocked) return;
@@ -4232,42 +4883,13 @@
       game.chargeDirection = 1; // 長押し開始時は増加から始める
     }
 
-    function getLaunchDirection() {
-      const dir = new THREE.Vector3();
-      game.camera.getWorldDirection(dir);
-
-      // 上下角を少しだけ反映
-      // 完全にカメラ通りにすると変化が強すぎるので弱める
-      dir.y *= 0.35;
-
-      // 真上/真下に近づきすぎないように軽く制限
-      dir.y = THREE.MathUtils.clamp(dir.y, -0.22, 0.22);
-
-      return dir.normalize();
-    }
-
-    function getWindAccelerationWithJitter(elapsed) {
-      const base = getWindAcceleration().clone();
-
-      // 風速が 0 に近い時はそのまま
-      if (base.lengthSq() < 1e-8) return base;
-
-      // 左右風に対して、ごく弱い上下揺らぎを足す
-      const vertical =
-        Math.sin(elapsed * 1.9) * 0.10 +
-        Math.sin(elapsed * 3.7 + 1.2) * 0.05;
-
-      // 風の強さ自体も少しだけ脈動させる
-      const gust = 1.0 +
-        Math.sin(elapsed * 1.4 + 0.6) * 0.10 +
-        Math.sin(elapsed * 2.8 + 2.1) * 0.05;
-
-      base.multiplyScalar(gust);
-      base.y += vertical * game.windAccelerationScale;
-
-      return base;
-    }
-
+    /**
+     * 役割: チャージ率、風、重力、初速をもとに矢を発射する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function releaseArrow() {
       if (!game.isCharging) return;
 
@@ -4331,6 +4953,13 @@
       updateHUD();
     }
 
+    /**
+     * 役割: 次弾を装填し、装填矢と弓の表示を戻す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function reloadArrow() {
       if (game.isGameOver) return;
 
@@ -4346,9 +4975,13 @@
       updateHUD();
     }
 
-    // ============================================================
-    // 手元の弓矢の見た目更新
-    // ============================================================
+    /**
+     * 役割: 装填中の矢の表示/非表示を状態に合わせて更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateLoadedArrowVisual() {
       if (!game.loadedArrow) return;
 
@@ -4380,17 +5013,14 @@
       }
 
     }
-    function orientArrowToDirection(arrow, dir) {
-      // この矢モデルは +X が先端方向
-      const from = new THREE.Vector3(1, 0, 0);
-      const to = dir.clone().normalize();
 
-      if (to.lengthSq() < 1e-8) return;
-
-      const q = new THREE.Quaternion().setFromUnitVectors(from, to);
-      arrow.quaternion.copy(q);
-    }
-
+    /**
+     * 役割: チャージ率に応じて弦の引き量と装填矢の位置を更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateBowDraw(ratio) {
       const drawRatio = THREE.MathUtils.clamp(ratio, 0, 1);
 
@@ -4400,71 +5030,89 @@
       }
     }
 
-    // ============================================================
-    // 方向・姿勢
-    // ============================================================
-    function getHorizontalForward() {
-      const dir = new THREE.Vector3(0, 0, -1);
-      dir.applyQuaternion(game.camera.quaternion);
-
-      // 水平成分だけ使う
-      dir.y = 0;
-
-      // 真上/真下近くを向いた時の保険
-      if (dir.lengthSq() < 1e-6) {
-        dir.set(0, 0, -1);
-      }
-
-      dir.normalize();
-      return dir;
-    }
-
-    function getMuzzlePosition() {
-      const pos = new THREE.Vector3();
-      game.camera.getWorldPosition(pos);
-
-      // 画面中央から少し前へ
-      const forward = new THREE.Vector3(0, 0, -1)
-        .applyQuaternion(game.camera.quaternion)
-        .normalize();
-
-      pos.addScaledVector(forward, 0.85);
-  
-      // ほんの少し下げて視認性を上げる
-      pos.y -= 0.05;
-
-      return pos;
-    }
-
+    /**
+     * 役割: 現在選ばれている風向きベクトルを返す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function getCurrentWindDirection() {
       return WIND_DIRECTIONS[game.wind.directionIndex] || WIND_DIRECTIONS[0];
     }
 
+    /**
+     * 役割: 現在の風向きと風速から矢に加える加速度を返す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function getWindAcceleration() {
       return getCurrentWindDirection().vector
         .clone()
         .multiplyScalar(game.wind.speed * game.windAccelerationScale);
     }
 
+    /**
+     * 役割: 発射ごとに少し揺らぎを含む風加速度を計算する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
+    function getWindAccelerationWithJitter(elapsed) {
+      const base = getWindAcceleration().clone();
+
+      // 風速が 0 に近い時はそのまま
+      if (base.lengthSq() < 1e-8) return base;
+
+      // 左右風に対して、ごく弱い上下揺らぎを足す
+      const vertical =
+        Math.sin(elapsed * 1.9) * 0.10 +
+        Math.sin(elapsed * 3.7 + 1.2) * 0.05;
+
+      // 風の強さ自体も少しだけ脈動させる
+      const gust = 1.0 +
+        Math.sin(elapsed * 1.4 + 0.6) * 0.10 +
+        Math.sin(elapsed * 2.8 + 2.1) * 0.05;
+
+      base.multiplyScalar(gust);
+      base.y += vertical * game.windAccelerationScale;
+
+      return base;
+    }
+
+    /**
+     * 役割: 風向きと風速をランダムに更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function randomizeWind() {
       game.wind.directionIndex = Math.floor(Math.random() * WIND_DIRECTIONS.length);
       game.wind.speed = THREE.MathUtils.lerp(1.5, 7.0, Math.random());
     }
 
-    // 向きはそのままで風速だけ変える
+    /**
+     * 役割: 風向きを維持したまま風速だけをランダム更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function randomizeWindSpeedOnly() {
       game.wind.speed = THREE.MathUtils.lerp(1.5, 7.0, Math.random());
     }
 
-    function orientArrowHorizontally(arrow, horizontalDir) {
-      // この矢モデルは +X が先端方向
-      const from = new THREE.Vector3(1, 0, 0);
-      const to = horizontalDir.clone().normalize();
-
-      const q = new THREE.Quaternion().setFromUnitVectors(from, to);
-      arrow.quaternion.copy(q);
-    }
-
+    /**
+     * 役割: スマホ操作時のドラッグ量からカメラ回転を更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateTouchLook(dx, dy) {
       if (!isTouchDevice) return;
       if (game.isGameOver) return;
@@ -4484,10 +5132,31 @@
       game.camera.rotation.x = game.touchLook.pitch;
     }
 
+    /**
+     * 役割: 矢追従や着弾保持など、通常操作以外のカメラ状態か判定する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function isCameraInCinematicMode() {
       return !!game.followArrow || game.isHoldingOnImpact || game.isReturningCamera;
     }
 
+
+    // ============================================================
+    // 8. 矢追従カメラ・当たり判定
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
+    // ============================================================
+
+    /**
+     * 役割: 発射後に矢を追うカメラ演出へ移行する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function startArrowFollow(arrowData) {
       game.savedCameraPosition.copy(game.camera.position);
       game.savedCameraQuaternion.copy(game.camera.quaternion);
@@ -4501,6 +5170,13 @@
       }
     }
 
+    /**
+     * 役割: 着弾直後にカメラを一時停止する演出へ移行する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function startImpactHold() {
       if (!game.followArrow || game.isHoldingOnImpact) return;
 
@@ -4508,6 +5184,13 @@
       game.impactHoldTime = 0;
     }
 
+    /**
+     * 役割: 着弾後カメラを元の視点へ戻す処理を開始する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function startCameraReturn() {
       if (!isCameraInCinematicMode()) return;
 
@@ -4517,6 +5200,13 @@
       game.impactHoldTime = 0;
     }
 
+    /**
+     * 役割: カメラ復帰処理を完了し、通常視点へ戻す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function finishCameraReturn() {
       game.camera.position.copy(game.savedCameraPosition);
 
@@ -4540,6 +5230,13 @@
       reloadArrow();
     }
 
+    /**
+     * 役割: 矢追従、着弾保持、視点復帰のカメラ状態を毎フレーム更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateCameraFollow(dt) {
       if (game.followArrow) {
         const arrowData = game.followArrow;
@@ -4593,9 +5290,13 @@
       }
     }
 
-    // ============================================================
-    // 矢と障害物の当たり判定メソッド
-    // ============================================================
+    /**
+     * 役割: 矢が木・岩・観客席など登録済みオブジェクトへ衝突したか調べる。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function checkArrowObjectHit(prevPos, nextPos) {
       if (!game.arrowCollisionObjects.length) return null;
 
@@ -4620,9 +5321,20 @@
       return hits[0];
     }
 
+
     // ============================================================
-    // 当たり判定 / スコア
+    // 5. 的・スコア判定
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
     // ============================================================
+
+    /**
+     * 役割: 矢が的面に当たったかを判定し、中心からの距離を返す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function checkTargetHit(prevPos, nextPos) {
       const center = game.targetFace.getWorldPosition(new THREE.Vector3());
 
@@ -4653,6 +5365,13 @@
       return null;
     }
 
+    /**
+     * 役割: 的中心からの距離を、10点から1点のリングスコアへ変換する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function scoreFromDistance(dist) {
       const ringWidth = game.targetRadius / 10;
 
@@ -4665,6 +5384,20 @@
       return THREE.MathUtils.clamp(10 - ringIndex, 1, 10);
     }
 
+
+    // ============================================================
+    // 9. ゲーム進行・HUD・メインループ
+    // ------------------------------------------------------------
+    // この章では関連する処理を近くにまとめ、後から調整しやすくしている。
+    // ============================================================
+
+    /**
+     * 役割: 的中時の紙吹雪演出を発生させる。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function triggerHitCelebration() {
       if (!celebrationLayer) return;
 
@@ -4711,6 +5444,13 @@
       window.setTimeout(() => burst.remove(), maxLifetimeMs + 120);
     }
 
+    /**
+     * 役割: ゲーム開始時にタイマー、スコア、矢、風などを初期状態へ戻す。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function startGame() {
       randomizeWind();
       game.hasStarted = true;
@@ -4718,30 +5458,13 @@
       updateHUD();
     }
 
-    // ============================================================
-    // スコア送信（PowerShell連携）
-    // ※失敗しても絶対にエラーにしない
-    // ============================================================
-    async function sendScoreToExternal(score) {
-      if (!ENABLE_SCORE_POST) return;
-
-      try {
-        await fetch(SCORE_POST_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            score: score,
-            timestamp: new Date().toISOString()
-          })
-        });
-      } catch (e) {
-        // ★重要：完全に無視（エラーにしない）
-        console.warn("スコア送信失敗（無視）", e);
-      }
-    }
-
+    /**
+     * 役割: ゲーム終了表示と入力状態の整理を行う。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function endGame() {
       if (game.isGameOver) return;
 
@@ -4769,6 +5492,13 @@
       sendScoreToExternal(game.score);
     }
 
+    /**
+     * 役割: 残り時間を減らし、0になったらゲーム終了へ進める。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateTimer(dt) {
       if (!game.hasStarted || game.isGameOver) return;
 
@@ -4779,18 +5509,36 @@
       }
     }
 
+    /**
+     * 役割: 残り時間をHUD表示用の文字列へ変換する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function formatTimeRemaining(seconds) {
       return `${Math.max(0, Math.ceil(seconds))}s`;
     }
 
+    /**
+     * 役割: 各射の得点履歴をHUD表示用に整形する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function formatShotScores() {
       if (!game.shotScores.length) return "-";
       return game.shotScores.join("＋");
     }
 
-    // ============================================================
-    // HUD
-    // ============================================================
+    /**
+     * 役割: スコア、風、残り時間、チャージ率などのHUDを更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateHUD() {
       const chargeRatio = THREE.MathUtils.clamp(
         game.chargeTime / game.maxChargeTime,
@@ -4818,9 +5566,13 @@
       `;
     }
 
-    // ============================================================
-    // 更新
-    // ============================================================
+    /**
+     * 役割: requestAnimationFrameで毎フレーム更新と描画を実行する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function animate() {
       requestAnimationFrame(animate);
 
@@ -4848,161 +5600,13 @@
       game.renderer.render(game.scene, game.camera);
     }
 
-    function updateSpectators(dt, elapsed) {
-      if (!game.spectators?.length) return;
-
-      for (const spectator of game.spectators) {
-        const anim = spectator.userData.spectatorAnim;
-        if (!anim) continue;
-
-        const t = elapsed * anim.speed + anim.phase;
-        const parts = anim.parts;
-
-        // 体全体の微妙な揺れ
-        spectator.rotation.x =
-          anim.baseRotationX +
-          Math.sin(t * 1.1) * anim.bodySway;
-
-        spectator.rotation.z =
-          anim.baseRotationZ +
-          Math.sin(t * 0.9 + 1.7) * anim.bodySway * 0.7;
-
-        // 観客全体がほんの少し左右を見る
-        spectator.rotation.y =
-          spectator.userData.baseRotationY +
-          Math.sin(t * 0.35) * THREE.MathUtils.degToRad(1.5);
-
-        // 頭の動き
-        if (parts.head) {
-          parts.head.rotation.y =
-            Math.sin(t * 0.55) * anim.headYaw;
-
-          parts.head.rotation.x =
-            Math.sin(t * 0.8 + 0.6) * anim.headPitch;
-        }
-
-        // 腕の動き
-        if (anim.pose === "camera") {
-          const cameraMove = Math.sin(t * 0.8) * 0.006;
-
-          if (parts.leftForeArm) {
-            const base = parts.leftForeArm.userData.basePosition;
-            parts.leftForeArm.position.set(base.x, base.y + cameraMove, base.z);
-          }
-
-          if (parts.rightForeArm) {
-            const base = parts.rightForeArm.userData.basePosition;
-            parts.rightForeArm.position.set(base.x, base.y + cameraMove, base.z);
-          }
-
-          if (parts.camera) {
-            syncSpectatorCameraToHands(spectator, parts);
-            updateSpectatorCameraArmConnections(spectator, parts);
-
-            parts.camera.rotation.x =
-              THREE.MathUtils.degToRad(-4) +
-              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(1.0);
-
-            parts.camera.rotation.y =
-              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2.0);
-
-            parts.camera.rotation.z =
-              Math.sin(t * 0.55 + 0.8) * THREE.MathUtils.degToRad(1.2);
-          }
-        } else if (anim.clapLike) {
-          const clap = Math.max(0, Math.sin(t * 3.2));
-
-          if (parts.leftUpperArm) {
-            parts.leftUpperArm.rotation.x =
-              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
-            parts.leftUpperArm.rotation.z =
-              THREE.MathUtils.degToRad(-23) + clap * THREE.MathUtils.degToRad(8);
-          }
-
-          if (parts.rightUpperArm) {
-            parts.rightUpperArm.rotation.x =
-              THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
-            parts.rightUpperArm.rotation.z =
-              THREE.MathUtils.degToRad(23) - clap * THREE.MathUtils.degToRad(8);
-          }
-
-          if (parts.leftForeArm) {
-            const base = parts.leftForeArm.userData.basePosition;
-            parts.leftForeArm.rotation.x =
-              clap * THREE.MathUtils.degToRad(4);
-            parts.leftForeArm.rotation.z =
-              THREE.MathUtils.degToRad(-8) + clap * THREE.MathUtils.degToRad(10);
-            parts.leftForeArm.position.set(
-              base.x + clap * 0.006,
-              base.y,
-              base.z
-            );
-          }
-
-          if (parts.rightForeArm) {
-            const base = parts.rightForeArm.userData.basePosition;
-            parts.rightForeArm.rotation.x =
-              clap * THREE.MathUtils.degToRad(4);
-            parts.rightForeArm.rotation.z =
-              THREE.MathUtils.degToRad(8) - clap * THREE.MathUtils.degToRad(10);
-            parts.rightForeArm.position.set(
-              base.x - clap * 0.006,
-              base.y,
-              base.z
-            );
-          }
-        } else {
-          const armMove = Math.sin(t * 0.9) * anim.armSwing;
-          const armMove2 = Math.sin(t * 0.9 + 0.35) * anim.armSwing * 0.45;
-
-          const leftUpperBaseX = THREE.MathUtils.degToRad(10);
-          const rightUpperBaseX = THREE.MathUtils.degToRad(10);
-
-          const leftUpperBaseZ = THREE.MathUtils.degToRad(-23);
-          const rightUpperBaseZ = THREE.MathUtils.degToRad(23);
-
-          if (parts.leftUpperArm) {
-            parts.leftUpperArm.rotation.x = leftUpperBaseX + armMove;
-            parts.leftUpperArm.rotation.z = leftUpperBaseZ + armMove2;
-          }
-
-          if (parts.rightUpperArm) {
-            parts.rightUpperArm.rotation.x = rightUpperBaseX - armMove;
-            parts.rightUpperArm.rotation.z = rightUpperBaseZ - armMove2;
-          }
-
-          if (parts.leftForeArm) {
-            const base = parts.leftForeArm.userData.basePosition;
-            parts.leftForeArm.rotation.x = armMove * 0.55;
-            parts.leftForeArm.rotation.z = armMove2 * 0.55;
-            parts.leftForeArm.position.set(
-              base.x,
-              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
-              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
-            );
-          }
-
-          if (parts.rightForeArm) {
-            const base = parts.rightForeArm.userData.basePosition;
-            parts.rightForeArm.rotation.x = -armMove * 0.55;
-            parts.rightForeArm.rotation.z = -armMove2 * 0.55;
-            parts.rightForeArm.position.set(
-              base.x,
-              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
-              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
-            );
-          }
-        }
-      }
-    }
-
-    function updateOpenFieldSkyDome() {
-      if (!game.openFieldSkyDome) return;
-
-      // 常にカメラを中心にする
-      game.openFieldSkyDome.position.copy(game.camera.position);
-    }
-
+    /**
+     * 役割: 長押し中のチャージ量を増減させ、ゲージ往復を制御する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateCharge(dt) {
       if (!game.isCharging) return;
 
@@ -5023,6 +5627,13 @@
       updateBowDraw(ratio);
     }
 
+    /**
+     * 役割: 発射済み矢の物理移動、衝突、スコア確定を更新する。
+     * 処理単位:
+     * - 入力値や現在状態を読み取る。
+     * - 必要なThree.jsオブジェクト、ゲーム状態、DOM表示を更新する。
+     * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
+     */
     function updateFlyingArrows(dt) {
       for (let i = game.flyingArrows.length - 1; i >= 0; i--) {
         const arrowData = game.flyingArrows[i];
@@ -5106,6 +5717,19 @@
           }
         }
       }
+    }
+
+    // ============================================================
+    // 10. 起動処理
+    // ------------------------------------------------------------
+    // すべての関数・定数が定義された後に初期化する。
+    // これにより、const/let の初期化前参照によるエラーを防ぐ。
+    // ============================================================
+    try {
+      init();
+      animate();
+    } catch (err) {
+      showError("初期化エラー:\n" + (err?.stack || err?.message || String(err)));
     }
   </script>
 </body>
