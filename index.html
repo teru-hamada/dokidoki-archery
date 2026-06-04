@@ -1309,24 +1309,33 @@
     function createSmoothForearmHandGeometry(side, poseType = "normal") {
       const radialSegments = 14;
 
-      // 前腕〜手を、複数リングで1つの連続した肌メッシュにする
-      // rx/rz を途中で変えることで、肘 → 前腕 → 手首 → 手の太さを自然につなぐ
+      // 肘を原点にしたローカル座標
       const rings = poseType === "camera"
         ? [
-            // カメラを構える腕：手を顔の前に上げる
-            { x: side * 0.135, y: 0.305, z: 0.035, rx: 0.024, rz: 0.022 }, // 肘付近
-            { x: side * 0.120, y: 0.365, z: 0.075, rx: 0.023, rz: 0.021 }, // 前腕
-            { x: side * 0.095, y: 0.420, z: 0.120, rx: 0.021, rz: 0.020 }, // 手首
-            { x: side * 0.060, y: 0.455, z: 0.165, rx: 0.032, rz: 0.022 }, // 手のひら
-            { x: side * 0.038, y: 0.465, z: 0.180, rx: 0.026, rz: 0.018 }  // 指先側
+            // 肘。ここが elbowRoot とつながる
+            { x: 0.000,          y: 0.000, z: 0.000, rx: 0.026, rz: 0.023 },
+
+            // 前腕：顔方向へ上げる
+            { x: -side * 0.012,  y: 0.060, z: 0.050, rx: 0.024, rz: 0.022 },
+
+            // 前腕先：さらに内側・前方へ
+            { x: -side * 0.028,  y: 0.120, z: 0.105, rx: 0.022, rz: 0.020 },
+
+            // 手首：カメラの横へ寄せる
+            { x: -side * 0.046,  y: 0.170, z: 0.158, rx: 0.020, rz: 0.018 },
+
+            // 手のひら：カメラ本体の左右に触れる位置
+            { x: -side * 0.062,  y: 0.205, z: 0.185, rx: 0.034, rz: 0.024 },
+
+            // 指先側：少しだけ前に回り込む
+            { x: -side * 0.066,  y: 0.218, z: 0.205, rx: 0.026, rz: 0.018 }
           ]
         : [
-            // 通常の座っている腕
-            { x: side * 0.155, y: 0.245, z: 0.030, rx: 0.024, rz: 0.022 }, // 肘付近
-            { x: side * 0.158, y: 0.205, z: 0.050, rx: 0.023, rz: 0.021 }, // 前腕
-            { x: side * 0.152, y: 0.160, z: 0.080, rx: 0.020, rz: 0.019 }, // 手首
-            { x: side * 0.145, y: 0.125, z: 0.112, rx: 0.031, rz: 0.022 }, // 手のひら
-            { x: side * 0.142, y: 0.108, z: 0.135, rx: 0.025, rz: 0.017 }  // 指先側
+            { x: 0.000,        y: 0.000,  z: 0.000, rx: 0.024, rz: 0.022 },
+            { x: side * 0.003, y: -0.046, z: 0.020, rx: 0.023, rz: 0.021 },
+            { x: side * 0.006, y: -0.091, z: 0.048, rx: 0.020, rz: 0.019 },
+            { x: side * 0.008, y: -0.125, z: 0.082, rx: 0.031, rz: 0.022 },
+            { x: side * 0.010, y: -0.142, z: 0.104, rx: 0.025, rz: 0.017 }
           ];
 
       const positions = [];
@@ -1338,7 +1347,6 @@
         for (let j = 0; j < radialSegments; j++) {
           const a = (j / radialSegments) * Math.PI * 2;
 
-          // 横方向は少し楕円にして、手のひら感を出す
           const x = ring.x + Math.cos(a) * ring.rx;
           const y = ring.y;
           const z = ring.z + Math.sin(a) * ring.rz;
@@ -1347,7 +1355,6 @@
         }
       }
 
-      // 側面
       for (let i = 0; i < rings.length - 1; i++) {
         for (let j = 0; j < radialSegments; j++) {
           const a = i * radialSegments + j;
@@ -1413,7 +1420,7 @@
 
       // カメラ本体
       const body = new THREE.Mesh(
-        new THREE.BoxGeometry(0.095, 0.052, 0.035),
+        new THREE.BoxGeometry(0.115, 0.060, 0.042),
         cameraMat
       );
       group.add(body);
@@ -1424,7 +1431,7 @@
         lensMat
       );
       lens.rotation.x = Math.PI / 2;
-      lens.position.z = 0.030;
+      lens.position.z = 0.036;
       group.add(lens);
 
       // 上部のでっぱり
@@ -1436,6 +1443,123 @@
       group.add(top);
 
       return group;
+    }
+
+    function createCameraArmConnector(radius, material) {
+      const group = new THREE.Group();
+
+      const geometry = new THREE.CapsuleGeometry(radius, 1.0, 6, 12);
+      const mesh = new THREE.Mesh(geometry, material);
+
+      group.add(mesh);
+      group.userData.mesh = mesh;
+
+      return group;
+    }
+
+    function updateCameraArmConnector(connector, parent, startWorld, endWorld) {
+      if (!connector || !parent) return;
+
+      const start = parent.worldToLocal(startWorld.clone());
+      const end = parent.worldToLocal(endWorld.clone());
+
+      const mid = new THREE.Vector3()
+        .copy(start)
+        .add(end)
+        .multiplyScalar(0.5);
+
+      const dir = new THREE.Vector3()
+        .copy(end)
+        .sub(start);
+
+      const len = dir.length();
+      if (len <= 0.001) return;
+
+      connector.position.copy(mid);
+
+      // CapsuleGeometry はY軸方向に伸びるので、Y軸を接続方向へ向ける
+      connector.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        dir.clone().normalize()
+      );
+
+      // geometryの長さを都度作り直す
+      const mesh = connector.userData.mesh;
+      mesh.geometry.dispose();
+      mesh.geometry = new THREE.CapsuleGeometry(
+        0.021,
+        Math.max(0.001, len - 0.042),
+        6,
+        12
+      );
+    }
+
+    function syncSpectatorCameraToHands(spectator, parts) {
+      if (!parts.camera || !parts.head) return;
+
+      const cameraWorld = new THREE.Vector3();
+      const cameraLocal = new THREE.Vector3();
+
+      spectator.updateMatrixWorld(true);
+
+      // 頭のローカル座標で「顔の前・少し下」に置く
+      // x: 左右
+      // y: 高さ。マイナスにすると下がる
+      // z: 顔の前方向
+      cameraWorld.set(0, -0.070, 0.155);
+      parts.head.localToWorld(cameraWorld);
+
+      spectator.worldToLocal(cameraLocal.copy(cameraWorld));
+
+      parts.camera.position.copy(cameraLocal);
+
+      // ほんの少しだけ前に出す
+      parts.camera.position.z += 0.006;
+    }
+
+    function updateSpectatorCameraArmConnections(spectator, parts) {
+      if (
+        !parts.camera ||
+        !parts.leftForeArm ||
+        !parts.rightForeArm ||
+        !parts.leftCameraArm ||
+        !parts.rightCameraArm
+      ) {
+        return;
+      }
+
+      spectator.updateMatrixWorld(true);
+
+      const leftElbowWorld = new THREE.Vector3();
+      const rightElbowWorld = new THREE.Vector3();
+
+      const leftCameraGripWorld = new THREE.Vector3();
+      const rightCameraGripWorld = new THREE.Vector3();
+
+      // 肘の位置
+      parts.leftForeArm.getWorldPosition(leftElbowWorld);
+      parts.rightForeArm.getWorldPosition(rightElbowWorld);
+
+      // カメラ本体の左右。今のカメラ位置はそのままで、左右側面に接続する
+      leftCameraGripWorld.set(-0.060, -0.004, 0.004);
+      rightCameraGripWorld.set(0.060, -0.004, 0.004);
+
+      parts.camera.localToWorld(leftCameraGripWorld);
+      parts.camera.localToWorld(rightCameraGripWorld);
+
+      updateCameraArmConnector(
+        parts.leftCameraArm,
+        spectator,
+        leftElbowWorld,
+        leftCameraGripWorld
+      );
+
+      updateCameraArmConnector(
+        parts.rightCameraArm,
+        spectator,
+        rightElbowWorld,
+        rightCameraGripWorld
+      );
     }
 
     function createSpectatorModel() {
@@ -1504,6 +1628,10 @@
         rightForeArm: null,
         leftHand: null,
         rightHand: null,
+        leftGrip: null,
+        rightGrip: null,
+        leftCameraArm: null,
+        rightCameraArm: null,
         camera: null
       };
 
@@ -1623,45 +1751,90 @@
       function addArm(side) {
         const isCameraPose = spectatorPose === "camera";
 
-        // 服の袖・上腕
+        // 肩支点
+        const upperArmRoot = new THREE.Group();
+        upperArmRoot.position.set(
+          side * (isCameraPose ? 0.118 : 0.128),
+          isCameraPose ? 0.405 : 0.392,
+          isCameraPose ? 0.020 : 0.012
+        );
+
+        upperArmRoot.rotation.z =
+          side * THREE.MathUtils.degToRad(isCameraPose ? 42 : 23);
+        upperArmRoot.rotation.x =
+          THREE.MathUtils.degToRad(isCameraPose ? 34 : 10);
+
+        spectator.add(upperArmRoot);
+
+        // 上腕
+        const upperArmRadius = 0.028;
+        const upperArmLength = isCameraPose ? 0.145 : 0.16;
+
         const upperArm = new THREE.Mesh(
           new THREE.CapsuleGeometry(
-            0.028,
-            isCameraPose ? 0.145 : 0.16,
+            upperArmRadius,
+            upperArmLength,
             6,
             14
           ),
           shirtMat
         );
 
-        if (isCameraPose) {
-          // カメラを構えるので、上腕をやや前・上方向へ
-          upperArm.position.set(side * 0.125, 0.335, 0.020);
-          upperArm.rotation.z = side * THREE.MathUtils.degToRad(42);
-          upperArm.rotation.x = THREE.MathUtils.degToRad(34);
-        } else {
-          upperArm.position.set(side * 0.142, 0.305, 0.010);
-          upperArm.rotation.z = side * THREE.MathUtils.degToRad(23);
-          upperArm.rotation.x = THREE.MathUtils.degToRad(10);
-        }
+        // 肩から下へ伸ばす
+        const upperArmCenterY = isCameraPose ? -0.075 : -0.082;
+        upperArm.position.set(0, upperArmCenterY, 0.010);
+        upperArmRoot.add(upperArm);
 
-        spectator.add(upperArm);
+        // 肘支点
+        const elbowRoot = new THREE.Group();
+        elbowRoot.position.set(
+          0,
+          upperArmCenterY - (upperArmLength * 0.5 + upperArmRadius) + 0.006,
+          0.014
+        );
+        elbowRoot.userData.basePosition = elbowRoot.position.clone();
+        upperArmRoot.add(elbowRoot);
 
-        // 肌部分：肘〜前腕〜手を1つの連続メッシュにする
+        // 前腕〜手（肌）
         const forearmHand = new THREE.Mesh(
           createSmoothForearmHandGeometry(side, spectatorPose),
           skinMat
         );
+        elbowRoot.add(forearmHand);
 
-        spectator.add(forearmHand);
+        // カメラ持ちの場合は、後でカメラ位置に合わせた接続腕を作るため、
+        // 固定形状の前腕は非表示にする
+        if (isCameraPose) {
+          forearmHand.visible = false;
+        }
+
+        // カメラ持ち用のグリップ点
+        if (isCameraPose) {
+          const grip = new THREE.Group();
+
+          // 手先の接触位置
+          grip.position.set(
+            -side * 0.064,
+            0.210,
+            0.195
+          );
+
+          elbowRoot.add(grip);
+
+          if (side < 0) {
+            parts.leftGrip = grip;
+          } else {
+            parts.rightGrip = grip;
+          }
+        }
 
         if (side < 0) {
-          parts.leftUpperArm = upperArm;
-          parts.leftForeArm = forearmHand;
+          parts.leftUpperArm = upperArmRoot;
+          parts.leftForeArm = elbowRoot;
           parts.leftHand = forearmHand;
         } else {
-          parts.rightUpperArm = upperArm;
-          parts.rightForeArm = forearmHand;
+          parts.rightUpperArm = upperArmRoot;
+          parts.rightForeArm = elbowRoot;
           parts.rightHand = forearmHand;
         }
       }
@@ -1672,12 +1845,6 @@
       if (spectatorPose === "camera") {
         const cameraProp = createSpectatorCameraProp();
 
-        // 顔の前、両手の間に置く
-        cameraProp.position.set(0, 0.465, 0.178);
-        cameraProp.rotation.x = THREE.MathUtils.degToRad(-4);
-        cameraProp.rotation.y = THREE.MathUtils.degToRad((Math.random() - 0.5) * 8);
-        cameraProp.rotation.z = THREE.MathUtils.degToRad((Math.random() - 0.5) * 5);
-
         spectator.add(cameraProp);
         parts.camera = cameraProp;
 
@@ -1687,6 +1854,23 @@
         if (parts.head) {
           parts.head.rotation.x = THREE.MathUtils.degToRad(-3);
         }
+
+        // 今のカメラ位置のまま、顔の前へ配置
+        syncSpectatorCameraToHands(spectator, parts);
+
+        cameraProp.rotation.x = THREE.MathUtils.degToRad(-4);
+        cameraProp.rotation.y = 0;
+        cameraProp.rotation.z = 0;
+
+        // 肘からカメラまでをつなぐ腕を追加
+        parts.leftCameraArm = createCameraArmConnector(0.021, skinMat);
+        parts.rightCameraArm = createCameraArmConnector(0.021, skinMat);
+
+        spectator.add(parts.leftCameraArm);
+        spectator.add(parts.rightCameraArm);
+
+        // 初期状態でも接続しておく
+        updateSpectatorCameraArmConnections(spectator, parts);
       }
 
       // ----------------------------
@@ -4470,8 +4654,15 @@
     }
 
     function scoreFromDistance(dist) {
-      const normalized = 1 - dist / game.targetRadius;
-      return Math.max(1, Math.round(normalized * 10));
+      const ringWidth = game.targetRadius / 10;
+
+      // 境界線ギリギリで下の点に落ちるのを防ぐため、微小値を引く
+      const EPS = 1e-8;
+
+      const ringIndex = Math.floor(Math.max(0, dist - EPS) / ringWidth);
+
+      // 0番目: 10点、1番目: 9点、...、9番目: 1点
+      return THREE.MathUtils.clamp(10 - ringIndex, 1, 10);
     }
 
     function triggerHitCelebration() {
@@ -4692,24 +4883,33 @@
 
         // 腕の動き
         if (anim.pose === "camera") {
-          // カメラを構えている人は、手を大きく振らずに少しだけ揺らす
           const cameraMove = Math.sin(t * 0.8) * 0.006;
 
           if (parts.leftForeArm) {
-            parts.leftForeArm.position.y = cameraMove;
+            const base = parts.leftForeArm.userData.basePosition;
+            parts.leftForeArm.position.set(base.x, base.y + cameraMove, base.z);
           }
 
           if (parts.rightForeArm) {
-            parts.rightForeArm.position.y = cameraMove;
+            const base = parts.rightForeArm.userData.basePosition;
+            parts.rightForeArm.position.set(base.x, base.y + cameraMove, base.z);
           }
 
           if (parts.camera) {
-            parts.camera.position.y = 0.465 + cameraMove;
+            syncSpectatorCameraToHands(spectator, parts);
+            updateSpectatorCameraArmConnections(spectator, parts);
+
+            parts.camera.rotation.x =
+              THREE.MathUtils.degToRad(-4) +
+              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(1.0);
+
             parts.camera.rotation.y =
-              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2);
+              Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2.0);
+
+            parts.camera.rotation.z =
+              Math.sin(t * 0.55 + 0.8) * THREE.MathUtils.degToRad(1.2);
           }
         } else if (anim.clapLike) {
-          // 拍手っぽい処理：上腕も一緒に寄せる
           const clap = Math.max(0, Math.sin(t * 3.2));
 
           if (parts.leftUpperArm) {
@@ -4727,22 +4927,31 @@
           }
 
           if (parts.leftForeArm) {
+            const base = parts.leftForeArm.userData.basePosition;
             parts.leftForeArm.rotation.x =
               clap * THREE.MathUtils.degToRad(4);
             parts.leftForeArm.rotation.z =
               THREE.MathUtils.degToRad(-8) + clap * THREE.MathUtils.degToRad(10);
-            parts.leftForeArm.position.x = clap * 0.006;
+            parts.leftForeArm.position.set(
+              base.x + clap * 0.006,
+              base.y,
+              base.z
+            );
           }
 
           if (parts.rightForeArm) {
+            const base = parts.rightForeArm.userData.basePosition;
             parts.rightForeArm.rotation.x =
               clap * THREE.MathUtils.degToRad(4);
             parts.rightForeArm.rotation.z =
               THREE.MathUtils.degToRad(8) - clap * THREE.MathUtils.degToRad(10);
-            parts.rightForeArm.position.x = -clap * 0.006;
+            parts.rightForeArm.position.set(
+              base.x - clap * 0.006,
+              base.y,
+              base.z
+            );
           }
         } else {
-          // 普通の観客：上腕と前腕〜手を同じ流れで連動させる
           const armMove = Math.sin(t * 0.9) * anim.armSwing;
           const armMove2 = Math.sin(t * 0.9 + 0.35) * anim.armSwing * 0.45;
 
@@ -4752,7 +4961,6 @@
           const leftUpperBaseZ = THREE.MathUtils.degToRad(-23);
           const rightUpperBaseZ = THREE.MathUtils.degToRad(23);
 
-          // 上腕が前後に揺れる
           if (parts.leftUpperArm) {
             parts.leftUpperArm.rotation.x = leftUpperBaseX + armMove;
             parts.leftUpperArm.rotation.z = leftUpperBaseZ + armMove2;
@@ -4763,21 +4971,26 @@
             parts.rightUpperArm.rotation.z = rightUpperBaseZ - armMove2;
           }
 
-          // 前腕〜手は、上腕より少し遅れて同方向に揺らす
-          // createSmoothForearmHandGeometry() は絶対座標の一体メッシュなので、
-          // 回転を大きく入れすぎず、少しだけ位置も追従させる
           if (parts.leftForeArm) {
+            const base = parts.leftForeArm.userData.basePosition;
             parts.leftForeArm.rotation.x = armMove * 0.55;
             parts.leftForeArm.rotation.z = armMove2 * 0.55;
-            parts.leftForeArm.position.y = Math.sin(t * 0.9 + 0.2) * 0.004;
-            parts.leftForeArm.position.z = Math.sin(t * 0.9 + 0.2) * 0.003;
+            parts.leftForeArm.position.set(
+              base.x,
+              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
+              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
+            );
           }
 
           if (parts.rightForeArm) {
+            const base = parts.rightForeArm.userData.basePosition;
             parts.rightForeArm.rotation.x = -armMove * 0.55;
             parts.rightForeArm.rotation.z = -armMove2 * 0.55;
-            parts.rightForeArm.position.y = Math.sin(t * 0.9 + 0.2) * 0.004;
-            parts.rightForeArm.position.z = Math.sin(t * 0.9 + 0.2) * 0.003;
+            parts.rightForeArm.position.set(
+              base.x,
+              base.y + Math.sin(t * 0.9 + 0.2) * 0.004,
+              base.z + Math.sin(t * 0.9 + 0.2) * 0.003
+            );
           }
         }
       }
