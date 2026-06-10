@@ -1835,8 +1835,6 @@
       }
     }
 
-    //　★★ここまでコメント調整★★
-
     // ============================================================
     // 4. 競技場・観客モデル
     // ------------------------------------------------------------
@@ -1851,22 +1849,27 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function createStadiumStands() {
+      // スタンドのマテリアルを作成する。土台は明るいグレー、座席は青、通路は薄いグレーにして、全体的に少しマットな質感にする。これで、スタンドが競技場らしい見た目になる。
       const standMat = new THREE.MeshStandardMaterial({
         color: 0xbfc7d6,
         roughness: 0.95
       });
 
+      // 座席は青、通路は薄いグレーにして、全体的に少しマットな質感にする。これで、スタンドが競技場らしい見た目になる。
       const seatMat = new THREE.MeshStandardMaterial({
         color: 0x3d5fa8,
         roughness: 0.9
       });
 
+      // 通路は薄いグレーにして、全体的に少しマットな質感にする。これで、スタンドが競技場らしい見た目になる。
       const aisleMat = new THREE.MeshStandardMaterial({
         color: 0xd6dbe5,
         roughness: 0.95
       });
 
+      // プレイヤー初期位置を中心に、左右スタンドと後方スタンド、的の後ろの壁を配置する。これで、競技場の構造ができあがり、ゲームの世界が完成する。
       const centerX = game.camera.position.x;
+      // カメラの初期Z位置を取得する。これで、スタンドの配置に必要な基準となる位置を知ることができる。
       const startZ = game.camera.position.z;
 
       // createTargetSystem() より前に呼ばれるため、targetCenter ではなく targetDistance から計算する
@@ -1883,6 +1886,7 @@
       const zFront = startZ + 5.0;
       const zBack = targetZ + 2.0;
 
+      // 左側の階段状スタンドを生成する。これで、プレイヤーの左右に階段状の観客席ができ、競技場らしい雰囲気になる。
       createSideStadiumStand({
         side: -1,
         centerX,
@@ -1895,6 +1899,7 @@
         aisleMat
       });
 
+      // 右側の階段状スタンドを生成する。これで、プレイヤーの左右に階段状の観客席ができ、競技場らしい雰囲気になる。
       createSideStadiumStand({
         side: 1,
         centerX,
@@ -1946,17 +1951,20 @@
       seatMat,
       aisleMat
     }) {
+      // 階段状の観客席を生成する。これで、プレイヤーの左右に階段状の観客席ができ、競技場らしい雰囲気になる。
       const group = new THREE.Group();
 
+      // 階段席の奥行きと中心位置を計算する。これで、階段席のサイズと配置が決まり、正しい位置にスタンドができるようになる。
       const length = Math.abs(zFront - zBack);
       const centerZ = (zFront + zBack) / 2;
 
+      // 階段の段数と、段ごとの奥行き方向の分割数を設定する。これで、階段席の構造が決まり、段数や分割数を調整することで見た目を変えることができるようになる。
       const stepCount = 8;
       const segmentCount = 10;
-
       const stepWidth = (outerX - innerX) / stepCount;
       const segmentDepth = length / segmentCount;
 
+      // 左右どちらのスタンドかを示す符号。これで、左右どちらのスタンドを作るかを指定でき、同じ関数で両方のスタンドを生成できるようになる。
       const sideSign = side; // -1: 左 / 1: 右
 
       // 土台
@@ -1965,12 +1973,14 @@
         standMat
       );
 
+      // 土台の位置を設定する。これで、土台が正しい位置に配置され、スタンドの構造ができるようになる。
       base.position.set(
         centerX + sideSign * ((innerX + outerX) / 2),
         0.3,
         centerZ
       );
 
+      // 土台をグループに追加する。これで、土台がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(base);
 
       // 階段席
@@ -1980,20 +1990,25 @@
         // 射線側から外側へ行くほど高くする
         const x = centerX + sideSign * (innerX + stepWidth * xStep + stepWidth / 2);
 
+        // 奥行き方向に分割して、その位置に座席を配置する
         for (let zStep = 0; zStep < segmentCount; zStep++) {
+          // 座席のz位置を計算する。これで、座席が階段状に配置され、スタンドの構造ができるようになる。
           const z = zFront - segmentDepth * zStep - segmentDepth / 2;
 
+          // 座席メッシュを作成する。ジオメトリは、段の幅と分割の奥行きから少し小さめにして、マテリアルは先ほど作成した座席用のマテリアルを使用する。これで、座席がスタンドの構造に合ったサイズと見た目になるようになる。
           const seat = new THREE.Mesh(
             new THREE.BoxGeometry(stepWidth * 0.96, 0.34, segmentDepth * 0.92),
             seatMat
           );
 
+          // 座席の位置を設定する。これで、座席が正しい位置に配置され、階段席の構造ができるようになる。
           seat.position.set(
             x,
             height,
             z
           );
 
+          // 座席をグループに追加する。これで、座席がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
           group.add(seat);
 
           // その座席に観客を置く
@@ -2010,12 +2025,14 @@
         standMat
       );
 
+      // 背面壁の位置を設定する。これで、背面壁が正しい位置に配置され、スタンドの構造ができるようになる。
       backWall.position.set(
         centerX + sideSign * (outerX + 0.45),
         2.4,
         centerZ
       );
 
+      // 背面壁をグループに追加する。これで、背面壁がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(backWall);
 
       // 射線側の低い縁
@@ -2024,19 +2041,23 @@
         aisleMat
       );
 
+      // 射線側の低い縁の位置を設定する。これで、射線側の低い縁が正しい位置に配置され、スタンドの構造ができるようになる。
       innerWall.position.set(
         centerX + sideSign * (innerX - 0.25),
         0.38,
         centerZ
       );
 
+      // 射線側の低い縁をグループに追加する。これで、射線側の低い縁がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(innerWall);
 
+      // グループ全体をシーンに追加する。これで、スタンドがゲームの世界に表示されるようになる。
       game.scene.add(group);
 
       // 矢の当たり判定対象にする
       registerArrowCollisionObject(group);
     }
+
     /**
      * 役割: プレイヤー後方の階段状観客席を生成する。
      * 処理単位:
@@ -2053,24 +2074,28 @@
       seatMat,
       aisleMat
     }) {
+      // プレイヤーの後方に階段状の観客席を生成する。これで、プレイヤーの後ろに階段状の観客席ができ、競技場らしい雰囲気になる。
       const group = new THREE.Group();
 
+      // 階段の段数と、段ごとの奥行き方向の分割数を設定する。これで、階段席の構造が決まり、段数や分割数を調整することで見た目を変えることができるようになる。
       const stepCount = 7;
       const depthStep = 1.3;
-
       const baseDepth = stepCount * depthStep + 1.2;
 
+      // 土台を作成する。ジオメトリは、幅は指定の幅、奥行きは段数と分割数から計算して少し大きめにし、マテリアルは先ほど作成したスタンド用のマテリアルを使用する。これで、土台がスタンドの構造に合ったサイズと見た目になるようになる。
       const base = new THREE.Mesh(
         new THREE.BoxGeometry(width, 0.6, baseDepth),
         standMat
       );
 
+      // 土台の位置を設定する。これで、土台が正しい位置に配置され、スタンドの構造ができるようになる。
       base.position.set(
         centerX,
         0.3,
         z + direction * baseDepth / 2
       );
 
+      // 土台をグループに追加する。これで、土台がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(base);
 
       // フィールドに近い側が低く、奥へ行くほど高い
@@ -2078,34 +2103,40 @@
         const h = 0.35;
         const y = 0.65 + i * 0.45;
 
+        // 座席メッシュを作成する。ジオメトリは、幅は指定の幅から少し小さめにして、奥行きは分割の奥行きから少し小さめにして、マテリアルは先ほど作成した座席用のマテリアルを使用する。これで、座席がスタンドの構造に合ったサイズと見た目になるようになる。
         const seat = new THREE.Mesh(
           new THREE.BoxGeometry(width * 0.94, h, depthStep * 0.9),
           seatMat
         );
 
+        // 座席の位置を設定する。これで、座席が正しい位置に配置され、階段席の構造ができるようになる。
         seat.position.set(
           centerX,
           y,
           z + direction * i * depthStep
         );
 
+        // 座席をグループに追加する。これで、座席がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
         group.add(seat);
 
         // 後ろの観客席にも、横方向へ複数人を並べる
         const spectatorColumns = 12;
         const usableWidth = width * 0.82;
 
+        // 横方向に複数人を並べる。これで、観客席に複数の観客が配置され、スタンドの雰囲気がよりリアルになる。
         for (let col = 0; col < spectatorColumns; col++) {
+          // 横方向の位置を、座席の幅の範囲内で均等に配置する。これで、観客が座席の幅に沿って自然な感じで並ぶようになる。
           const t = spectatorColumns === 1
             ? 0.5
             : col / (spectatorColumns - 1);
-
+          // 観客の座る位置を計算する。これで、観客が座席の幅に沿って正しい位置に配置され、スタンドの雰囲気がよりリアルになる。
           const spectatorSeatPos = new THREE.Vector3(
             centerX - usableWidth / 2 + usableWidth * t,
             seat.position.y,
             seat.position.z
           );
 
+          // その位置に観客を置く
           maybeAddSpectatorOnSeat(group, spectatorSeatPos, {
             direction
           });
@@ -2118,12 +2149,14 @@
         standMat
       );
 
+      // 背面壁の位置を設定する。これで、背面壁が正しい位置に配置され、スタンドの構造ができるようになる。
       backWall.position.set(
         centerX,
         2.3,
         z + direction * (stepCount * depthStep + 0.55)
       );
 
+      // 背面壁をグループに追加する。これで、背面壁がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(backWall);
 
       // フィールド側の低い境界
@@ -2132,16 +2165,19 @@
         aisleMat
       );
 
+      // フィールド側の低い境界の位置を設定する。これで、フィールド側の低い境界が正しい位置に配置され、スタンドの構造ができるようになる。
       frontRail.position.set(
         centerX,
         0.35,
         z - direction * 0.65
       );
 
+      // フィールド側の低い境界をグループに追加する。これで、フィールド側の低い境界がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(frontRail);
-
+      // グループ全体をシーンに追加する。これで、スタンドがゲームの世界に表示されるようになる。
       game.scene.add(group);
     }
+
     /**
      * 役割: 的後方に、矢が抜けないためのフラット壁を配置する。
      * 処理単位:
@@ -2156,6 +2192,7 @@
       standMat,
       aisleMat
     }) {
+      // 的の後方に、矢が抜けないためのフラット壁を配置する。これで、的の後ろに壁ができ、矢が抜けないようになり、ゲームのルールが成立する。
       const group = new THREE.Group();
 
       // 矢が飛ぶ方向の奥に、観客席ではなく壁だけを置く
@@ -2164,12 +2201,14 @@
         standMat
       );
 
+      // 壁の位置を設定する。これで、壁が正しい位置に配置され、的の後ろに壁ができるようになる。
       wall.position.set(
         centerX,
         2.6,
         z
       );
 
+      // 壁をグループに追加する。これで、壁がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。
       group.add(wall);
 
       // 壁の下に低い縁を置いて、スタジアム感を少し出す
@@ -2178,19 +2217,23 @@
         aisleMat
       );
 
+      // 低い縁の位置を設定する。これで、低い縁が正しい位置に配置され、スタジアム感が少し出るようになる。
       lowerRail.position.set(
         centerX,
         0.35,
         z + 0.65
       );
 
+      // 低い縁をグループに追加する。これで、低い縁がスタンドの一部としてまとめられ、スタンド全体を管理しやすくなる。 
       group.add(lowerRail);
 
+      // グループ全体をシーンに追加する。これで、壁がゲームの世界に表示されるようになる。
       game.scene.add(group);
 
       // 矢の当たり判定対象にする
       registerArrowCollisionObject(group);
     }
+
     /**
      * 役割: 観客の上半身をリング形状から滑らかなメッシュとして生成する。
      * 処理単位:
@@ -2199,6 +2242,7 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function createSmoothUpperBodyGeometry() {
+      // リング形状の頂点数。多いほど滑らかになるが、重くなる。これで、リング形状の細かさを調整でき、見た目とパフォーマンスのバランスを取ることができるようになる。
       const radialSegments = 24;
 
       // y: 高さ
@@ -2215,6 +2259,7 @@
         { y: 0.445, rx: 0.100, rz: 0.055, z: 0.000 }  // 首元へ絞る
       ];
 
+      // 頂点と面のインデックスを格納する配列。これで、ジオメトリの構造を定義するための頂点と面の情報を管理できるようになる。
       const positions = [];
       const indices = [];
 
@@ -2222,6 +2267,7 @@
       for (let i = 0; i < rings.length; i++) {
         const ring = rings[i];
 
+        // リングの周囲に頂点を配置する。これで、リング形状の頂点が作られ、後で面を作るための基礎となるようになる。
         for (let j = 0; j < radialSegments; j++) {
           const a = (j / radialSegments) * Math.PI * 2;
 
@@ -2229,24 +2275,28 @@
           const sin = Math.sin(a);
           const cos = Math.cos(a);
 
+          // 正面側（sin > 0）では、奥行き方向の半径を少し大きくして、背面側（sin < 0）では少し小さくする。これで、人体っぽい形状になり、見た目が良くなるようになる。
           const frontBackBias = sin > 0 ? 1.10 : 0.88;
 
+          // リングの周囲に頂点を配置する。xは横幅方向、yは高さ、zは前後位置。これで、リング形状の頂点が作られ、後で面を作るための基礎となるようになる。
           const x = Math.cos(a) * ring.rx;
           const y = ring.y;
           const z = ring.z + Math.sin(a) * ring.rz * frontBackBias;
 
+          // 頂点の位置を配列に追加する。これで、ジオメトリの構造を定義するための頂点の情報が管理できるようになる。
           positions.push(x, y, z);
         }
       }
 
       // 側面の面を作る
       for (let i = 0; i < rings.length - 1; i++) {
+        // リングの周囲に頂点が radialSegments 個あるので、リングごとに radialSegments 個の頂点がある。これで、リングごとの頂点数を理解し、面を作るためのインデックスを正しく計算できるようになる。
         for (let j = 0; j < radialSegments; j++) {
+          // 4つの頂点 a, b, c, d を使って、2つの三角形 (a, c, b) と (b, c, d) を作る。これで、リング同士をつなぐ面ができ、ジオメトリの構造が完成するようになる。
           const a = i * radialSegments + j;
           const b = i * radialSegments + ((j + 1) % radialSegments);
           const c = (i + 1) * radialSegments + j;
           const d = (i + 1) * radialSegments + ((j + 1) % radialSegments);
-
           indices.push(a, c, b);
           indices.push(b, c, d);
         }
@@ -2254,8 +2304,10 @@
 
       // 下側を閉じる
       const bottomCenterIndex = positions.length / 3;
+      // 一番下のリングの位置を中心にして、底面の中心点を追加する。これで、底面の中心点ができ、下側を閉じるための面を作ることができるようになる。
       positions.push(0, rings[0].y, rings[0].z);
 
+      // 一番下のリングの周囲の頂点と、底面の中心点を使って、底面を三角形で埋める。これで、下側が閉じるようになり、ジオメトリの構造が完成するようになる。
       for (let j = 0; j < radialSegments; j++) {
         const a = j;
         const b = (j + 1) % radialSegments;
@@ -2264,23 +2316,28 @@
 
       // 上側を閉じる
       const topCenterIndex = positions.length / 3;
+      // 一番上のリングの位置を中心にして、頂点を追加する。これで、頂点ができ、上側を閉じるための面を作ることができるようになる。
       const topRingStart = (rings.length - 1) * radialSegments;
       const topRing = rings[rings.length - 1];
       positions.push(0, topRing.y, topRing.z);
 
+      // 一番上のリングの周囲の頂点と、頂点を使って、上面を三角形で埋める。これで、上側が閉じるようになり、ジオメトリの構造が完成するようになる。
       for (let j = 0; j < radialSegments; j++) {
         const a = topRingStart + j;
         const b = topRingStart + ((j + 1) % radialSegments);
         indices.push(topCenterIndex, a, b);
       }
 
+      // ジオメトリを作成する。頂点の位置と面のインデックスを設定し、法線を計算する。これで、ジオメトリが完成し、滑らかな上半身の形状ができるようになる。
       const geometry = new THREE.BufferGeometry();
 
+      // 頂点の位置をジオメトリに設定する。これで、ジオメトリの頂点の位置が定義され、形状ができるようになる。
       geometry.setAttribute(
         "position",
         new THREE.Float32BufferAttribute(positions, 3)
       );
 
+      // 面のインデックスをジオメトリに設定する。これで、ジオメトリの面の構造が定義され、形状ができるようになる。
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
 
@@ -2326,30 +2383,34 @@
             { x: side * 0.010, y: -0.142, z: 0.104, rx: 0.025, rz: 0.017 }
           ];
 
+      // 頂点と面のインデックスを格納する配列。これで、ジオメトリの構造を定義するための頂点と面の情報を管理できるようになる。
       const positions = [];
       const indices = [];
 
+      // リング頂点を作る
       for (let i = 0; i < rings.length; i++) {
         const ring = rings[i];
 
+        // リングの周囲に頂点を配置する。これで、リング形状の頂点が作られ、後で面を作るための基礎となるようになる。
         for (let j = 0; j < radialSegments; j++) {
+          // リングの周囲に頂点を配置する。xは横幅方向、yは高さ、zは前後位置。これで、リング形状の頂点が作られ、後で面を作るための基礎となるようになる。
           const a = (j / radialSegments) * Math.PI * 2;
-
           const x = ring.x + Math.cos(a) * ring.rx;
           const y = ring.y;
           const z = ring.z + Math.sin(a) * ring.rz;
-
           positions.push(x, y, z);
         }
       }
 
+      // 側面の面を作る
       for (let i = 0; i < rings.length - 1; i++) {
+        // リングの周囲に頂点が radialSegments 個あるので、リングごとに radialSegments 個の頂点がある。これで、リングごとの頂点数を理解し、面を作るためのインデックスを正しく計算できるようになる。
         for (let j = 0; j < radialSegments; j++) {
+          // 4つの頂点 a, b, c, d を使って、2つの三角形 (a, c, b) と (b, c, d) を作る。これで、リング同士をつなぐ面ができ、ジオメトリの構造が完成するようになる。
           const a = i * radialSegments + j;
           const b = i * radialSegments + ((j + 1) % radialSegments);
           const c = (i + 1) * radialSegments + j;
           const d = (i + 1) * radialSegments + ((j + 1) % radialSegments);
-
           indices.push(a, c, b);
           indices.push(b, c, d);
         }
@@ -2357,8 +2418,10 @@
 
       // 始端を閉じる
       const startCenter = positions.length / 3;
+      // 一番下のリングの位置を中心にして、底面の中心点を追加する。これで、底面の中心点ができ、下側を閉じるための面を作ることができるようになる。
       positions.push(rings[0].x, rings[0].y, rings[0].z);
 
+      // 一番下のリングの周囲の頂点と、底面の中心点を使って、底面を三角形で埋める。これで、下側が閉じるようになり、ジオメトリの構造が完成するようになる。
       for (let j = 0; j < radialSegments; j++) {
         const a = j;
         const b = (j + 1) % radialSegments;
@@ -2367,18 +2430,22 @@
 
       // 終端を閉じる
       const endCenter = positions.length / 3;
+      // 一番上のリングの位置を中心にして、頂点を追加する。これで、頂点ができ、上側を閉じるための面を作ることができるようになる。
       const lastRingStart = (rings.length - 1) * radialSegments;
       const last = rings[rings.length - 1];
       positions.push(last.x, last.y, last.z);
 
+      // 一番上のリングの周囲の頂点と、頂点を使って、上面を三角形で埋める。これで、上側が閉じるようになり、ジオメトリの構造が完成するようになる。
       for (let j = 0; j < radialSegments; j++) {
         const a = lastRingStart + j;
         const b = lastRingStart + ((j + 1) % radialSegments);
         indices.push(endCenter, a, b);
       }
 
+      // ジオメトリを作成する。頂点の位置と面のインデックスを設定し、法線を計算する。これで、ジオメトリが完成し、滑らかな前腕・手の形状ができるようになる。
       const geometry = new THREE.BufferGeometry();
 
+      // 頂点の位置をジオメトリに設定する。これで、ジオメトリの頂点の位置が定義され、形状ができるようになる。
       geometry.setAttribute(
         "position",
         new THREE.Float32BufferAttribute(positions, 3)
@@ -2398,14 +2465,17 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function createSpectatorCameraProp() {
+      // カメラの本体、レンズ、上部パーツを作る。これで、観客が持つ小型カメラの見た目ができ、ゲームの雰囲気がよりリアルになる。
       const group = new THREE.Group();
 
+      // カメラのマテリアルを作る。色は暗めのグレーで、少しだけ金属感を出す。これで、カメラの見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
       const cameraMat = new THREE.MeshStandardMaterial({
         color: 0x111827,
         roughness: 0.75,
         metalness: 0.05
       });
 
+      // レンズのマテリアルを作る。色はさらに暗いグレーで、金属感を少し強めにする。これで、レンズの見た目がカメラの本体と区別され、リアルになり、ゲームの雰囲気がより良くなるようになる。
       const lensMat = new THREE.MeshStandardMaterial({
         color: 0x020617,
         roughness: 0.45,
@@ -2417,6 +2487,8 @@
         new THREE.BoxGeometry(0.115, 0.060, 0.042),
         cameraMat
       );
+
+      // カメラ本体の位置を設定する。これで、カメラの本体が正しい位置に配置され、カメラの見た目がリアルになるようになる。
       group.add(body);
 
       // レンズ
@@ -2424,6 +2496,8 @@
         new THREE.CylinderGeometry(0.018, 0.022, 0.028, 14),
         lensMat
       );
+
+      // レンズの位置と向きを設定する。これで、レンズがカメラの本体の前面に正しい位置と向きで配置され、カメラの見た目がリアルになるようになる。
       lens.rotation.x = Math.PI / 2;
       lens.position.z = 0.036;
       group.add(lens);
@@ -2433,6 +2507,8 @@
         new THREE.BoxGeometry(0.040, 0.018, 0.026),
         cameraMat
       );
+
+      // 上部のでっぱりの位置を設定する。これで、上部のでっぱりがカメラの本体の上に正しい位置に配置され、カメラの見た目がリアルになるようになる。
       top.position.set(0, 0.034, 0);
       group.add(top);
 
@@ -2447,11 +2523,12 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function createCameraArmConnector(radius, material) {
+      // 肘からカメラまで伸びる接続腕メッシュを作る。これで、肘とカメラが接続され、カメラ持ち観客の見た目がリアルになるようになる。
       const group = new THREE.Group();
-
       const geometry = new THREE.CapsuleGeometry(radius, 1.0, 6, 12);
       const mesh = new THREE.Mesh(geometry, material);
 
+      // geometryの長さは、肘とカメラの距離に合わせて毎フレーム更新するので、初期値は1.0にしておく。これで、接続腕の長さが動的に変わることを考慮した初期設定になり、見た目が自然になるようになる。
       group.add(mesh);
       group.userData.mesh = mesh;
 
@@ -2466,23 +2543,29 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateCameraArmConnector(connector, parent, startWorld, endWorld) {
+      // 接続腕を、肘とカメラ側面の2点を結ぶ位置・角度・長さへ更新する。これで、接続腕が肘とカメラを正しくつなぐようになり、カメラ持ち観客の見た目がリアルになるようになる。
       if (!connector || !parent) return;
 
+      // ワールド座標の startWorld と endWorld を、接続腕の親オブジェクトのローカル座標に変換する。これで、接続腕を配置するための正しい位置情報が得られ、見た目が自然になるようになる。
       const start = parent.worldToLocal(startWorld.clone());
       const end = parent.worldToLocal(endWorld.clone());
 
+      // start と end の中点を計算する。これで、接続腕の中心位置がわかり、正しい位置に配置できるようになる。
       const mid = new THREE.Vector3()
         .copy(start)
         .add(end)
         .multiplyScalar(0.5);
 
+      // start と end を結ぶベクトルを計算する。これで、接続腕の向きを決めるための情報が得られ、正しい角度に回転できるようになる。
       const dir = new THREE.Vector3()
         .copy(end)
         .sub(start);
 
+      // dir の長さを計算する。これで、接続腕の長さを決めるための情報が得られ、正しい長さにスケーリングできるようになる。
       const len = dir.length();
       if (len <= 0.001) return;
 
+      // 接続腕の位置を、start と end の中点に設定する。これで、接続腕が肘とカメラの間に配置され、見た目が自然になるようになる。
       connector.position.copy(mid);
 
       // CapsuleGeometry はY軸方向に伸びるので、Y軸を接続方向へ向ける
@@ -2510,11 +2593,14 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function syncSpectatorCameraToHands(spectator, parts) {
+      // カメラ持ち観客のカメラを、現在の顔前位置へ配置する。これで、カメラが常に顔の前に配置され、カメラ持ち観客の見た目がリアルになるようになる。
       if (!parts.camera || !parts.head) return;
 
+      // カメラの位置を、頭部のローカル座標で「顔の前・少し下」に設定する。これで、カメラが顔の前に自然な位置に配置され、見た目が良くなるようになる。
       const cameraWorld = new THREE.Vector3();
       const cameraLocal = new THREE.Vector3();
 
+      // spectator のワールド行列を最新にする。これで、正しい位置にカメラが配置されるようになる。
       spectator.updateMatrixWorld(true);
 
       // 頭のローカル座標で「顔の前・少し下」に置く
@@ -2524,8 +2610,10 @@
       cameraWorld.set(0, -0.070, 0.155);
       parts.head.localToWorld(cameraWorld);
 
+      // cameraWorld を spectator のローカル座標に変換する。これで、cameraWorld の位置情報が spectator のローカル座標系で得られ、正しい位置にカメラを配置できるようになる。
       spectator.worldToLocal(cameraLocal.copy(cameraWorld));
 
+      // カメラの位置を更新する。これで、カメラが顔の前に配置され、カメラ持ち観客の見た目がリアルになるようになる。
       parts.camera.position.copy(cameraLocal);
 
       // ほんの少しだけ前に出す
@@ -2540,6 +2628,7 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateSpectatorCameraArmConnections(spectator, parts) {
+      // 左右の肘からカメラ側面までの接続腕を毎フレーム張り直す。これで、観客が動いても肘とカメラが常に接続され、カメラ持ち観客の見た目がリアルになるようになる。
       if (
         !parts.camera ||
         !parts.leftForeArm ||
@@ -2550,11 +2639,14 @@
         return;
       }
 
+      // spectator のワールド行列を最新にする。これで、正しい位置に接続腕が配置されるようになる。
       spectator.updateMatrixWorld(true);
 
+      // 肘とカメラ側面のワールド座標を格納するベクトル。これで、肘とカメラ側面の位置情報が得られ、接続腕を正しく配置できるようになる。
       const leftElbowWorld = new THREE.Vector3();
       const rightElbowWorld = new THREE.Vector3();
 
+      // カメラ本体の左右側面の位置。カメラのローカル座標で、左右に少しずつ離れた位置を指定する。これで、カメラ側面の位置がわかり、接続腕を正しく配置できるようになる。
       const leftCameraGripWorld = new THREE.Vector3();
       const rightCameraGripWorld = new THREE.Vector3();
 
@@ -2566,9 +2658,11 @@
       leftCameraGripWorld.set(-0.060, -0.004, 0.004);
       rightCameraGripWorld.set(0.060, -0.004, 0.004);
 
+      // カメラのローカル座標で指定した左右側面の位置を、ワールド座標に変換する。これで、カメラ側面のワールド座標が得られ、接続腕を正しく配置できるようになる。
       parts.camera.localToWorld(leftCameraGripWorld);
       parts.camera.localToWorld(rightCameraGripWorld);
 
+      // 左肘とカメラ側面のワールド座標を結ぶように、接続腕の位置・角度・長さを更新する。これで、接続腕が肘とカメラを正しくつなぐようになり、カメラ持ち観客の見た目がリアルになるようになる。
       updateCameraArmConnector(
         parts.leftCameraArm,
         spectator,
@@ -2576,6 +2670,7 @@
         leftCameraGripWorld
       );
 
+      // 右肘とカメラ側面のワールド座標を結ぶように、接続腕の位置・角度・長さを更新する。これで、接続腕が肘とカメラを正しくつなぐようになり、カメラ持ち観客の見た目がリアルになるようになる。
       updateCameraArmConnector(
         parts.rightCameraArm,
         spectator,
@@ -2592,51 +2687,62 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function createSpectatorModel() {
+      // 観客1人分の頭、胴体、腕、脚、カメラ持ちポーズ、アニメーション情報を生成する。これで、観客の見た目と動きの基礎ができ、ゲームの雰囲気がよりリアルになるようになる。
       const spectator = new THREE.Group();
 
+      // 肌の色の候補。明るめの色から暗めの色まで、バリエーションを持たせている。これで、観客の見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const skinColors = [
         0xffd2a6, 0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524
       ];
 
+      // シャツの色の候補。明るめの色を中心に、バリエーションを持たせている。これで、観客の見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const shirtColors = [
         0xd94848, 0x2563eb, 0x16a34a, 0xfacc15,
         0x7c3aed, 0xf8fafc, 0xf97316, 0x0f766e,
         0x1e293b, 0xbe123c
       ];
 
+      // ズボンの色の候補。暗めの色を中心に、バリエーションを持たせている。これで、観客の見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const pantsColors = [
         0x111827, 0x1f2937, 0x334155, 0x475569, 0x293241
       ];
 
+      // 髪の色の候補。暗めの色を中心に、バリエーションを持たせている。これで、観客の見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const hairColors = [
         0x111111, 0x1f130f, 0x2b1b14, 0x3b2f2f, 0x6b4f3a, 0x8b6f47
       ];
 
+      // マテリアルを作る。肌、シャツ、ズボン、髪、目、口のマテリアルをそれぞれ作成する。これで、観客の各部位の見た目が定義され、ゲームの雰囲気がよりリアルになるようになる。
       const skinMat = new THREE.MeshStandardMaterial({
         color: skinColors[Math.floor(Math.random() * skinColors.length)],
         roughness: 0.92
       });
 
+      // シャツのマテリアルを作る。色は shirtColors からランダムに選ぶ。これで、観客のシャツの見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const shirtMat = new THREE.MeshStandardMaterial({
         color: shirtColors[Math.floor(Math.random() * shirtColors.length)],
         roughness: 0.88
       });
 
+      // ズボンのマテリアルを作る。色は pantsColors からランダムに選ぶ。これで、観客のズボンの見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const pantsMat = new THREE.MeshStandardMaterial({
         color: pantsColors[Math.floor(Math.random() * pantsColors.length)],
         roughness: 0.95
       });
 
+      // 髪のマテリアルを作る。色は hairColors からランダムに選ぶ。これで、観客の髪の見た目にバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const hairMat = new THREE.MeshStandardMaterial({
         color: hairColors[Math.floor(Math.random() * hairColors.length)],
         roughness: 0.96
       });
 
+      // 目のマテリアルを作る。色は暗めのグレーで、少しだけ金属感を出す。これで、目の見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
       const eyeMat = new THREE.MeshStandardMaterial({
         color: 0x050505,
         roughness: 0.7
       });
 
+      // 口のマテリアルを作る。色は暗めの赤で、少しだけ金属感を出す。これで、口の見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
       const mouthMat = new THREE.MeshStandardMaterial({
         color: 0x7f1d1d,
         roughness: 0.9
@@ -2668,6 +2774,7 @@
       // 少し前傾させて、座っている姿勢にする
       body.rotation.x = THREE.MathUtils.degToRad(5);
 
+      // body の位置を設定する。これで、上半身が正しい位置に配置され、見た目が自然になるようになる。
       spectator.add(body);
       parts.body = body;
 
@@ -2676,6 +2783,7 @@
         new THREE.CylinderGeometry(0.032, 0.038, 0.058, 12),
         skinMat
       );
+      // 首の位置を設定する。これで、首が上半身の上に正しい位置に配置され、見た目が自然になるようになる。
       neck.position.y = 0.475;
       spectator.add(neck);
 
@@ -2683,10 +2791,12 @@
       // 頭部グループ
       // ----------------------------
       const headGroup = new THREE.Group();
+      // 頭部グループの位置を設定する。これで、頭部が首の上に正しい位置に配置され、見た目が自然になるようになる。
       headGroup.position.y = 0.56;
       spectator.add(headGroup);
       parts.head = headGroup;
 
+      // 頭
       const head = new THREE.Mesh(
         new THREE.SphereGeometry(0.086, 18, 12),
         skinMat
@@ -2731,6 +2841,7 @@
         headGroup.add(ear);
       }
 
+      // 左右の耳を追加する。これで、耳が頭部の両側に正しい位置に配置され、見た目が自然になるようになる。
       addEar(-1);
       addEar(1);
 
@@ -2745,6 +2856,7 @@
         headGroup.add(eye);
       }
 
+      // 左右の目を追加する。これで、目が頭部の前面に正しい位置に配置され、見た目が自然になるようになる。
       addEye(-1);
       addEye(1);
 
@@ -2770,6 +2882,7 @@
         ? "camera"
         : "normal";
 
+      // 腕と手
       function addArm(side) {
         const isCameraPose = spectatorPose === "camera";
 
@@ -2781,17 +2894,20 @@
           isCameraPose ? 0.020 : 0.012
         );
 
+        // 肩の向きは、カメラ持ちの人はより前を向くように、そうでない人は少し横を向くようにする。これで、肩の向きが観客のポーズに合わせて自然になり、見た目が良くなるようになる。
         upperArmRoot.rotation.z =
           side * THREE.MathUtils.degToRad(isCameraPose ? 42 : 23);
         upperArmRoot.rotation.x =
           THREE.MathUtils.degToRad(isCameraPose ? 34 : 10);
 
+        // 肩支点を spectator に追加する。これで、肩が上半身の一部として配置され、見た目が自然になるようになる。
         spectator.add(upperArmRoot);
 
         // 上腕
         const upperArmRadius = 0.028;
         const upperArmLength = isCameraPose ? 0.145 : 0.16;
 
+        // 上腕のジオメトリを作る。CapsuleGeometry を使って、肩から肘までの滑らかな形状を作る。これで、上腕の見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
         const upperArm = new THREE.Mesh(
           new THREE.CapsuleGeometry(
             upperArmRadius,
@@ -2841,8 +2957,10 @@
             0.195
           );
 
+          // グリップの向きは、カメラを構えるように少し内側を向くようにする。これで、グリップの向きがカメラ持ちポーズに合わせて自然になり、見た目が良くなるようになる。
           elbowRoot.add(grip);
 
+          // グリップを parts に保存する。これで、後でグリップの位置を参照してカメラを配置できるようになり、カメラ持ち観客の見た目がリアルになるようになる。
           if (side < 0) {
             parts.leftGrip = grip;
           } else {
@@ -2850,6 +2968,7 @@
           }
         }
 
+        // 腕のパーツを parts に保存する。これで、後で腕の各部位を参照してアニメーションさせることができるようになり、観客の動きがリアルになるようになる。
         if (side < 0) {
           parts.leftUpperArm = upperArmRoot;
           parts.leftForeArm = elbowRoot;
@@ -2861,18 +2980,21 @@
         }
       }
 
+      // 左右の腕と手を追加する。これで、腕と手が上半身の両側に正しい位置に配置され、見た目が自然になるようになる。
       addArm(-1);
       addArm(1);
 
+      // カメラを持つ観客の場合は、カメラ本体と接続腕を追加する。これで、カメラを持つ観客の見た目が完成し、ゲームの雰囲気がよりリアルになるようになる。
       if (spectatorPose === "camera") {
+        // カメラのパーツを作る。これで、カメラの見た目ができ、ゲームの雰囲気がよりリアルになるようになる。
         const cameraProp = createSpectatorCameraProp();
-
         spectator.add(cameraProp);
         parts.camera = cameraProp;
 
         // カメラを構えている人は少し前のめり
         body.rotation.x = THREE.MathUtils.degToRad(8);
 
+        // 頭も少し前を向くようにする。これで、頭の向きがカメラ持ちポーズに合わせて自然になり、見た目が良くなるようになる。
         if (parts.head) {
           parts.head.rotation.x = THREE.MathUtils.degToRad(-3);
         }
@@ -2880,6 +3002,7 @@
         // 今のカメラ位置のまま、顔の前へ配置
         syncSpectatorCameraToHands(spectator, parts);
 
+        // カメラの向きを、少しだけ前を向くようにする。これで、カメラの向きがカメラ持ちポーズに合わせて自然になり、見た目が良くなるようになる。
         cameraProp.rotation.x = THREE.MathUtils.degToRad(-4);
         cameraProp.rotation.y = 0;
         cameraProp.rotation.z = 0;
@@ -2888,6 +3011,7 @@
         parts.leftCameraArm = createCameraArmConnector(0.021, skinMat);
         parts.rightCameraArm = createCameraArmConnector(0.021, skinMat);
 
+        // 接続腕を spectator に追加する。これで、接続腕がカメラと肘をつなぐように配置され、カメラ持ち観客の見た目がリアルになるようになる。
         spectator.add(parts.leftCameraArm);
         spectator.add(parts.rightCameraArm);
 
@@ -2899,6 +3023,7 @@
       // 座っている脚
       // ----------------------------
       function addLeg(side) {
+        // 脚のジオメトリを作る。これも CapsuleGeometry を使って、太ももから足首までの滑らかな形状を作る。これで、脚の見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
         const thigh = new THREE.Mesh(
           new THREE.CapsuleGeometry(0.033, 0.19, 4, 9),
           pantsMat
@@ -2907,6 +3032,7 @@
         thigh.rotation.x = THREE.MathUtils.degToRad(78);
         spectator.add(thigh);
 
+        // すねの位置を、太ももの先端から少し下にして、座っている脚の自然な位置にする。これで、すねが太ももから自然につなが
         const shin = new THREE.Mesh(
           new THREE.CapsuleGeometry(0.028, 0.158, 4, 9),
           pantsMat
@@ -2918,6 +3044,7 @@
         spectator.add(shin);
       }
 
+      // 左右の脚を追加する。これで、脚が上半身の両側に正しい位置に配置され、見た目が自然になるようになる。
       addLeg(-1);
       addLeg(1);
 
@@ -2925,9 +3052,12 @@
       // サイズ
       // 前回の一回り小さい値を維持しつつ、少し個体差をつける
       // ----------------------------
+      // 観客の基本スケールを設定する。前回の一回り小さい値を維持しつつ、少し個体差をつける。これで、観客のサイズが適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const spectatorBaseScale = 2.85;
+      // 0.92〜1.08倍の範囲でランダムにスケールを変える。これで、観客のサイズにバリエーションができ、ゲームの雰囲気がより楽しくなるようになる。
       const s = spectatorBaseScale * (0.92 + Math.random() * 0.16);
 
+      // 観客全体のスケールを設定する。これで、観客のサイズが適切になり、ゲームの雰囲気がよりリアルになるようになる。
       spectator.scale.set(
         s * (0.94 + Math.random() * 0.12),
         s * (0.95 + Math.random() * 0.10),
@@ -2955,6 +3085,7 @@
         clapLike: Math.random() < 0.18
       };
 
+      // spectator を返す。これで、観客の3Dモデルが生成され、ゲームのシーンに追加できるようになる。
       return spectator;
     }
 
@@ -2969,14 +3100,18 @@
       // 1.0 に近いほど満席。0.45〜0.65くらいが自然
       const occupancyRate = 0.58;
 
+      // 座席ごとの確率に応じて観客を生成する。これで、スタンドの席にランダムに観客が配置され、ゲームの雰囲気がよりリアルになるようになる。
       if (Math.random() > occupancyRate) return;
 
+      // 観客を生成する。これで、観客の3Dモデルが作られ、スタンドに配置できるようになる。
       const spectator = createSpectatorModel();
 
+      // 向きと位置を調整して配置する。これで、観客が座席の位置に自然に配置され、見た目が良くなるようになる。
       const forwardOffset = options.side
         ? 0
         : -0.10 * (options.direction ?? 1);
 
+      // 座席位置を基準に、少しランダムなオフセットを加えて配置する。これで、観客が座席の位置に完全に固定されず、自然なばらつきができて見た目が良くなるようになる。
       spectator.position.set(
         seatPosition.x + (Math.random() - 0.5) * 0.16,
         seatPosition.y + 0.28,
@@ -3009,6 +3144,7 @@
       // 毎フレーム動かす対象として登録
       game.spectators.push(spectator);
     }
+
     /**
      * 役割: 観客の揺れ、首振り、腕、カメラ、接続腕のアニメーションを更新する。
      * 処理単位:
@@ -3017,12 +3153,16 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateSpectators(dt, elapsed) {
+      // 観客の揺れ、首振り、腕、カメラ、接続腕のアニメーションを更新する。これで、観客が動いているように見え、ゲームの雰囲気がよりリアルになるようになる。
       if (!game.spectators?.length) return;
 
+      // 各観客に対してアニメーションを更新する。これで、観客ごとに個別の動きができ、ゲームの雰囲気がよりリアルになるようになる。
       for (const spectator of game.spectators) {
+        // spectator の userData からアニメーション情報を取得する。これで、観客ごとに異なるアニメーションのパラメータが得られ、動きにバリエーションができて見た目が良くなるようになる。
         const anim = spectator.userData.spectatorAnim;
         if (!anim) continue;
 
+        // 経過時間に基づいてアニメーションの進行度を計算する。これで、時間の経過に応じて観客の動きが変化し、ゲームの雰囲気がよりリアルになるようになる。
         const t = elapsed * anim.speed + anim.phase;
         const parts = anim.parts;
 
@@ -3031,6 +3171,7 @@
           anim.baseRotationX +
           Math.sin(t * 1.1) * anim.bodySway;
 
+        // 体全体の微妙な左右の傾き
         spectator.rotation.z =
           anim.baseRotationZ +
           Math.sin(t * 0.9 + 1.7) * anim.bodySway * 0.7;
@@ -3049,37 +3190,44 @@
             Math.sin(t * 0.8 + 0.6) * anim.headPitch;
         }
 
-        // 腕の動き
+        // 腕の動きは、カメラ持ちポーズの人、たまに拍手っぽく動く人、その他の人で分けて処理する。これで、腕の動きにバリエーションができ、観客の動きがよりリアルになるようになる。
         if (anim.pose === "camera") {
+          // カメラ持ちポーズの人は、肘を上下に動かして、カメラを構える感じを出す。これで、カメラ持ち観客の動きがリアルになり、ゲームの雰囲気がより良くなるようになる。
           const cameraMove = Math.sin(t * 0.8) * 0.006;
 
+          // 肘の位置を動かす。これで、肘が上下に動いてカメラを構える感じが出て、カメラ持ち観客の動きがリアルになるようになる。
           if (parts.leftForeArm) {
             const base = parts.leftForeArm.userData.basePosition;
             parts.leftForeArm.position.set(base.x, base.y + cameraMove, base.z);
           }
 
+          // 肘の位置を動かす。これで、肘が上下に動いてカメラを構える感じが出て、カメラ持ち観客の動きがリアルになるようになる。
           if (parts.rightForeArm) {
             const base = parts.rightForeArm.userData.basePosition;
             parts.rightForeArm.position.set(base.x, base.y + cameraMove, base.z);
           }
 
+          // カメラの位置と接続腕の向きを更新する。これで、カメラが肘の動きに合わせて自然に動き、接続腕も正しい向きになるようになり、カメラ持ち観客の見た目がリアルになるようになる。
           if (parts.camera) {
             syncSpectatorCameraToHands(spectator, parts);
             updateSpectatorCameraArmConnections(spectator, parts);
 
+            // カメラの向きを、少しだけ動かす。これで、カメラの向きがカメラ持ちポーズに合わせて自然になり、見た目が良くなるようになる。
             parts.camera.rotation.x =
               THREE.MathUtils.degToRad(-4) +
               Math.sin(t * 0.45) * THREE.MathUtils.degToRad(1.0);
-
             parts.camera.rotation.y =
               Math.sin(t * 0.45) * THREE.MathUtils.degToRad(2.0);
-
             parts.camera.rotation.z =
               Math.sin(t * 0.55 + 0.8) * THREE.MathUtils.degToRad(1.2);
           }
+        
+        // たまに拍手っぽく動く人は、腕を前に出す動きをする。これで、拍手しているような動きができて、観客の動きにバリエーションができて見た目が良くなるようになる。
         } else if (anim.clapLike) {
+          // 拍手の動きの進行度を計算する。これで、拍手の動きが時間の経過に応じて変化し、観客の動きがよりリアルになるようになる。
           const clap = Math.max(0, Math.sin(t * 3.2));
 
+          // 左腕の角度を動かす。これで、腕が前に出す動きをして拍手しているような感じが出て、観客の動きがリアルになるようになる。
           if (parts.leftUpperArm) {
             parts.leftUpperArm.rotation.x =
               THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
@@ -3087,6 +3235,7 @@
               THREE.MathUtils.degToRad(-23) + clap * THREE.MathUtils.degToRad(8);
           }
 
+          // 右腕の角度を動かす。これで、腕が前に出す動きをして拍手しているような感じが出て、観客の動きがリアルになるようになる。
           if (parts.rightUpperArm) {
             parts.rightUpperArm.rotation.x =
               THREE.MathUtils.degToRad(10) + clap * THREE.MathUtils.degToRad(5);
@@ -3094,6 +3243,7 @@
               THREE.MathUtils.degToRad(23) - clap * THREE.MathUtils.degToRad(8);
           }
 
+          // 前腕の角度と位置を動かす。これで、前腕も前に出す動きをして拍手しているような感じが出て、観客の動きがリアルになるようになる。
           if (parts.leftForeArm) {
             const base = parts.leftForeArm.userData.basePosition;
             parts.leftForeArm.rotation.x =
@@ -3107,6 +3257,7 @@
             );
           }
 
+          // 前腕の角度と位置を動かす。これで、前腕も前に出す動きをして拍手しているような感じが出て、観客の動きがリアルになるようになる。
           if (parts.rightForeArm) {
             const base = parts.rightForeArm.userData.basePosition;
             parts.rightForeArm.rotation.x =
@@ -3119,26 +3270,30 @@
               base.z
             );
           }
+        
+        // その他の人は、腕をゆらゆらさせる。これで、腕が自然に動いているように見え、観客の動きがよりリアルになるようになる。
         } else {
+          // 腕の動きを計算する。これで、腕がゆらゆらと動いているように見え、観客の動きがよりリアルになるようになる。
           const armMove = Math.sin(t * 0.9) * anim.armSwing;
           const armMove2 = Math.sin(t * 0.9 + 0.35) * anim.armSwing * 0.45;
-
           const leftUpperBaseX = THREE.MathUtils.degToRad(10);
           const rightUpperBaseX = THREE.MathUtils.degToRad(10);
-
           const leftUpperBaseZ = THREE.MathUtils.degToRad(-23);
           const rightUpperBaseZ = THREE.MathUtils.degToRad(23);
 
+          // 左上腕の角度を動かす。これで、腕がゆらゆらと動いているように見え、観客の動きがよりリアルになるようになる。
           if (parts.leftUpperArm) {
             parts.leftUpperArm.rotation.x = leftUpperBaseX + armMove;
             parts.leftUpperArm.rotation.z = leftUpperBaseZ + armMove2;
           }
 
+          // 右上腕の角度を動かす。これで、腕がゆらゆらと動いているように見え、観客の動きがよりリアルになるようになる。
           if (parts.rightUpperArm) {
             parts.rightUpperArm.rotation.x = rightUpperBaseX - armMove;
             parts.rightUpperArm.rotation.z = rightUpperBaseZ - armMove2;
           }
 
+          // 左前腕の角度と位置を動かす。これで、前腕もゆらゆらと動いているように見え、観客の動きがよりリアルになるようになる。
           if (parts.leftForeArm) {
             const base = parts.leftForeArm.userData.basePosition;
             parts.leftForeArm.rotation.x = armMove * 0.55;
@@ -3150,6 +3305,7 @@
             );
           }
 
+          // 右前腕の角度と位置を動かす。これで、前腕もゆらゆらと動いているように見え、観客の動きがよりリアルになるようになる。
           if (parts.rightForeArm) {
             const base = parts.rightForeArm.userData.basePosition;
             parts.rightForeArm.rotation.x = -armMove * 0.55;
@@ -3164,6 +3320,7 @@
       }
     }
 
+    // ★★  
 
     // ============================================================
     // 5. 的・スコア判定
