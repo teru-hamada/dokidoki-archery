@@ -3320,8 +3320,6 @@
       }
     } 
 
-    // ★★ここまでコメント保管済。以下は来月実施★★
-
     // ============================================================
     // 5. 的・スコア判定
     // ------------------------------------------------------------
@@ -3337,6 +3335,7 @@
      */
     function createTargetSystem() {
       const targetGroup = new THREE.Group();
+      // 的の半径と厚みを設定する。これで、的のサイズが適切になり、ゲームの雰囲気がよりリアルになるようになる。
       game.targetRadius = 0.8;
       const targetThickness = 0.14;
 
@@ -3384,18 +3383,20 @@
         roughness: 1.0
       });
 
+      // 支柱を start から end まで追加する関数
       function addSupportBetweenPoints(start, end, radius = 0.03) {
         const dir = new THREE.Vector3().subVectors(end, start);
         const length = dir.length();
 
+        // 支柱のジオメトリを作る。CylinderGeometry を使って、支柱の形状を作る。これで、支柱の見た目がリアルになり、ゲームの雰囲気がより良くなるようになる。
         const leg = new THREE.Mesh(
           new THREE.CylinderGeometry(radius, radius * 1.15, length, 12),
           standMaterial
         );
 
+        // 支柱の位置を start と end の中間点に設定する。これで、支柱が正しい位置に配置され、見た目が自然になるようになる。
         const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
         leg.position.copy(mid);
-
         leg.quaternion.setFromUnitVectors(
           new THREE.Vector3(0, 1, 0),
           dir.clone().normalize()
@@ -3434,10 +3435,10 @@
       tripodJoint.position.copy(topJointPos);
       targetGroup.add(tripodJoint);
 
+      // 的の中心位置、正面メッシュ、グループを game に保存する。これで、後で的の位置や状態を参照できるようになり、ゲームの進行に必要な情報が保持されるようになる。
       game.targetFace = face;
       game.targetGroup = targetGroup;
       game.targetCenter = targetCenter.clone();
-
       game.scene.add(targetGroup);
     }
 
@@ -3451,11 +3452,12 @@
     function createTargetTexture(size = 1024) {
       const canvas = document.createElement("canvas");
       canvas.width = canvas.height = size;
+      // 2Dコンテキストを取得する。これで、Canvas上に描画するためのコンテキストが得られ、的のテクスチャを描画できるようになる。
       const ctx = canvas.getContext("2d");
-
+      // 背景を白で塗りつぶす。これで、的の背景が白くなり、見た目が自然になるようになる。
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, size, size);
-
+      // 的の中心座標を計算する。これで、的の中心位置が得られ、同心円を描画する際の基準点として使えるようになる。
       const cx = size / 2;
       const cy = size / 2;
 
@@ -3463,6 +3465,7 @@
       // 外側から中心に向かって描画
       const unit = (size / 2) / 10;
 
+      // 同心円の半径と色を定義する。これで、的の各リングのサイズと色が決まり、描画する際に使えるようになる。
       const rings = [
         // White (1, 2)
         { r: unit * 10, color: "#ffffff", stroke: "#d0d0d0" },
@@ -3481,16 +3484,19 @@
         { r: unit * 1,  color: "#ffe500", stroke: "rgba(160,140,0,0.4)" }
       ];
 
-      ctx.lineWidth = size * 0.003; // 少し細めの線
+      // 線の太さを設定する。これで、的のリングの境界線が適切な太さで描画され、見た目が自然になるようになる。
+      ctx.lineWidth = size * 0.003;
 
+      // 各リングを描画する。これで、的の同心円が順番に描画され、見た目が完成するようになる。
       for (const ring of rings) {
+        // 円を描く。これで、的の各リングが描画され、見た目が完成するようになる。
         ctx.beginPath();
         ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
         ctx.closePath();
-        
+        // 塗りつぶす。これで、的の各リングが指定された色で塗りつぶされ、見た目が完成するようになる。
         ctx.fillStyle = ring.color;
         ctx.fill();
-        
+        // 境界線を描く。これで、的の各リングの境界線が描画され、見た目が完成するようになる。
         ctx.strokeStyle = ring.stroke;
         ctx.stroke();
       }
@@ -3502,6 +3508,7 @@
       ctx.textBaseline = "middle";
       ctx.fillText("+", cx, cy);
 
+      // 生成したCanvasをThree.jsのテクスチャとして使用する。これで、的のテクスチャがThree.jsのマテリアルに適用され、3Dシーンで表示できるようになる。
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -3510,7 +3517,6 @@
       texture.anisotropy = game.renderer.capabilities.getMaxAnisotropy();
       return texture;
     }
-
 
     // ============================================================
     // 6. 弓モデル・矢モデル
@@ -3541,6 +3547,7 @@
       game.camera.add(bowRoot);
       game.scene.add(game.camera);
 
+      // Three.jsオブジェクトを game に保存する。これで、弓のルート、弦、装填矢がゲームの状態として保持され、後で参照できるようになる。
       game.bowRoot = bowRoot;
       game.loadedArrow = loadedArrow;
 
@@ -3549,6 +3556,7 @@
         bowGroup.userData.attachArrow(loadedArrow);
       }
 
+      // 初期状態を反映する。これで、弓の表示位置や拡大率が画面サイズに応じて調整され、ゲームの見た目が適切になるようになる。
       updateLoadedArrowVisual();
       updateBowDraw(0);
       applyResponsiveBowLayout();
@@ -3564,6 +3572,7 @@
     function applyResponsiveBowLayout() {
       if (!game.bowRoot) return;
 
+      // 画面サイズに応じて弓の表示位置・拡大率を調整する。これで、弓が画面サイズに適切に表示され、ゲームの見た目が良くなるようになる。
       const isPortrait = window.innerHeight > window.innerWidth;
       const isMobilePortrait = isTouchDevice && isPortrait;
 
@@ -3571,14 +3580,13 @@
         // 縦画面スマホでは弓を少し内側に寄せて小さくする
         game.bowRoot.position.set(-0.18, -0.10, 0.00);
         game.bowRoot.scale.set(0.82, 0.82, 0.82);
-
         // 少しだけ広く見せる
         game.camera.fov = 78;
       } else {
         // それ以外は従来どおり
         game.bowRoot.position.set(0, 0, 0);
         game.bowRoot.scale.set(1, 1, 1);
-
+        // 標準的な視野角
         game.camera.fov = 70;
       }
 
@@ -3598,10 +3606,11 @@
       // --------------------------------------------------
       // 基本設定
       // --------------------------------------------------
+      // 弓の基準位置を設定する。これで、弓の表示位置が適切になり、ゲームの見た目が良くなるようになる。
       const baseX = 0.58;
       const baseY = -0.34;
       const baseZ = -1.02;
-
+      // 弓の半分の長さを設定する。これで、弓のサイズが適切になり、ゲームの見た目が良くなるようになる。
       const bowHalfLen = 0.90;
       // 装填中の矢が最大でどれだけ後退するか
       const maxDraw = 0.38;
@@ -3612,42 +3621,49 @@
       // --------------------------------------------------
       // 材質
       // --------------------------------------------------
+      // limbMaterial はリムの材質を設定する。これで、リムの見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const limbMaterial = new THREE.MeshStandardMaterial({
         color: 0xd7d8de,
         roughness: 0.34,
         metalness: 0.16
       });
 
+      // riserMaterial はライザーの材質を設定する。これで、ライザーの見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const riserMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         roughness: 0.42,   
         metalness: 0.15    
       });
 
+      // pocketMaterial はポケットの材質を設定する。これで、ポケットの見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const pocketMaterial = new THREE.MeshStandardMaterial({
         color: 0x9ca7b6,
         roughness: 0.30,
         metalness: 0.50
       });
 
+      // gripMaterial はグリップの材質を設定する。これで、グリップの見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const gripMaterial = new THREE.MeshStandardMaterial({
         color: 0x1a1a1d,
         roughness: 0.92,
         metalness: 0.04
       });
 
+      // detailMaterial は細部の材質を設定する。これで、細部の見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const detailMaterial = new THREE.MeshStandardMaterial({
         color: 0xbcc5d2,
         roughness: 0.25,
         metalness: 0.92
       });
 
+      // darkDetailMaterial は暗い細部の材質を設定する。これで、暗い細部の見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const darkDetailMaterial = new THREE.MeshStandardMaterial({
         color: 0x14171b,
         roughness: 0.52,
         metalness: 0.46
       });
 
+      // stringMaterial は弦の材質を設定する。これで、弦の見た目が適切になり、ゲームの雰囲気がよりリアルになるようになる。
       const stringMaterial = new THREE.LineBasicMaterial({
         color: 0xdcdcdc
       });
@@ -3656,11 +3672,15 @@
       // 座標変換
       // --------------------------------------------------
       function toWorld(local) {
+        // local は弓のローカル座標を表す。これで、弓の各部品の位置をローカル座標で指定でき、後でワールド座標に変換して表示できるようになる。
         return local.clone()
           .applyEuler(new THREE.Euler(0, bowTiltY, 0, "XYZ"))
           .add(new THREE.Vector3(baseX, baseY, baseZ));
       }
 
+      //--------------------------------------------------
+      // 座標変換を適用する関数
+      // --------------------------------------------------
       function applyLocalTransform(object3D, localPos) {
         object3D.position.copy(toWorld(localPos));
         object3D.rotation.set(0, bowTiltY, 0, "XYZ");
@@ -3716,23 +3736,32 @@
         p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.04);
         p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.08);
 
+        // Catmull-Romスプラインで滑らかに接続する
         return new THREE.CatmullRomCurve3([
           root, p1, p2, p3, p4, p5, p6, tipTarget
         ]);
       }
 
+      //--------------------------------------------------
+      // リム中心線
+      // 返りのある現代リカーブ風
+      //--------------------------------------------------
       function createLowerLimbCurve(draw = 0, kick = 0, stringLocals = null) {
+        // locals は弦の接続点のローカル座標を取得する。これで、弦の接続点の位置が得られ、リムの形状を計算する際に使用できるようになる。
         const locals = stringLocals ?? getStringLocals(draw, kick);
-
+        // tipTarget は弦端の位置を表す。これで、リムの先端が弦に接続される位置が決まり、リムの形状を計算する際に使用できるようになる。
         const tipTarget = locals.botLocal.clone();
+        // bendTarget は弦の中間点の位置を表す。これで、リムの傾き方向が決まり、リムの形状を計算する際に使用できるようになる。
         const bendTarget = locals.midLocal.clone();
-
+        // root はリムの根元の位置を表す。これで、リムの基準点が決まり、リムの形状を計算する際に使用できるようになる。
         const root = new THREE.Vector3(0.000, -0.286, -0.002);
-
+        // bendDir はリムの傾き方向を表す。これで、リムの形状を計算する際に使用できるようになる。
         const bendDir = bendTarget.clone().sub(root).normalize();
+        // tipDir はリムの先端方向を表す。これで、リムの形状を計算する際に使用できるようになる。
         const tipDir = tipTarget.clone().sub(root).normalize();
-
+        // flex はリムのしなり具合を計算する。これで、リムの形状が適切に変化し、弓の見た目がリアルになるようになる。
         const flex = draw * 0.062 + kick * 0.022;
+        // tiltVec はリムの傾きベクトルを計算する。これで、リムの形状が適切に変化し、弓の見た目がリアルになるようになる。
         const tiltVec = bendDir.clone().multiplyScalar(flex * 0.95);
 
         // 上側と対称になるように形状だけ調整
@@ -3743,6 +3772,7 @@
         const p5 = new THREE.Vector3(0.015, -0.715, 0.060);
         const p6 = new THREE.Vector3(0.008, -0.804, 0.086);
 
+        // 根元から先端へだんだん大きく、midLocal方向へ傾ける
         p1.addScaledVector(tiltVec, 0.10);
         p2.addScaledVector(tiltVec, 0.24);
         p3.addScaledVector(tiltVec, 0.42);
@@ -3750,13 +3780,16 @@
         p5.addScaledVector(tiltVec, 0.82);
         p6.addScaledVector(tiltVec, 1.00);
 
+        // 先端側だけは弦端接続に向けて少し戻す
         p5.addScaledVector(tipDir, flex * 0.03);
         p6.addScaledVector(tipDir, flex * 0.05);
 
+        // tip直前の折れを防ぐ
         p6.x = THREE.MathUtils.lerp(p6.x, tipTarget.x, 0.08);
         p6.y = THREE.MathUtils.lerp(p6.y, tipTarget.y, 0.04);
         p6.z = THREE.MathUtils.lerp(p6.z, tipTarget.z, 0.08);
 
+        // Catmull-Romスプラインで滑らかに接続する
         return new THREE.CatmullRomCurve3([
           root, p1, p2, p3, p4, p5, p6, tipTarget
         ]);
@@ -3766,60 +3799,74 @@
       // リム断面: 根元太く・平べったく、先端へ細く
       // --------------------------------------------------
       function createTaperedLimbGeometry(curve) {
+        // tubularSegments はリムの長さ方向の分割数を設定する。これで、リムの形状が滑らかになり、見た目が自然になる
         const tubularSegments = 72;
+        // radialSegments はリムの断面の分割数を設定する。これで、リムの
         const radialSegments = 18;
-
+        // frames はリムの中心線に沿ったフレームを計算する。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
         const frames = curve.computeFrenetFrames(tubularSegments, false);
+
         const positions = [];
         const normals = [];
         const uvs = [];
         const indices = [];
 
+        // リムの断面を作る
         for (let i = 0; i <= tubularSegments; i++) {
+          // t はリムの長さ方向のパラメータを計算する。これで、リムの形状が滑らかになり、見た目が自然になるようになる。
           const t = i / tubularSegments;
+          // p はリムの中心線上の点を取得する。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
           const p = curve.getPointAt(t);
-
+          // n はリムの法線ベクトルを取得する。これで、リムの断面の向きが決まり、見た目が自然になるようになる。
           const n = frames.normals[i].clone().normalize();
+          // b はリムの二法線ベクトルを取得する。これで、リムの断面の向きが決まり、見た目が自然になるようになる。
           const b = frames.binormals[i].clone().normalize();
-
           // 根元: 幅広で厚め / 先端: 細く薄い
           const width = THREE.MathUtils.lerp(0.050, 0.011, t);
           const thickness = THREE.MathUtils.lerp(0.0085, 0.0032, t);
 
+          // リムの断面を作る
           for (let j = 0; j < radialSegments; j++) {
+            // a はリムの断面の角度を計算する。これで、リムの断面が円形に近い形状になり、見た目が自然になるようになる。
             const a = (j / radialSegments) * Math.PI * 2;
+            // rx はリムの断面の半径を計算する。これで、リムの断面が円形に近い形状になり、見た目が自然になるようになる。
             const rx = Math.cos(a) * width;
+            // ry はリムの断面の厚みを計算する。これで、リムの断面が円形に近い形状になり、見た目が自然になるようになる。
             const ry = Math.sin(a) * thickness;
-
+            // pos はリムの断面上の点を計算する。これで、リムの断面が円形に近い形状になり、見た目が自然になるようになる。
             const pos = new THREE.Vector3()
               .copy(p)
               .addScaledVector(n, rx)
               .addScaledVector(b, ry);
 
+            // positions 配列にリムの断面上の点の座標を追加する。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
             positions.push(pos.x, pos.y, pos.z);
 
+            // normals 配列にリムの断面上の点の法線ベクトルを追加する。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
             const normal = new THREE.Vector3()
               .copy(n).multiplyScalar(Math.cos(a))
               .addScaledVector(b, Math.sin(a))
               .normalize();
             normals.push(normal.x, normal.y, normal.z);
 
+            // uvs 配列にリムの断面上の点のUV座標を追加する。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
             uvs.push(j / radialSegments, t);
           }
         }
 
+        // インデックスを作る
         for (let i = 0; i < tubularSegments; i++) {
           for (let j = 0; j < radialSegments; j++) {
             const a = i * radialSegments + j;
             const b = i * radialSegments + ((j + 1) % radialSegments);
             const c = (i + 1) * radialSegments + j;
             const d = (i + 1) * radialSegments + ((j + 1) % radialSegments);
-
             indices.push(a, c, b);
             indices.push(b, c, d);
           }
         }
 
+        // BufferGeometry を作る。これで、リムの形状が適切に変化し、見た目が自然になるようになる。
         const geo = new THREE.BufferGeometry();
         geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
         geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
@@ -3848,7 +3895,6 @@
           // -----------------------------
           // 下端の面取り
           new THREE.Vector2(-0.062, -0.402),
-        
           new THREE.Vector2(-0.060, -0.350),
           new THREE.Vector2(-0.050, -0.305),
           new THREE.Vector2(-0.040, -0.245),
@@ -3888,29 +3934,35 @@
           new THREE.Vector2(0.010, -0.430)
         ];
 
+        // 形状を定義する
         s.moveTo(points[0].x, points[0].y);
-
         for (let i = 1; i < points.length; i++) {
           s.lineTo(points[i].x, points[i].y);
         }
-
         s.closePath();
         return s;
       }
 
+      //--------------------------------------------------
+      // riser メッシュを作る
+      //--------------------------------------------------
       function createRiserMesh() {
+        // riserGroup はライザーのメッシュをまとめるグループを作る。これで、ライザーの各部品をまとめて管理でき、後で一括して操作できるようになる。
         const riserGroup = new THREE.Group();
-
+        // fullDepth はライザーの全体の奥行きを設定する。これで、ライザーの厚みが適切になり、見た目が自然になるようになる。
         const fullDepth = 0.06;
+        // insetDepth はライザーのくぼみの奥行きを設定する。これで、ライザーのくぼみが適切になり、見た目が自然になるようになる。
         const insetDepth = 0.030;
-
+        // frontZ はライザーの前面のZ座標を設定する。これで、ライザーの前面が適切な位置に配置され、見た目が自然になるようになる。
         const frontZ = fullDepth;
+        // backZ はライザーの背面のZ座標を設定する。これで、ライザーの背面が適切な位置に配置され、見た目が自然になるようになる。
         const backZ = 0.0;
+        // recessedBackZ はライザーのくぼみの背面のZ座標を設定する。これで、ライザーのくぼみが適切な位置に配置され、見た目が自然になるようになる。
         const recessedBackZ = backZ + insetDepth;
 
+        // riserMaterial を複製して、baseMat と wallMat を作る。これで、ライザーの前面と側面の材質を個別に設定でき、見た目が自然になるようになる。
         const baseMat = riserMaterial.clone();
         const wallMat = riserMaterial.clone();
-
         baseMat.side = THREE.DoubleSide;
         wallMat.side = THREE.DoubleSide;
 
@@ -3972,7 +4024,6 @@
           recessedBackZ,
           wallMat
         ));
-
         riserGroup.add(createQuadWall(
           new THREE.Vector2(-0.018, 0.000),
           new THREE.Vector2( 0.082, 0.000),
@@ -3998,6 +4049,10 @@
         return riserGroup;
       }
 
+      // --------------------------------------------------
+      // 外周側壁を作る
+      // くぼみ帯の左右だけ奥側を recessedBackZ にする
+      // --------------------------------------------------
       function createMatchedOuterWall(frontZ, backZ, recessedBackZ, material) {
         const positions = [];
 
@@ -4105,28 +4160,30 @@
           );
         }
 
+        //--------------------------------------------------
+        // recessedBackZ に落とすか backZ にするかを決める
+        //--------------------------------------------------
         function getBackZForPoint(p) {
           return isRecessPoint(p) ? recessedBackZ : backZ;
         }
 
+        // 外周側壁の頂点を作る
         for (let i = 0; i < points.length; i++) {
           const a = points[i];
           const b = points[(i + 1) % points.length];
-
           const aBackZ = getBackZForPoint(a);
           const bBackZ = getBackZForPoint(b);
-
           positions.push(
             a.x, a.y, aBackZ,
             b.x, b.y, bBackZ,
             a.x, a.y, frontZ,
-
             b.x, b.y, bBackZ,
             b.x, b.y, frontZ,
             a.x, a.y, frontZ
           );
         }
 
+        // BufferGeometry を作る
         const geom = new THREE.BufferGeometry();
         geom.setAttribute(
           "position",
@@ -4137,23 +4194,32 @@
         return new THREE.Mesh(geom, material);
       }
 
+      // --------------------------------------------------
+      // riser に垂直グラデーションを適用する
+      // --------------------------------------------------
       function applyVerticalGradientToGroup(group) {
+        // riserGroup のバウンディングボックスを計算する
         const box = new THREE.Box3().setFromObject(group);
         const minY = box.min.y;
         const maxY = box.max.y;
         const halfH = Math.max(Math.abs(minY), Math.abs(maxY));
 
+        // centerColor はリムの中央の色を設定する。これで、リムの中央部分が適切な色になり、見た目が自然になるようになる。
         const centerColor = new THREE.Color(0xcfd4db);
+        // edgeColor はリムの端の色を設定する。これで、リムの端部分が適切な色になり、見た目が自然になるようになる。
         const edgeColor = new THREE.Color(0x121418);
 
+        // group のワールドマトリクスを更新する
         group.updateMatrixWorld(true);
 
+        // group の全てのオブジェクトをトラバースして、メッシュの頂点カラーを設定する
         group.traverse(obj => {
           if (!obj.isMesh || !obj.geometry?.attributes?.position) return;
 
           const pos = obj.geometry.attributes.position;
           const colors = [];
 
+          // pos の全ての頂点に対して、頂点カラーを計算する
           for (let i = 0; i < pos.count; i++) {
             const local = new THREE.Vector3(
               pos.getX(i),
@@ -4161,15 +4227,19 @@
               pos.getZ(i)
             );
 
+            // world は頂点のワールド座標を計算する。これで、頂点の位置が適切に変化し、見た目が自然になるようになる。
             const world = local.clone().applyMatrix4(obj.matrixWorld);
 
+            // t は頂点のY座標の絶対値を半分の高さで割った値を計算する。これで、頂点の位置が適切に変化し、見た目が自然になるようになる。
             let t = Math.abs(world.y) / halfH;
             t = THREE.MathUtils.clamp(Math.pow(t, 0.85), 0, 1);
 
+            // c は頂点カラーを計算する。これで、頂点の色が適切に変化し、見た目が自然になるようになる。
             const c = centerColor.clone().lerp(edgeColor, t);
             colors.push(c.r, c.g, c.b);
           }
 
+          // obj のジオメトリに頂点カラーを設定する
           obj.geometry.setAttribute(
             "color",
             new THREE.Float32BufferAttribute(colors, 3)
@@ -4180,6 +4250,9 @@
         });
       }
 
+      // --------------------------------------------------
+      // riser くぼみの段差壁を作る
+      // --------------------------------------------------
       function createQuadWall(p1, p2, z1, z2, material) {
         const positions = new Float32Array([
           p1.x, p1.y, z1,
@@ -4198,6 +4271,9 @@
         return new THREE.Mesh(geom, material);
       }
 
+      // --------------------------------------------------
+      // riser くぼみ帯の輪郭を作る
+      // --------------------------------------------------
       function createRecessBandShape() {
         const s = new THREE.Shape();
 
@@ -4238,9 +4314,15 @@
         return s;
       }
 
+      // --------------------------------------------------
+      // riser 背面の上部形状を作る
+      // --------------------------------------------------
       function createBackTopShape() {
         const s = new THREE.Shape();
 
+        //--------------------------------------------------
+        // 背面上部の輪郭を作る
+        //--------------------------------------------------
         const points = [
           new THREE.Vector2(-0.030, 0.280),
           new THREE.Vector2(-0.040, 0.275),
@@ -4262,9 +4344,15 @@
         return s;
       }
 
+      // --------------------------------------------------
+      // riser 背面の下部形状を作る
+      // --------------------------------------------------
       function createBackBottomShape() {
         const s = new THREE.Shape();
 
+        //--------------------------------------------------
+        // 背面下部の輪郭を作る
+        //--------------------------------------------------
         const points = [
           new THREE.Vector2(-0.040, -0.430),
           new THREE.Vector2(-0.062, -0.402),
@@ -4424,6 +4512,7 @@
       function createTipMesh() {
         const g = new THREE.Group();
 
+        // tip の本体
         const cap = new THREE.Mesh(
           new THREE.CapsuleGeometry(0.011, 0.032, 5, 12),
           darkDetailMaterial
@@ -4431,6 +4520,7 @@
         cap.rotation.z = Math.PI / 2;
         g.add(cap);
 
+        // tip の groove 部分
         const groove = new THREE.Mesh(
           new THREE.BoxGeometry(0.010, 0.006, 0.014),
           detailMaterial
@@ -4449,10 +4539,15 @@
       tipGroup.add(upperTip);
       tipGroup.add(lowerTip);
 
+      //--------------------------------------------------
+      // tip の向きを limb 曲線に合わせる
+      //--------------------------------------------------
       function updateTipTransform(tipMesh, curve, isUpper) {
+        // t は曲線上の位置を表すパラメータで、0 から 1 の範囲で指定する。isUpper が true の場合は曲線の先端（t=1）に、false の場合は曲線の根元（t=0）に tip を配置する。
         const t = isUpper ? 1 : 0;
+        // sampleT は曲線上のサンプル位置を表すパラメータで、tip の向きを決定するために使用する。isUpper が true の場合は曲線の根元（t=0.015）に、false の場合は曲線の先端（t=0.985）にサンプル位置を設定する。
         const sampleT = isUpper ? 0.985 : 0.015;
-
+        // 曲線上の位置と接線を取得
         const localPos = curve.getPointAt(t);
         const tangent = (
           isUpper
@@ -4460,15 +4555,19 @@
             : curve.getPointAt(sampleT).clone().sub(curve.getPointAt(t))
         ).normalize();
 
+        // worldPos は tip のワールド座標を計算する。toWorld 関数を使用して、ローカル座標系からワールド座標系に変換する。
         const worldPos = toWorld(localPos);
+        // worldTarget は tip の向きを決定するためのターゲット位置を計算する。接線方向にオフセットを加えて、tip の向きを調整する。
         const worldTarget = toWorld(localPos.clone().add(tangent));
-
+        
+        // m は tip の向きを決定するためのマトリクスを計算する。lookAt 関数を使用して、tip の位置（worldPos）からターゲット位置（worldTarget）を向くように設定する。
         const m = new THREE.Matrix4().lookAt(
           worldPos,
           worldTarget,
           new THREE.Vector3(0, 1, 0)
         );
 
+        // q は tip の回転を表すクォータニオンを計算する。マトリクス m から回転を抽出し、さらに Y 軸周りに 90 度回転させることで、tip の向きを調整する。
         const q = new THREE.Quaternion()
           .setFromRotationMatrix(m)
           .multiply(new THREE.Quaternion().setFromEuler(
@@ -4489,60 +4588,55 @@
       // 弦のローカル基準点
       // --------------------------------------------------
       function getStringLocals(draw = 0, kick = 0) {
+        // 弦のたわみ量を計算する。draw は弦を引いた量、kick は弓の反動を表す。これらの値を組み合わせて、弦のたわみ量を決定する。
         const flex = draw * 0.045 + kick * 0.025;
-
         // 矢を引いた時の弦の先端の移動量（前方向）
         const tipForward = flex * 1.00;
-
         // 矢を引いた時の弦の横方向の移動量（左右）
         const tipSide = flex * 0.00;
-
-        // 追加: 矢を引いた時の弦端の上下移動量
+        // 矢を引いた時の弦端の上下移動量
         // 上側は下へ、下側は上へ
         const topTipDown = draw * 0.050;
         const bottomTipUp = draw * 0.030;
-
         // 弦を左へ移動させるオフセット（値を大きくすると左へ）
         const stringLeftOffset = 0.08;
-
         // 弦を手前へ移動させるオフセット（値を大きくすると手前へ）
         const stringForwardOffset = 0.10;
-
         // 弦全体を上下に移動させるオフセット
         const stringUpOffset = 0.05;
-
         // 弦の上下長を短くする量（値を大きくすると短くなる）
         const stringShorten = 0.10;
 
+        // baseTopLocal と baseBotLocal は、弦の上端と下端の基準位置を表すベクトルで、弦のたわみやオフセットを考慮して計算される。
         const baseTopLocal = new THREE.Vector3(
           0.002 + tipSide * 0.08 - stringLeftOffset,
           bowHalfLen + stringUpOffset,
           0.146 + tipForward * 0.96 + stringForwardOffset
         );
-
         const baseBotLocal = new THREE.Vector3(
           0.002 + tipSide * 0.08 - stringLeftOffset,
           -bowHalfLen + stringUpOffset,
           0.146 + tipForward * 0.96 + stringForwardOffset
         );
 
+        // straightMid は、弦の上端と下端の中間位置を計算するベクトルで、弦のたわみやオフセットを考慮して計算される。
         const straightMid = baseTopLocal.clone().lerp(baseBotLocal, 0.5);
-
+        // topLocal と botLocal は、弦の上端と下端の最終的な位置を表すベクトルで、弦のたわみやオフセット、上下変位を考慮して計算される。
         const topLocal = baseTopLocal.clone();
         const botLocal = baseBotLocal.clone();
-
         // 既存の上下短縮
         topLocal.y -= stringShorten;
         botLocal.y += stringShorten;
-
         // 追加: draw時の上下変位
         topLocal.y -= topTipDown;
         botLocal.y += bottomTipUp;
 
+        // loadedArrowDrawDirLocal は、矢を引いた時の弦の方向を表すベクトルで、弦のたわみやオフセットを考慮して計算される。
         const loadedArrowDrawDirLocal = new THREE.Vector3(0, 0, -1)
           .applyEuler(new THREE.Euler(0, -0.30, 0, "XYZ"))
           .normalize();
 
+        // midLocal は、弦の中間位置を計算するベクトルで、弦のたわみやオフセット、矢を引いた量を考慮して計算される。draw が 0 の場合は straightMid と同じ位置になるが、draw が増えると矢を引いた方向に移動する。
         const midLocal = straightMid.clone().sub(
           loadedArrowDrawDirLocal.clone().multiplyScalar(draw * maxDraw)
         );
@@ -4553,14 +4647,15 @@
       // --------------------------------------------------
       // 弦
       // --------------------------------------------------
+      // initLocals は、弦の初期位置を計算するために getStringLocals 関数を呼び出して取得される。draw と kick の初期値は 0 で、弦はまっすぐな状態になる。
       const initLocals = getStringLocals(0, 0);
-
+      // stringGeo は、弦のジオメトリを作成するために THREE.BufferGeometry を使用して、弦の上端、中間、下端の位置を設定する。toWorld 関数を使用して、ローカル座標系からワールド座標系に変換する。
       const stringGeo = new THREE.BufferGeometry().setFromPoints([
         toWorld(initLocals.topLocal),
         toWorld(initLocals.midLocal),
         toWorld(initLocals.botLocal)
       ]);
-
+      // stringMaterial は、弦のマテリアルを作成するために THREE.LineBasicMaterial を使用して、色と線幅を設定する。
       const string = new THREE.Line(stringGeo, stringMaterial);
       bowGroup.add(string);
       game.bowString = string;
@@ -4575,12 +4670,19 @@
       // --------------------------------------------------
       // 状態
       // --------------------------------------------------
+      // charge は弓を引いた量を表す値で、0 から 1 の範囲で設定される。drawAmount は弓を引いた量を表す値で、0 から 1 の範囲で設定される。releaseVelocity は弓をリリースした時の速度を表す値で、0 から 1 の範囲で設定される。stringVibration は弦の振動量を表す値で、0 から 1 の範囲で設定される。bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.charge = 0;
+      // drawAmount は弓を引いた量を表す値で、0 から 1 の範囲で設定される。releaseVelocity は弓をリリースした時の速度を表す値で、0 から 1 の範囲で設定される。stringVibration は弦の振動量を表す値で、0 から 1 の範囲で設定される。bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.drawAmount = 0;
+      // releaseVelocity は弓をリリースした時の速度を表す値で、0 から 1 の範囲で設定される。stringVibration は弦の振動量を表す値で、0 から 1 の範囲で設定される。bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.releaseVelocity = 0;
+      // stringVibration は弦の振動量を表す値で、0 から 1 の範囲で設定される。bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.stringVibration = 0;
+      // bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.bowKick = 0;
+      // attachedArrow は接続されている矢のオブジェクトを保持する。
       bowGroup.userData.attachedArrow = null;
+      // arrowAttach は矢を接続する位置を表す THREE.Object3D で、弓の弦の中間位置に配置される。
       bowGroup.userData.arrowAttach = arrowAttach;
 
       // --------------------------------------------------
@@ -4589,7 +4691,9 @@
       function placeArrowByNock(arrow, attachPos) {
         if (!arrow) return;
 
+        // arrow.userData.nockToCenter が未定義の場合は、デフォルト値として 0.475 を使用する。これは、矢のノック部分から矢の中心までの距離を表す。
         const nockToCenter = arrow.userData?.nockToCenter ?? 0.475;
+        // forward は矢の前方向を表す THREE.Vector3 で、矢のクォータニオンを適用して正規化される。これにより、矢の向きに応じた前方向ベクトルが得られる。
         const forward = new THREE.Vector3(1, 0, 0)
           .applyQuaternion(arrow.quaternion)
           .normalize();
@@ -4603,20 +4707,24 @@
       // 弓形状再構築
       // --------------------------------------------------
       function rebuildBow(draw = 0, kick = 0) {
+        // 弦のローカル基準点を取得する
         const stringLocals = getStringLocals(draw, kick);
 
+        // 弦の上端と下端の位置を取得する
         const upperCurve = createUpperLimbCurve(draw, kick, stringLocals);
         const lowerCurve = createLowerLimbCurve(draw, kick, stringLocals);
 
+        // 弓の上肢と下肢のジオメトリを再構築する
         const upperGeo = createTaperedLimbGeometry(upperCurve);
         const lowerGeo = createTaperedLimbGeometry(lowerCurve);
 
+        // 既存のジオメトリを破棄して、新しいジオメトリを設定する
         upperLimbMesh.geometry.dispose();
         lowerLimbMesh.geometry.dispose();
-
         upperLimbMesh.geometry = upperGeo;
         lowerLimbMesh.geometry = lowerGeo;
 
+        // tip の位置と向きを更新する
         updateTipTransform(upperTip, upperCurve, true);
         updateTipTransform(lowerTip, lowerCurve, false);
 
@@ -4629,6 +4737,7 @@
       function updateString(draw = 0, kick = 0, vibePhase = 0, vibeAmp = 0, stringLocals = null) {
         const locals = stringLocals ?? getStringLocals(draw, kick);
 
+        // 弦の上端、中間、下端のワールド座標を計算する
         const top = toWorld(locals.topLocal);
         const mid = toWorld(
           locals.midLocal.clone().add(
@@ -4637,6 +4746,7 @@
         );
         const bot = toWorld(locals.botLocal);
 
+        // 弦の頂点位置を更新する
         const pos = string.geometry.attributes.position;
         pos.setXYZ(0, top.x, top.y, top.z);
         pos.setXYZ(1, mid.x, mid.y, mid.z);
@@ -4655,10 +4765,12 @@
       // チャージ
       // --------------------------------------------------
       bowGroup.userData.setCharge = function (value) {
+        // c は弓を引いた量を表す値で、0 から 1 の範囲にクランプされる。value が負の値や 1 を超える値の場合は、0 または 1 に制限される。
         const c = THREE.MathUtils.clamp(value, 0, 1);
         bowGroup.userData.charge = c;
         bowGroup.userData.drawAmount = c;
 
+        // 弓形状を再構築し、弦を更新する
         const stringLocals = rebuildBow(c, 0);
         updateString(c, 0, 0, 0, stringLocals);
       };
@@ -4670,6 +4782,7 @@
         bowGroup.userData.attachedArrow = arrow;
         if (!arrow) return;
 
+        // 矢のノック位置を弓の接続点に合わせる
         placeArrowByNock(arrow, arrowAttach.position);
       };
 
@@ -4677,8 +4790,10 @@
       // リリース
       // --------------------------------------------------
       bowGroup.userData.releaseString = function () {
+        // 弓をリリースした時のパワーを計算する。drawAmount は弓を引いた量を表す値で、0 から 1 の範囲で設定される。power は弓のパワーを表す値で、0 から 1 の範囲で設定される。
         const power = bowGroup.userData.drawAmount;
 
+        // リリース時の速度、弦の振動量、弓の反動量を計算する。releaseVelocity は弓をリリースした時の速度を表す値で、0 から 1 の範囲で設定される。stringVibration は弦の振動量を表す値で、0 から 1 の範囲で設定される。bowKick は弓の反動量を表す値で、0 から 1 の範囲で設定される。
         bowGroup.userData.releaseVelocity = Math.max(0.22, power * 0.52);
         bowGroup.userData.stringVibration = 0.024 + power * 0.040;
         bowGroup.userData.bowKick = 0.60 + power * 0.72;
@@ -4689,6 +4804,7 @@
       // 毎フレーム更新
       // --------------------------------------------------
       bowGroup.userData.updateBowAnimation = function (dt, elapsed) {
+        // drawAmount は弓を引いた量を表す値で、0 から 1 の範囲で設定される。releaseVelocity は弓をリリースした時の速度を表す値で、0 から 1 の範囲で設定される。
         if (bowGroup.userData.drawAmount > 0) {
           bowGroup.userData.drawAmount -= bowGroup.userData.releaseVelocity * dt * 5.4;
           if (bowGroup.userData.drawAmount < 0) {
@@ -4696,12 +4812,17 @@
           }
         }
 
+        // 弦の振動量と弓の反動量を時間経過に応じて減衰させる。Math.exp 関数を使用して、指数関数的に減衰させることで、自然な振動の減衰を表現する。
         bowGroup.userData.stringVibration *= Math.exp(-dt * 11.0);
+        // 弓の反動量を減衰させることで、弓がリリースされた後の反動が徐々に収まるようにする。
         bowGroup.userData.bowKick *= Math.exp(-dt * 9.0);
 
+        // 弓の反動量に応じて、弓の形状を再構築し、弦を更新する。kick は弓の反動量に応じて計算され、弓の形状や弦の位置に影響を与える。
         const kick = Math.sin(elapsed * 26.0) * bowGroup.userData.bowKick * 0.055;
-
+        // 弓形状を再構築し、弦の位置を更新する。rebuildBow 関数を呼び出して、弓の形状を再構築し、updateString 関数を呼び出して、弦の位置を更新する。
         const stringLocals = rebuildBow(bowGroup.userData.drawAmount, kick);
+
+        // 弦の位置を更新する。updateString 関数を呼び出して、弦の上端、中間、下端の位置を計算し、弦のジオメトリを更新する。
         updateString(
           bowGroup.userData.drawAmount,
           kick,
@@ -4732,6 +4853,7 @@
 
       // 軸（細め）
       const shaftRadius = 0.012;
+      // シャフト材質
       const shaft = new THREE.Mesh(
         new THREE.CylinderGeometry(shaftRadius, shaftRadius, 0.95, 12),
         new THREE.MeshStandardMaterial({
@@ -4739,6 +4861,7 @@
           roughness: 0.82
         })
       );
+      // 軸を横に回転
       shaft.rotation.z = -Math.PI / 2;
       group.add(shaft);
 
@@ -4751,6 +4874,7 @@
           roughness: 0.35
         })
       );
+      // 矢じりを横に回転
       tip.rotation.z = -Math.PI / 2;
       tip.position.x = 0.95 / 2 + 0.025;
       group.add(tip);
@@ -4810,18 +4934,19 @@
       // 接着面を少しだけ軸の外へ逃がしてZ-fightingを防ぐ
       const contactLift = 0.0002;
 
+      // ------------------------------------------------------------
+      // 羽生成
+      // ------------------------------------------------------------
       function createFeather(radialAngle, color) {
         const mat = featherBaseMat.clone();
         mat.color.setHex(color);
 
+        // 羽のメッシュを作成
         const feather = new THREE.Mesh(featherGeom, mat);
-
         // 羽の前後を反転
         feather.scale.x = -1;
-
         // 軸周りに回転
         feather.rotation.x = radialAngle;
-
         // y=0 の最長辺全体が軸に接するように配置
         feather.position.set(
           featherX,
@@ -4837,7 +4962,6 @@
       const f2 = createFeather(Math.PI / 2,   0xffffff);
       const f3 = createFeather(Math.PI,       0xf28c28);
       const f4 = createFeather(Math.PI * 1.5, 0xffffff);
-
       group.add(f1, f2, f3, f4);
 
       // ノック（矢の最後方）からグループ中心までの距離
@@ -4861,6 +4985,7 @@
 
       if (to.lengthSq() < 1e-8) return;
 
+      // from から to への回転を計算する
       const q = new THREE.Quaternion().setFromUnitVectors(from, to);
       arrow.quaternion.copy(q);
     }
@@ -4873,6 +4998,7 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function getHorizontalForward() {
+      // カメラの前方ベクトルを取得する
       const dir = new THREE.Vector3(0, 0, -1);
       dir.applyQuaternion(game.camera.quaternion);
 
@@ -4897,6 +5023,7 @@
      */
     function getMuzzlePosition() {
       const pos = new THREE.Vector3();
+      // カメラのワールド位置を取得する
       game.camera.getWorldPosition(pos);
 
       // 画面中央から少し前へ
@@ -4911,7 +5038,6 @@
 
       return pos;
     }
-
 
     // ============================================================
     // 7. 入力・発射・風計算
@@ -4944,13 +5070,18 @@
           return;
         }
 
+        // チャージを開始する
         beginCharge();
       });
 
+      // --------------------------------------------------
+      // PC: 左クリック離す
+      // --------------------------------------------------
       window.addEventListener("mouseup", (e) => {
         if (isTouchDevice) return;
         if (e.button !== 0) return;
 
+        // チャージを終了し、矢を発射する
         releaseArrow();
       });
 
@@ -4963,55 +5094,77 @@
         if (!isTouchDevice) return;
         if (e.touches.length !== 1) return;
 
+        // デフォルトのタッチ操作（スクロールやズーム）を無効化する
         e.preventDefault();
 
+        // タッチ位置を取得する
         const touch = e.touches[0];
 
+        // インパクトで止まっている状態で再度タッチしたらカメラリターン（１秒フリーズ）
         if (
           game.followArrow &&
           game.isHoldingOnImpact &&
           game.impactHoldTime >= 1.0
         ) {
+          // カメラリターンを開始する
           startCameraReturn();
           return;
         }
 
+        // タッチ操作で照準を行うための状態を初期化する
         game.touchLook.active = true;
         game.touchLook.lastX = touch.clientX;
         game.touchLook.lastY = touch.clientY;
 
+        // チャージを開始する
         beginCharge();
       }, { passive: false });
 
+      // --------------------------------------------------
+      // スマホ: タッチ移動
+      // --------------------------------------------------
       window.addEventListener("touchmove", (e) => {
         if (!isTouchDevice) return;
         if (!game.touchLook.active) return;
         if (e.touches.length !== 1) return;
 
+        // デフォルトのタッチ操作（スクロールやズーム）を無効化する
         e.preventDefault();
 
+        // タッチ位置の変化量を計算する
         const touch = e.touches[0];
         const dx = touch.clientX - game.touchLook.lastX;
         const dy = touch.clientY - game.touchLook.lastY;
 
+        // タッチ位置を更新する
         game.touchLook.lastX = touch.clientX;
         game.touchLook.lastY = touch.clientY;
 
+        // タッチ移動量に応じてカメラの向きを更新する
         updateTouchLook(dx, dy);
       }, { passive: false });
 
+      //--------------------------------------------------
+      // スマホ: タッチ離す
+      //--------------------------------------------------
       window.addEventListener("touchend", (e) => {
         if (!isTouchDevice) return;
 
+        // デフォルトのタッチ操作（スクロールやズーム）を無効化する
         e.preventDefault();
         game.touchLook.active = false;
 
+        // チャージを終了し、矢を発射する
         releaseArrow();
       }, { passive: false });
 
+      //--------------------------------------------------
+      // スマホ: タッチキャンセル（システムによる強制キャンセル）
+      //--------------------------------------------------
       window.addEventListener("touchcancel", (e) => {
         if (!isTouchDevice) return;
 
+        // デフォルトのタッチ操作（スクロールやズーム）を無効化する
         e.preventDefault();
         game.touchLook.active = false;
         game.isCharging = false;
@@ -5035,9 +5188,12 @@
       if (isCameraInCinematicMode()) return;
       if (!game.hasLoadedArrow) return;
 
+      // チャージを開始する
       game.isCharging = true;
+      // チャージ時間をリセットする
       game.chargeTime = 0;
-      game.chargeDirection = 1; // 長押し開始時は増加から始める
+      // 長押し開始時は増加から始める
+      game.chargeDirection = 1; 
     }
 
     /**
@@ -5050,46 +5206,45 @@
     function releaseArrow() {
       if (!game.isCharging) return;
 
+      // チャージを終了する
       game.isCharging = false;
 
       if (!game.hasLoadedArrow || !game.loadedArrow) return;
 
+      // チャージ時間をもとに発射速度を計算する
       const chargeRatio = THREE.MathUtils.clamp(
         game.chargeTime / game.maxChargeTime,
         0,
         1
       );
-
+      // チャージ率に応じて速度を線形補間する
       const speed = THREE.MathUtils.lerp(
         game.minSpeed,
         game.maxSpeed,
         chargeRatio
       );
-
       // まずは従来どおり水平ベースの前方方向を使う
       const horizontalDir = getHorizontalForward();
-
       // そこへ少しだけ上向き補正を加える
       const launchDir = horizontalDir.clone();
       launchDir.y += DEFAULT_ARROW_PITCH_BIAS;
       launchDir.normalize();
-
+      // 矢を生成し、発射位置に配置する
       const arrow = createArrowModel();
       arrow.position.copy(getMuzzlePosition());
-
       // 矢の向きも launchDir に合わせる
       orientArrowToDirection(arrow, launchDir);
 
       game.scene.add(arrow);
 
+      // 発射速度ベクトルを計算する
       const velocity = launchDir.clone().multiplyScalar(speed);
-
       // 既存の上向き速度は維持
       velocity.y += 1.5 + 2.3 * chargeRatio;
-
+      // 飛翔矢の情報を game.flyingArrows に追加する
       const shotIndex = game.shotScores.length;
       game.shotScores.push(0);
-
+      // 飛翔矢の情報をオブジェクトにまとめる
       const arrowData = {
         mesh: arrow,
         velocity,
@@ -5100,12 +5255,15 @@
         scored: false
       };
 
+      // 飛翔矢の情報を game.flyingArrows に追加する
       game.flyingArrows.push(arrowData);
       startArrowFollow(arrowData);
 
+      // 発射後は装填矢がなくなるので、game.hasLoadedArrow を false に設定する
       game.hasLoadedArrow = false;
       updateLoadedArrowVisual();
 
+      // 発射回数をカウントする
       game.shots++;
       updateHUD();
     }
@@ -5120,15 +5278,20 @@
     function reloadArrow() {
       if (game.isGameOver) return;
 
+      // 装填矢を生成する
       game.hasLoadedArrow = true;
+      // 装填矢のモデルを生成する
       game.isCharging = false;
+      // チャージ時間をリセットする
       game.chargeTime = 0;
     
       // リロードのたびに風速だけ変える
       randomizeWindSpeedOnly();
-  
+      // 装填矢の表示を更新する
       updateLoadedArrowVisual();
+      // 弓の引き量をリセットする
       updateBowDraw(0);
+      // HUD を更新する
       updateHUD();
     }
 
@@ -5142,17 +5305,18 @@
     function updateLoadedArrowVisual() {
       if (!game.loadedArrow) return;
 
+      // 装填矢の表示を game.hasLoadedArrow に合わせる
       game.loadedArrow.visible = game.hasLoadedArrow;
-
+      // 弓の接続点を取得する
       const bowGroup = game.bowRoot?.children?.[0];
-
+      // 装填矢がない場合は弓の接続点から矢を外す 
       if (!game.hasLoadedArrow) {
         if (bowGroup?.userData) {
           bowGroup.userData.attachedArrow = null;
         }
         return;
       }
-
+      // 装填矢がある場合は弓の接続点に矢を接続する
       const shaftDir = new THREE.Vector3(0, 0, -1)
         .applyEuler(new THREE.Euler(
           -0.03,  // X: 少し上向き/下向き
@@ -5161,14 +5325,12 @@
           "XYZ"
         ))
         .normalize();
-
+      // 装填矢の向きを弓の接続点に合わせる
       orientArrowToDirection(game.loadedArrow, shaftDir);
-
       // 再装填時も必ず弓へ再接続する
       if (bowGroup?.userData?.attachArrow) {
          bowGroup.userData.attachArrow(game.loadedArrow);
       }
-
     }
 
     /**
@@ -5179,8 +5341,9 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateBowDraw(ratio) {
+      // ratio は弓を引いた量を表す値で、0 から 1 の範囲にクランプされる。負の値や 1 を超える値の場合は、0 または 1 に制限される。
       const drawRatio = THREE.MathUtils.clamp(ratio, 0, 1);
-
+      // 弓の接続点を取得する
       const bowGroup = game.bowRoot?.children?.[0];
       if (bowGroup?.userData?.setCharge) {
         bowGroup.userData.setCharge(drawRatio);
@@ -5223,17 +5386,15 @@
 
       // 風速が 0 に近い時はそのまま
       if (base.lengthSq() < 1e-8) return base;
-
       // 左右風に対して、ごく弱い上下揺らぎを足す
       const vertical =
         Math.sin(elapsed * 1.9) * 0.10 +
         Math.sin(elapsed * 3.7 + 1.2) * 0.05;
-
       // 風の強さ自体も少しだけ脈動させる
       const gust = 1.0 +
         Math.sin(elapsed * 1.4 + 0.6) * 0.10 +
         Math.sin(elapsed * 2.8 + 2.1) * 0.05;
-
+      // 風加速度に揺らぎを適用する
       base.multiplyScalar(gust);
       base.y += vertical * game.windAccelerationScale;
 
@@ -5275,15 +5436,16 @@
       if (game.isGameOver) return;
       if (isCameraInCinematicMode()) return;
 
+      // タッチ移動量に応じて yaw/pitch を更新する
       game.touchLook.yaw -= dx * game.touchLook.sensitivityX;
       game.touchLook.pitch -= dy * game.touchLook.sensitivityY;
-
       game.touchLook.pitch = THREE.MathUtils.clamp(
         game.touchLook.pitch,
         -Math.PI / 3,
         Math.PI / 3
       );
 
+      // カメラの回転順序を YXZ に設定し、yaw/pitch を適用する
       game.camera.rotation.order = "YXZ";
       game.camera.rotation.y = game.touchLook.yaw;
       game.camera.rotation.x = game.touchLook.pitch;
@@ -5300,7 +5462,6 @@
       return !!game.followArrow || game.isHoldingOnImpact || game.isReturningCamera;
     }
 
-
     // ============================================================
     // 8. 矢追従カメラ・当たり判定
     // ------------------------------------------------------------
@@ -5315,13 +5476,19 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function startArrowFollow(arrowData) {
+      // カメラの現在位置を保存する
       game.savedCameraPosition.copy(game.camera.position);
+      // カメラの現在の回転を保存する
       game.savedCameraQuaternion.copy(game.camera.quaternion);
+      // 矢追従カメラを開始する
       game.followArrow = arrowData;
+      // 着弾保持をリセットする
       game.isHoldingOnImpact = false;
+      // カメラ復帰中の状態をリセットする
       game.isReturningCamera = false;
+      // 着弾保持時間をリセットする
       game.impactHoldTime = 0;
-
+      // 弓の表示を非表示にする
       if (game.bowRoot) {
         game.bowRoot.visible = false;
       }
@@ -5337,6 +5504,7 @@
     function startImpactHold() {
       if (!game.followArrow || game.isHoldingOnImpact) return;
 
+      // カメラの現在位置を保存する
       game.isHoldingOnImpact = true;
       game.impactHoldTime = 0;
     }
@@ -5351,9 +5519,13 @@
     function startCameraReturn() {
       if (!isCameraInCinematicMode()) return;
 
+      // カメラ復帰中の状態を開始する
       game.followArrow = null;
+      // 着弾保持を終了する
       game.isHoldingOnImpact = false;
+      // カメラ復帰中の状態を開始する
       game.isReturningCamera = true;
+      // 着弾保持時間をリセットする
       game.impactHoldTime = 0;
     }
 
@@ -5370,20 +5542,18 @@
       // 視点を正面（デフォルト）にリセット
       game.camera.rotation.set(0, 0, 0, "YXZ");
       game.camera.quaternion.setFromEuler(game.camera.rotation);
-
       // タッチ用の yaw/pitch もリセット
       game.touchLook.yaw = 0;
       game.touchLook.pitch = 0;
-
+      // カメラ復帰中の状態を終了する
       game.followArrow = null;
       game.isHoldingOnImpact = false;
       game.isReturningCamera = false;
       game.impactHoldTime = 0;
-
+      // 弓の表示を元に戻す
       if (game.bowRoot) {
         game.bowRoot.visible = true;
       }
-
       reloadArrow();
     }
 
@@ -5396,31 +5566,35 @@
      */
     function updateCameraFollow(dt) {
       if (game.followArrow) {
+        // 矢追従カメラ中は弓の表示を非表示にする
         const arrowData = game.followArrow;
-
+        // 矢がシーンから削除されていたら、カメラ復帰処理を開始する
         if (!arrowData.mesh.parent) {
           startCameraReturn();
           return;
         }
-
+        // 矢の水平前方方向を取得する
         const followDir = arrowData.horizontalDir.clone().normalize();
+        // 矢の位置からカメラの目標位置を計算する
         const targetPosition = arrowData.mesh.position.clone()
           .addScaledVector(followDir, -game.followOffsetDistance);
         targetPosition.y += game.followOffsetHeight;
-
+        // カメラ位置を滑らかに補間する
         const followAlpha = 1 - Math.exp(-game.followLerpSpeed * dt);
         game.camera.position.lerp(targetPosition, followAlpha);
-
+        // カメラの向きを矢の進行方向に向ける
         const lookTarget = arrowData.mesh.position.clone()
           .addScaledVector(followDir, game.followLookAhead);
+        // カメラの向きを矢の進行方向に向けるための回転行列を作成する
         const lookMatrix = new THREE.Matrix4().lookAt(
           game.camera.position,
           lookTarget,
           game.camera.up
         );
+        // 回転行列からクォータニオンを作成し、カメラの回転を滑らかに補間する
         const targetQuaternion = new THREE.Quaternion().setFromRotationMatrix(lookMatrix);
         game.camera.quaternion.slerp(targetQuaternion, followAlpha);
-
+        // 矢が着弾している場合は、着弾保持処理を開始する
         if (arrowData.stuck) {
           startImpactHold();
           game.impactHoldTime += dt;
@@ -5428,6 +5602,7 @@
         return;
       }
 
+      // 着弾保持中はカメラを固定する
       if (!game.isReturningCamera) {
         if (game.bowRoot) {
           game.bowRoot.visible = true;
@@ -5435,10 +5610,11 @@
         return;
       }
 
+      // カメラ復帰中は保存した位置と回転に向かって補間する
       const returnAlpha = 1 - Math.exp(-game.returnLerpSpeed * dt);
       game.camera.position.lerp(game.savedCameraPosition, returnAlpha);
       game.camera.quaternion.slerp(game.savedCameraQuaternion, returnAlpha);
-
+      // カメラがほぼ元の位置と回転に戻ったら復帰処理を完了する
       if (
         game.camera.position.distanceToSquared(game.savedCameraPosition) < 1e-4 &&
         game.camera.quaternion.angleTo(game.savedCameraQuaternion) < 0.01
@@ -5457,27 +5633,28 @@
     function checkArrowObjectHit(prevPos, nextPos) {
       if (!game.arrowCollisionObjects.length) return null;
 
+      // prevPos から nextPos までの線分をレイキャストして、衝突するオブジェクトがあるか調べる
       const move = nextPos.clone().sub(prevPos);
+      // 線分の長さを計算する
       const distance = move.length();
-
+      // 線分の長さがほぼゼロの場合は衝突判定をスキップする
       if (distance <= 1e-6) return null;
-
+      // 線分の方向を正規化する
       const direction = move.clone().normalize();
-
+      // レイキャスターを作成し、prevPos から direction 方向に distance だけの距離で衝突判定を行う
       const raycaster = new THREE.Raycaster(
         prevPos,
         direction,
         0,
         distance
       );
-
+      // レイキャストして衝突するオブジェクトを取得する
       const hits = raycaster.intersectObjects(game.arrowCollisionObjects, false);
-
+      // 衝突するオブジェクトがなければ null を返す
       if (!hits.length) return null;
-
+      // 衝突したオブジェクトの情報を返す
       return hits[0];
     }
-
 
     // ============================================================
     // 5. 的・スコア判定
@@ -5493,28 +5670,32 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function checkTargetHit(prevPos, nextPos) {
+      // 的の中心位置を取得する
       const center = game.targetFace.getWorldPosition(new THREE.Vector3());
-
       // 的の法線
       const normal = new THREE.Vector3(0, 0, 1)
         .applyQuaternion(game.targetFace.getWorldQuaternion(new THREE.Quaternion()))
         .normalize();
-
+      // prevPos と nextPos が的面の前後どちらにあるかを判定するため、中心からの距離を計算する
       const d1 = prevPos.clone().sub(center).dot(normal);
       const d2 = nextPos.clone().sub(center).dot(normal);
 
       // 平面を跨いでいなければヒットしない
       if (d1 * d2 > 0) return null;
 
+      // 線分と平面の交点を計算する
       const t = d1 / (d1 - d2);
       if (t < 0 || t > 1) return null;
 
+      // 線分上の交点を計算する
       const hitPos = prevPos.clone().lerp(nextPos, t);
-
+      // 的の中心からの距離を計算する
       const offset = hitPos.clone().sub(center);
+      // 平面上の距離を計算するため、法線方向の成分を除去する
       const planar = offset.sub(normal.clone().multiplyScalar(offset.dot(normal)));
+      // 的の中心からの距離を計算する
       const dist = planar.length();
-
+      // 的の半径内に入っていればヒットと判定する
       if (dist <= game.targetRadius) {
         return { hitPos, dist };
       }
@@ -5530,17 +5711,15 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function scoreFromDistance(dist) {
+      // 的の半径を10等分したリング幅を計算する
       const ringWidth = game.targetRadius / 10;
-
       // 境界線ギリギリで下の点に落ちるのを防ぐため、微小値を引く
       const EPS = 1e-8;
-
+      // 中心からの距離をリング番号に変換する（0番目が10点、9番目が1点）
       const ringIndex = Math.floor(Math.max(0, dist - EPS) / ringWidth);
-
       // 0番目: 10点、1番目: 9点、...、9番目: 1点
       return THREE.MathUtils.clamp(10 - ringIndex, 1, 10);
     }
-
 
     // ============================================================
     // 9. ゲーム進行・HUD・メインループ
@@ -5558,19 +5737,25 @@
     function triggerHitCelebration() {
       if (!celebrationLayer) return;
 
+      // 既存の紙吹雪バーストが多すぎる場合は古いものから削除する
       while (celebrationLayer.childElementCount >= MAX_ACTIVE_CONFETTI_BURSTS) {
         celebrationLayer.firstElementChild?.remove();
       }
 
+      // 紙吹雪バーストの DOM 要素を作成する
       const burst = document.createElement("div");
       burst.className = "confetti-burst";
 
+      // 紙吹雪の寿命を計算するための最大寿命を初期化する
       let maxLifetimeMs = 0;
 
+      // 紙吹雪の個数分ループして、個々の紙吹雪要素を作成する
       for (let i = 0; i < CONFETTI_PIECES_PER_HIT; i++) {
+        // 紙吹雪の個々の要素を作成する
         const piece = document.createElement("span");
         piece.className = "confetti-piece";
 
+        // 紙吹雪の幅と高さをランダムに決定する
         const width = 8 + Math.random() * 8;
         const height = 12 + Math.random() * 12;
         const durationMs = 2400 + Math.random() * 1300;
@@ -5582,6 +5767,7 @@
         const left = Math.random() * 100;
         const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
 
+        // CSS カスタムプロパティを設定する
         piece.style.setProperty("--confetti-width", `${width.toFixed(1)}px`);
         piece.style.setProperty("--confetti-height", `${height.toFixed(1)}px`);
         piece.style.setProperty("--confetti-left", `${left.toFixed(2)}vw`);
@@ -5593,10 +5779,12 @@
         piece.style.setProperty("--confetti-rotate-start", `${rotateStart.toFixed(1)}deg`);
         piece.style.setProperty("--confetti-rotate-end", `${rotateEnd.toFixed(1)}deg`);
 
+        // 紙吹雪の個々の要素をバーストに追加する
         burst.appendChild(piece);
         maxLifetimeMs = Math.max(maxLifetimeMs, durationMs + delayMs);
       }
 
+      // 紙吹雪バーストを celebrationLayer に追加する
       celebrationLayer.appendChild(burst);
       window.setTimeout(() => burst.remove(), maxLifetimeMs + 120);
     }
@@ -5609,6 +5797,7 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function startGame() {
+      // ゲーム状態を初期化する
       randomizeWind();
       game.hasStarted = true;
       game.timeRemaining = game.timeLimit;
@@ -5625,22 +5814,35 @@
     function endGame() {
       if (game.isGameOver) return;
 
+      // ゲーム終了状態を設定する
       game.isGameOver = true;
+      // ゲーム終了時の状態をリセットする
       game.timeRemaining = 0;
+      // ゲーム終了時のチャージ状態をリセットする
       game.isCharging = false;
+      // ゲーム終了時のチャージ時間をリセットする
       game.chargeTime = 0;
+      // ゲーム終了時の装填矢をリセットする
       finishCameraReturn();
+      // ゲーム終了時の装填矢の表示を更新する
       overlay.classList.add("hidden");
+      // ゲーム終了時のHUDを更新する
       const isCelebration = game.score >= 11;
+      // ゲーム終了時のメッセージを表示する
       gameOverScreen.textContent =
         isCelebration ? "CONGRATULATIONS!!" : "GAME OVER";
+      // ゲーム終了時のメッセージの色を設定する
       gameOverScreen.classList.toggle("isCelebration", isCelebration);
+      // ゲーム終了時のメッセージを表示する
       gameOverScreen.classList.add("visible");
-
+      // ゲーム終了時の弓の引き量をリセットする
       updateBowDraw(0);
+      // ゲーム終了時の装填矢の表示を更新する
       updateLoadedArrowVisual();
+      // ゲーム終了時のHUDを更新する
       updateHUD();
 
+      // ゲーム終了時に PointerLock を解除する
       if (game.controls.isLocked) {
         game.controls.unlock();
       }
@@ -5659,8 +5861,9 @@
     function updateTimer(dt) {
       if (!game.hasStarted || game.isGameOver) return;
 
+      // 残り時間を減らす
       game.timeRemaining = Math.max(0, game.timeRemaining - dt);
-
+      // 残り時間が 0 になったらゲーム終了へ進める
       if (game.timeRemaining <= 0) {
         endGame();
       }
@@ -5697,18 +5900,21 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateHUD() {
+      // チャージ率を計算し、0～100%の範囲に制限する
       const chargeRatio = THREE.MathUtils.clamp(
         game.chargeTime / game.maxChargeTime,
         0,
         1
       );
+      // チャージ率をパーセント表示に変換する
       const percent = Math.round(chargeRatio * 100);
-
+      // 現在の風向きと風速を取得する
       const windDirection = getCurrentWindDirection?.();
+      // 風向きと風速をHUD表示用の文字列へ変換する
       const windText = game.hasStarted
         ? `${windDirection.symbol}  ${game.wind.speed.toFixed(1)} m/s`
         : "-";
-
+      // HUD の HTML を更新する
       hudText.innerHTML = `
         <div><span class="hudLabel">スコア</span>: <b>${game.score}点（${formatShotScores()}）</b></div>
         <div><span class="hudLabel">残り時間</span>: <b>${formatTimeRemaining(game.timeRemaining)}</b></div>
@@ -5731,29 +5937,38 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function animate() {
+      // requestAnimationFrame を使って、次のフレームの描画を予約する
       requestAnimationFrame(animate);
-
+      // 1フレームの経過時間を取得する（最大 33ms に制限）
       const dt = Math.min(0.033, game.clock.getDelta());
+      // ゲーム開始からの経過時間を取得する
       const elapsed = game.clock.elapsedTime;
-
+      // ゲームオーバーでなければ、弓アニメーション、チャージ、矢の飛行、カメラ追従、タイマーを更新する
       if (!game.isGameOver) {
-
         // 実装済みの弓アニメーションを毎フレーム呼ぶ
         if (game.bowRoot?.children?.[0]?.userData?.updateBowAnimation) {
             game.bowRoot.children[0].userData.updateBowAnimation(dt, elapsed);
         }
+        // チャージ量の更新とゲージ往復制御を行う
         updateCharge(dt);
+        // 発射済み矢の物理移動、衝突、スコア確定を更新する
         updateFlyingArrows(dt);
+        // カメラ追従、着弾保持、視点復帰の状態を毎フレーム更新する
         updateCameraFollow(dt);
+        // 残り時間を減らし、0になったらゲーム終了へ進める
         updateTimer(dt);
       }
-
+      // 風エフェクト、草の揺れ、観客のアニメーション、空ドームの更新を行う
       updateWindFX(dt, elapsed);
+      // 草の揺れエフェクトを更新する
       updateGrassFX(dt, elapsed);
+      // 観客のアニメーションを更新する
       updateSpectators(dt, elapsed);
+      // 空ドームの色や雲の動きを更新する
       updateOpenFieldSkyDome();
+      // HUD の表示を更新する
       updateHUD();
-
+      // Three.js のレンダリングを実行する
       game.renderer.render(game.scene, game.camera);
     }
 
@@ -5767,8 +5982,8 @@
     function updateCharge(dt) {
       if (!game.isCharging) return;
 
+      // チャージ量を増減させる
       game.chargeTime += dt * game.chargeDirection;
-
       // 100%まで行ったら減少へ反転
       if (game.chargeTime >= game.maxChargeTime) {
         game.chargeTime = game.maxChargeTime;
@@ -5779,7 +5994,7 @@
         game.chargeTime = 0;
         game.chargeDirection = 1;
       }
-
+      // チャージ率を計算し、弓の引き量を更新する
       const ratio = game.chargeTime / game.maxChargeTime;
       updateBowDraw(ratio);
     }
@@ -5792,58 +6007,51 @@
      * - 後続処理が参照しやすいよう、結果を game または userData に反映する。
      */
     function updateFlyingArrows(dt) {
+      // 発射済み矢の配列を逆順にループして、古い矢から処理する
       for (let i = game.flyingArrows.length - 1; i >= 0; i--) {
+        // 発射済み矢のデータを取得する
         const arrowData = game.flyingArrows[i];
-
+        // 矢がすでに刺さっている場合は、物理移動や衝突判定をスキップする
         if (arrowData.stuck) continue;
-
+        // 矢の経過時間を更新する
         arrowData.age += dt;
-
         // 長く飛びすぎた矢は削除
         if (arrowData.age > game.maxLifetime) {
           game.scene.remove(arrowData.mesh);
           game.flyingArrows.splice(i, 1);
           continue;
         }
-
+        // 前フレームの位置を保存する
         const prevPos = arrowData.mesh.position.clone();
-
         // 重力・風
         arrowData.velocity.addScaledVector(game.gravity, dt);
         arrowData.velocity.addScaledVector(
           getWindAccelerationWithJitter(game.clock.elapsedTime),
           dt
         );
-
         // 位置更新
         arrowData.mesh.position.addScaledVector(arrowData.velocity, dt);
-
+        // 矢の進行方向を水平面上で計算する
         const nextPos = arrowData.mesh.position.clone();
-
         // 進行方向そのものへ向ける
         if (arrowData.velocity.lengthSq() > 1e-6) {
           orientArrowToDirection(arrowData.mesh, arrowData.velocity);
         }
-
         // 木・岩・観客席などに当たったら刺さって停止
         const objectHit = checkArrowObjectHit(prevPos, nextPos);
         if (objectHit) {
           arrowData.mesh.position.copy(objectHit.point);
           arrowData.velocity.set(0, 0, 0);
           arrowData.stuck = true;
-
           // 外した扱いなので score は加算しない
           if (!arrowData.scored) {
             arrowData.scored = true;
-
             if (typeof arrowData.shotIndex === "number") {
               game.shotScores[arrowData.shotIndex] = 0;
             }
           }
-
           continue;
         }
-
         // 地面に落ちたら停止
         if (arrowData.mesh.position.y <= 0.05) {
           arrowData.mesh.position.y = 0.05;
@@ -5851,25 +6059,23 @@
           arrowData.stuck = true;
           continue;
         }
-
         // 的ヒット判定
         const hit = checkTargetHit(prevPos, nextPos);
         if (hit) {
           arrowData.mesh.position.copy(hit.hitPos);
           arrowData.velocity.set(0, 0, 0);
           arrowData.stuck = true;
-
+          // スコア確定処理
           if (!arrowData.scored) {
             const point = scoreFromDistance(hit.dist);
-
             arrowData.scored = true;
             game.hits++;
             game.score += point;
-
+            // スコア履歴に追加する
             if (typeof arrowData.shotIndex === "number") {
               game.shotScores[arrowData.shotIndex] = point;
             }
-
+            // 的中時の紙吹雪演出を発生させる
             triggerHitCelebration();
           }
         }
@@ -5883,7 +6089,9 @@
     // これにより、const/let の初期化前参照によるエラーを防ぐ。
     // ============================================================
     try {
+      // Three.js の初期化、シーン構築、カメラ・ライト・弓・的の配置などを行う
       init();
+      // メインループを開始する
       animate();
     } catch (err) {
       showError("初期化エラー:\n" + (err?.stack || err?.message || String(err)));
